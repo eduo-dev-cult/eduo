@@ -1,6 +1,8 @@
 CREATE TABLE IF NOT EXISTS eduo.user_credential
 (
-    user_id       INTEGER
+    user_id       INTEGER    NOT NULL
+        CONSTRAINT user_credential_pk
+            PRIMARY KEY
         CONSTRAINT "FK_user_credential_user_id"
             REFERENCES eduo."user"
             ON UPDATE CASCADE ON DELETE CASCADE,
