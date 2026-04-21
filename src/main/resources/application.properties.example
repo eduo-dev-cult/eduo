@@ -1,0 +1,17 @@
+spring.application.name=eduo
+###########################################
+##### BEGIN  DATABASE #####################
+###########################################
+spring.datasource.url=jdbc:postgresql://localhost:5432/eduo-dev-cult
+#postgres specific step i'm told
+spring.jpa.properties.hibernate.default_schema=eduo
+spring.datasource.username=postgres (default)
+spring.datasource.password=root (default)
+spring.jpa.hibernate.ddl-auto=update
+# use update for dev (makes db match entity classes if different)
+# use validate for prod (throws error if db schema doesn't match app)
+# create (dangerous!) drops tables then recreates. all data lost
+spring.jpa.show-sql=true
+###########################################
+####### END DATABASE ######################
+###########################################
