@@ -16,4 +16,14 @@ import se.ltu.eduo.model.UserPreferences;
 public class SessionContext {
     private User currentUser;
     private UserPreferences preferences;
+
+
+    /**
+     * Log out the active user by nulling SessionContext fields
+     */
+    public void logOut()
+    {
+        currentUser = null;
+        preferences = null;
+    }
 }

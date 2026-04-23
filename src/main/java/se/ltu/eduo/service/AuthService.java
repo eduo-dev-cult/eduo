@@ -1,27 +1,33 @@
 package se.ltu.eduo.service;
 
-import org.springframework.beans.factory.annotation.Autowired;
+import jakarta.transaction.Transactional;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
-import se.ltu.eduo.SessionContext;
 import se.ltu.eduo.model.User;
 import se.ltu.eduo.model.UserCredential;
 import se.ltu.eduo.repository.UserCredentialRepository;
 import se.ltu.eduo.repository.UserRepository;
 
+import java.time.Instant;
 import java.util.Optional;
 
 @Service
+@RequiredArgsConstructor
 public class AuthService {
 
-    @Autowired
-    private SessionContext sessionContext;
+    private final UserRepository userRepository;
+    private final UserCredentialRepository credentialRepository;
 
-    @Autowired
-    private UserRepository userRepository;
-
-    @Autowired
-    private UserCredentialRepository credentialRepository;
-
+    /**
+     * Creates a new user and associated credentials.
+     *
+     * @param firstName user's first name
+     * @param lastName  user's last name
+     * @param username  login username (max 8 characters)
+     * @param password  login password
+     * @return the newly created {@link User}
+     */
+    @Transactional
     public User createUser(String firstName, String lastName, String username, String password) {
         User user = new User();
         user.setFirstName(firstName);
@@ -38,21 +44,35 @@ public class AuthService {
     }
 
     /**
-     * log in user by setting them as the active user in sessioncontext
-     * @param username
-     * @param password
-     * @return true on successful login
+     * Authenticates a user and returns the User entity.
+     * Updates {@code lastLoginAt} on success.
+     *
+     * @param username login username
+     * @param password login password
+     * @return Optional with user on successful login, optional with null otherwise
      */
-    public boolean LogInUser(String username, String password)
-    {
-        Integer userID = credentialRepository.findUserByUsernameAndPassword(username, password).getId();
+    public Optional<User> LogInUser(String username, String password) {
+        UserCredential credential = credentialRepository.findUserByUsernameAndPassword(username, password);
+        Optional<User> user = userRepository.findById(credential.getUser().getId());
 
-        Optional<User> user = userRepository.findById(userID);
+        if (user.isPresent()) {
+            credential.setLastLoginAt(Instant.now());
+            credentialRepository.save(credential);
+        }
 
-        //fixme fails on null user, good behaviour for test
-        sessionContext.setCurrentUser(user.get());
+        return user;
+    }
 
-        return true;
+    /**
+     * Deletes a user and their associated credentials by ID.
+     * Credential and preference rows are removed via database cascade.
+     *
+     * @param userId ID of the user to delete
+     */
+    @Transactional
+    public void DeleteUser(Integer userId) {
+        userRepository.deleteById(userId);
+        //fails silently if id does not exist - might be fine?
     }
 
 }
