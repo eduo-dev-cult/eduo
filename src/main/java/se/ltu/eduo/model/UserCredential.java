@@ -23,7 +23,7 @@ public class UserCredential {
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
 
-    @Column(name = "username", nullable = false, length = 8)
+    @Column(name = "username", nullable = false, length = 8, unique = true)
     private String username;
 
     @Column(name = "password", nullable = false, length = Integer.MAX_VALUE)
