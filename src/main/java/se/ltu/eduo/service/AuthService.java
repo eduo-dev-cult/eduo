@@ -29,6 +29,9 @@ public class AuthService {
      */
     @Transactional
     public User createUser(String firstName, String lastName, String username, String password) {
+        //check uniqueness
+        if (credentialRepository.findByUsername(username) != null) throw new IllegalArgumentException("Username already exists");
+
         User user = new User();
         user.setFirstName(firstName);
         user.setLastName(lastName);
@@ -49,10 +52,12 @@ public class AuthService {
      *
      * @param username login username
      * @param password login password
-     * @return Optional with user on successful login, optional with null otherwise
+     * @return Optional with user on successful login, empty Optional if credentials are invalid
      */
+    @Transactional
     public Optional<User> LogInUser(String username, String password) {
         UserCredential credential = credentialRepository.findUserByUsernameAndPassword(username, password);
+        if (credential == null) return Optional.empty();
         Optional<User> user = userRepository.findById(credential.getUser().getId());
 
         if (user.isPresent()) {
