@@ -1,9 +1,17 @@
+import Sidebar from "./components/SideBar";
+import TopBar from "./components/TopBar";
+import MainContent from "./components/MainContent";
 import "./App.css";
 
 function App() {
   return (
     <div className="app">
-      <h1>Eduo frontend works</h1>
+      <Sidebar />
+
+      <div className="page">
+        <TopBar />
+        <MainContent />
+      </div>
     </div>
   );
 }
