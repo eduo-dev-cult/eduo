@@ -18,7 +18,7 @@ export default function MainContent() {
           <p>Upload or paste material and let Eduo create questions based on it</p>
         </div>
 
-        <Stepper currentStep={currentStep} />
+        <Stepper currentStep={currentStep} onStepClick={setCurrentStep} />
 
         <div className="upload-section">
           <UploadBox />

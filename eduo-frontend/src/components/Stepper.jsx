@@ -1,51 +1,47 @@
 import "./Stepper.css";
 
-export default function Stepper({ currentStep }) {
+export default function Stepper({ currentStep, onStepClick }) {
+  const steps = [
+    { number: 1, label: "Add material" },
+    { number: 2, label: "Settings" },
+    { number: 3, label: "Preview and Save" },
+  ];
+
   return (
     <div className="stepper">
-      
-      {/* Step 1 */}
-      <div className="step-group">
-        <div className={`step ${currentStep === 1 ? "active-step" : ""}`}>
-          1
-        </div>
-        <span className={`step-text ${currentStep === 1 ? "active" : ""}`}>
-          Add material
-        </span>
-      </div>
+      {steps.map((step, index) => {
+        const isActive = currentStep === step.number;
+        const isClickable = step.number <= currentStep;
 
-      <div className="step-line" />
+        return (
+          <div className="stepper-item" key={step.number}>
+            <button
+              type="button"
+              className={`step-group ${isClickable ? "clickable" : ""}`}
+              onClick={() => {
+                if (isClickable) {
+                  onStepClick(step.number);
+                }
+              }}
+              disabled={!isClickable}
+            >
+              <div className={`step ${isActive ? "active-step" : ""}`}>
+                {step.number}
+              </div>
 
-      {/* Step 2 */}
-      <div className="step-group">
-        <div className={`step ${currentStep === 2 ? "active-step" : ""}`}>
-          2
-        </div>
-        <span
-          className={`step-text ${
-            currentStep === 2 ? "active" : "muted"
-          }`}
-        >
-          Settings
-        </span>
-      </div>
+              <span
+                className={`step-text ${
+                  isActive ? "active" : step.number > currentStep ? "muted" : ""
+                }`}
+              >
+                {step.label}
+              </span>
+            </button>
 
-      <div className="step-line" />
-
-      {/* Step 3 */}
-      <div className="step-group">
-        <div className={`step ${currentStep === 3 ? "active-step" : ""}`}>
-          3
-        </div>
-        <span
-          className={`step-text ${
-            currentStep === 3 ? "active" : "muted"
-          }`}
-        >
-          Preview and Save
-        </span>
-      </div>
-
+            {index < steps.length - 1 && <div className="step-line" />}
+          </div>
+        );
+      })}
     </div>
   );
 }
