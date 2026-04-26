@@ -1,13 +1,21 @@
-import Stepper from "./Stepper";
-import UploadBox from "./UploadBox";
 import { useState } from "react";
 
-export default function MainContent() {
-  const [currentStep, setCurrentStep] = useState(1); // State to track the current step
+import Stepper from "./Stepper";
+import UploadBox from "./UploadBox";
+import SettingsPanel from "./SettingsPanel";
+import PreviewSave from "./PreviewSave";
 
-  /** Function to go to the next step, ensuring it doesn't exceed step 3 */
+export default function MainContent() {
+  const [currentStep, setCurrentStep] = useState(1);
+
   const goToNextStep = () => {
     setCurrentStep((prevStep) => Math.min(prevStep + 1, 3));
+  };
+
+  const getButtonText = () => {
+    if (currentStep === 1) return "Continue";
+    if (currentStep === 2) return "Generate";
+    return "Save";
   };
 
   return (
@@ -20,14 +28,16 @@ export default function MainContent() {
 
         <Stepper currentStep={currentStep} onStepClick={setCurrentStep} />
 
-        <div className="upload-section">
-          <UploadBox />
+        <div className="step-content">
+          {currentStep === 1 && <UploadBox />}
+          {currentStep === 2 && <SettingsPanel />}
+          {currentStep === 3 && <PreviewSave />}
+        </div>
 
-          <div className="actions">
-            <button className="continue-button" onClick={goToNextStep}>
-              Continue
-            </button>
-          </div>
+        <div className="actions">
+          <button className="continue-button" onClick={goToNextStep}>
+            {getButtonText()}
+          </button>
         </div>
       </section>
     </main>
