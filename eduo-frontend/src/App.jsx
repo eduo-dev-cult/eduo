@@ -1,17 +1,21 @@
+import { useState } from "react";
+
 import "./App.css";
 import SideBar from "./components/SideBar";
 import TopBar from "./components/TopBar";
 import MainContent from "./components/MainContent";
 
 function App() {
+  const [activePage, setActivePage] = useState("generate");
+
   return (
     <div className="app">
       <TopBar />
 
-      <SideBar />
+      <SideBar activePage={activePage} setActivePage={setActivePage} />
 
       <div className="page">
-        <MainContent />
+        <MainContent activePage={activePage} />
       </div>
     </div>
   );

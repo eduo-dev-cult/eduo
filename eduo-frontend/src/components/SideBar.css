@@ -1,0 +1,51 @@
+.sidebar {
+  grid-column: 1;
+  grid-row: 2;
+
+  padding: 24px 20px 16px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+.nav {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+/* Clickable/default buttons: same as Sign Out */
+.nav-button {
+  width: 100%;
+  border: 1px solid var(--blue);
+  border-radius: 5px;
+  padding: 12px;
+  font-size: 16px;
+  cursor: pointer;
+
+  background: var(--blue);
+  color: white;
+}
+
+/* Chosen/current page */
+.nav-button.active {
+  background: var(--background);
+  color: var(--text);
+}
+
+/* Only clickable non-active buttons should darken on hover */
+.nav-button:not(.active):hover {
+  background: var(--blue-dark);
+  color: white;
+}
+
+/* Sign Out always stays clickable-looking */
+.sign-out {
+  background: var(--blue);
+  color: white;
+}
+
+.sign-out:hover {
+  background: var(--blue-dark);
+  color: white;
+}

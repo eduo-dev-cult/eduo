@@ -5,7 +5,7 @@ import UploadBox from "./UploadBox";
 import SettingsPanel from "./SettingsPanel";
 import PreviewSave from "./PreviewSave";
 
-export default function MainContent() {
+export default function MainContent({ activePage }) {
   const [currentStep, setCurrentStep] = useState(1);
 
   const goToNextStep = () => {
@@ -18,11 +18,28 @@ export default function MainContent() {
     return "Save";
   };
 
+  if (activePage !== "generate") {
+    return (
+      <main className="main-content">
+        <section className="content-card">
+          <div className="step-placeholder">
+            <h1>
+              {activePage === "collections" && "My Collections"}
+              {activePage === "material" && "Material"}
+              {activePage === "settings" && "Settings"}
+            </h1>
+            <p>This page will be implemented later.</p>
+          </div>
+        </section>
+      </main>
+    );
+  }
+
   return (
     <main className="main-content">
       <section className="content-card">
         <div className="title-section">
-          <h1>Create questions from material</h1>
+          <h1>Generate questions from material</h1>
           <p>Upload or paste material and let Eduo create questions based on it</p>
         </div>
 
