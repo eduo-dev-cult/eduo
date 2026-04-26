@@ -1,24 +1,51 @@
-export default function Stepper() {
+import "./Stepper.css";
+
+export default function Stepper({ currentStep }) {
   return (
     <div className="stepper">
+      
+      {/* Step 1 */}
       <div className="step-group">
-        <div className="step active-step">1</div>
-        <span>Add material</span>
+        <div className={`step ${currentStep === 1 ? "active-step" : ""}`}>
+          1
+        </div>
+        <span className={`step-text ${currentStep === 1 ? "active" : ""}`}>
+          Add material
+        </span>
       </div>
 
-      <div className="step-line"></div>
+      <div className="step-line" />
 
-      <div className="step-group muted">
-        <div className="step">2</div>
-        <span>Settings</span>
+      {/* Step 2 */}
+      <div className="step-group">
+        <div className={`step ${currentStep === 2 ? "active-step" : ""}`}>
+          2
+        </div>
+        <span
+          className={`step-text ${
+            currentStep === 2 ? "active" : "muted"
+          }`}
+        >
+          Settings
+        </span>
       </div>
 
-      <div className="step-line"></div>
+      <div className="step-line" />
 
-      <div className="step-group muted">
-        <div className="step">3</div>
-        <span>Preview and Save</span>
+      {/* Step 3 */}
+      <div className="step-group">
+        <div className={`step ${currentStep === 3 ? "active-step" : ""}`}>
+          3
+        </div>
+        <span
+          className={`step-text ${
+            currentStep === 3 ? "active" : "muted"
+          }`}
+        >
+          Preview and Save
+        </span>
       </div>
+
     </div>
   );
 }

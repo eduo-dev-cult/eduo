@@ -159,53 +159,6 @@
   font-size: 16px;
 }
 
-/* Stepper */
-
-.stepper {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  margin-bottom: 28px;
-}
-
-.step-group {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  color: var(--muted);
-  font-size: 16px;
-  white-space: nowrap;
-}
-
-.step {
-  width: 42px;
-  height: 42px;
-  border-radius: 50%;
-  background: var(--inactive);
-  color: #555;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 28px;
-  font-weight: 700;
-}
-
-.active-step {
-  background: var(--blue);
-  color: white;
-}
-
-.muted {
-  color: #d7d7d0;
-}
-
-.step-line {
-  width: 70px;
-  height: 1px;
-  background: #e1e1dc;
-  margin: 0 10px;
-}
-
 /* Upload box */
 
 .upload-box {
