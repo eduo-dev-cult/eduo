@@ -1,5 +1,3 @@
-import logo from "../assets/eduo-logo.png";
-
 export default function Sidebar() {
   return (
     <aside className="sidebar">
