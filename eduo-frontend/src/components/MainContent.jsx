@@ -12,6 +12,10 @@ export default function MainContent({ activePage }) {
     setCurrentStep((prevStep) => Math.min(prevStep + 1, 3));
   };
 
+  const goToPreviousStep = () => {
+    setCurrentStep((prevStep) => Math.max(prevStep - 1, 1));
+  };
+
   const getButtonText = () => {
     if (currentStep === 1) return "Continue";
     if (currentStep === 2) return "Generate";
@@ -52,6 +56,12 @@ export default function MainContent({ activePage }) {
         </div>
 
         <div className="actions">
+          {currentStep > 1 && (
+            <button className="secondary-button" onClick={goToPreviousStep}>
+              Back
+            </button>
+          )}
+
           <button className="continue-button" onClick={goToNextStep}>
             {getButtonText()}
           </button>
