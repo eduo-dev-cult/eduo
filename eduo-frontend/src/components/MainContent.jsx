@@ -12,10 +12,12 @@ export default function MainContent() {
 
         <Stepper />
 
-        <UploadBox />
+        <div className="upload-section">
+          <UploadBox />
 
-        <div className="actions">
-          <button className="continue-button">Continue</button>
+          <div className="actions">
+            <button className="continue-button">Continue</button>
+          </div>
         </div>
       </section>
     </main>
