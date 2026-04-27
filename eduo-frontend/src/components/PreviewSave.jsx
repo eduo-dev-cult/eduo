@@ -1,3 +1,5 @@
+import "./PreviewSave.css";
+
 export default function PreviewSave() {
   return (
     <div className="step-placeholder">

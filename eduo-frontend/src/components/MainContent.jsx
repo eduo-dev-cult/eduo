@@ -4,6 +4,7 @@ import Stepper from "./Stepper";
 import UploadBox from "./UploadBox";
 import SettingsPanel from "./SettingsPanel";
 import PreviewSave from "./PreviewSave";
+import "./MainContent.css";
 
 export default function MainContent({ activePage }) {
   const [currentStep, setCurrentStep] = useState(1);

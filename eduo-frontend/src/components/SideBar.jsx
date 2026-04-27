@@ -6,7 +6,7 @@ export default function SideBar({ activePage, setActivePage }) {
       <div>
         <nav className="nav">
           <button
-            className={`nav-button ${
+            className={`primary-button sidebar-button nav-button ${
               activePage === "generate" ? "active" : ""
             }`}
             onClick={() => setActivePage("generate")}
@@ -15,7 +15,7 @@ export default function SideBar({ activePage, setActivePage }) {
           </button>
 
           <button
-            className={`nav-button ${
+            className={`primary-button sidebar-button nav-button ${
               activePage === "collections" ? "active" : ""
             }`}
             onClick={() => setActivePage("collections")}
@@ -24,7 +24,7 @@ export default function SideBar({ activePage, setActivePage }) {
           </button>
 
           <button
-            className={`nav-button ${
+            className={`primary-button sidebar-button nav-button ${
               activePage === "material" ? "active" : ""
             }`}
             onClick={() => setActivePage("material")}
@@ -33,7 +33,7 @@ export default function SideBar({ activePage, setActivePage }) {
           </button>
 
           <button
-            className={`nav-button ${
+            className={`primary-button sidebar-button nav-button ${
               activePage === "settings" ? "active" : ""
             }`}
             onClick={() => setActivePage("settings")}
@@ -44,7 +44,7 @@ export default function SideBar({ activePage, setActivePage }) {
       </div>
 
       <button
-        className="nav-button sign-out"
+        className="primary-button sidebar-button sign-out"
         onClick={() => {
           alert("You have been signed out");
         }}

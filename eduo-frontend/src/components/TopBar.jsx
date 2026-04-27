@@ -1,4 +1,5 @@
 import logo from "../assets/eduo-logo.png";
+import "./TopBar.css";
 
 function TopBar() {
   return (

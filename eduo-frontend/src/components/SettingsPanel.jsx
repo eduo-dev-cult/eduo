@@ -1,3 +1,5 @@
+import "./SettingsPanel.css";
+
 export default function SettingsPanel() {
   return (
     <div className="step-placeholder">
