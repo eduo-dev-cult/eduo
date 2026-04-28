@@ -1,0 +1,29 @@
+spring.application.name=eduo
+###########################################
+##### BEGIN  DATABASE #####################
+###########################################
+spring.datasource.username=postgres (probably change this)
+spring.datasource.password=root (probably change this)
+    #secrets
+spring.datasource.url=jdbc:postgresql://localhost:5432/eduo-dev-cult
+
+spring.jpa.properties.hibernate.default_schema=eduo
+#spring.jpa.properties.hibernate.dialect= org.hibernate.dialect.PostgreSQLDialect
+    #postgres specific steps i'm told, unnecessary claims the log. kept for now
+
+spring.jpa.hibernate.ddl-auto=update
+    # use update for dev (makes db match entity classes if different)
+    # use validate for prod (throws error if db schema doesn't match app entities)
+    # create (dangerous!) drops tables then recreates. all data lost
+spring.jpa.defer-datasource-initialization=true
+    # waits to run sql inserts(data.sql) until after tables are initialized by hibernate
+spring.jpa.show-sql=true
+    # shows sql in log
+spring.sql.init.separator=;;
+    # causes pains in the data.sql init script if not included (dollar signs confuse the script runner regarding semicolons)
+spring.sql.init.mode=always
+    # runs some initialization intended for in-memory dbs, in this case to fill the db with test data
+    # data.sql checks if a specific user exists and aborts to not generate duplicates, because these are not checked currently
+###########################################
+####### END DATABASE ######################
+###########################################
