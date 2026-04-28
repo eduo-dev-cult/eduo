@@ -215,10 +215,10 @@ class ProjectServiceTest {
         Generation generation = projectService.createGeneration(project.getId(), List.of());
         UUID generationId = generation.getId();
 
-        projectService.deleteProject(project.getId());
-
         entityManager.flush();
         entityManager.clear();
+
+        projectService.deleteProject(project.getId());
 
         assertThat(generationRepository.findById(generationId)).isEmpty();
     }
