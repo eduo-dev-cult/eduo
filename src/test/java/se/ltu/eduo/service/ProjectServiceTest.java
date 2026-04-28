@@ -196,10 +196,12 @@ class ProjectServiceTest {
                 project.getId(), "notes.pdf", "application/pdf", new byte[]{1, 2, 3});
         UUID materialId = material.getId();
 
-        projectService.deleteProject(project.getId());
-
         entityManager.flush();
         entityManager.clear();
+
+        projectService.deleteProject(project.getId());
+
+
 
         assertThat(sourceMaterialRepository.findById(materialId)).isEmpty();
     }
