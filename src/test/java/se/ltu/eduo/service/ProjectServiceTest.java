@@ -93,7 +93,7 @@ class ProjectServiceTest {
 
         Project project = projectService.createProject(userId, "Intro to Java");
 
-        assertThat(project.getUserId()).isEqualTo(userId);
+        assertThat(project.getUserId().getId()).isEqualTo(userId);
         assertThat(project.getName()).isEqualTo("Intro to Java");
     }
 
