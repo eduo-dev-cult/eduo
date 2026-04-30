@@ -8,6 +8,7 @@ import "./MainContent.css";
 
 export default function MainContent({ activePage }) {
   const [currentStep, setCurrentStep] = useState(1);
+  const [selectedFile, setSelectedFile] = useState(null);
 
   const [generationSettings, setGenerationSettings] = useState({
     questionTypes: ["multipleChoice"],
@@ -36,6 +37,7 @@ export default function MainContent({ activePage }) {
   };
 
   const goToNextStep = () => {
+    if (currentStep === 1 && !selectedFile) return;
     setCurrentStep((prevStep) => Math.min(prevStep + 1, 3));
   };
 
@@ -45,6 +47,7 @@ export default function MainContent({ activePage }) {
 
   const handleGenerate = () => {
     const payload = {
+      fileName: selectedFile?.name,
       questionTypes: generationSettings.questionTypes,
       numberOfQuestions: Number(generationSettings.numberOfQuestions),
       collectionId: generationSettings.collectionId,
@@ -106,7 +109,9 @@ export default function MainContent({ activePage }) {
         <Stepper currentStep={currentStep} onStepClick={setCurrentStep} />
 
         <div className={getStepContentClass()}>
-          {currentStep === 1 && <UploadBox />}
+          {currentStep === 1 && (
+            <UploadBox selectedFile={selectedFile} onFileSelect={setSelectedFile} />
+          )}
 
           {currentStep === 2 && (
             <SettingsPanel
@@ -125,7 +130,11 @@ export default function MainContent({ activePage }) {
             </button>
           )}
 
-          <button className="button primary-button" onClick={handleMainButtonClick}>
+          <button
+            className="button primary-button"
+            onClick={handleMainButtonClick}
+            disabled={currentStep === 1 && !selectedFile}
+          >
             {getButtonText()}
           </button>
         </div>

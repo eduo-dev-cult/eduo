@@ -42,3 +42,8 @@
 .fixed-width-button {
   width: 150px;
 }
+
+.button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
