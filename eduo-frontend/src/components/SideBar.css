@@ -1,0 +1,28 @@
+.sidebar {
+  grid-column: 1;
+  grid-row: 2;
+
+  padding: 24px 20px 16px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+.nav {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+/* Chosen/current page */
+.nav-button.active {
+  background: var(--background);
+  color: var(--text);
+  border: 1px solid var(--text);
+}
+
+/* Active nav button should not look hoverable */
+.nav-button.active:hover {
+  background: var(--background);
+  color: var(--text);
+}
