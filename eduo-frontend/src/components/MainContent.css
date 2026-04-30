@@ -9,7 +9,7 @@
 }
 
 .main-content {
-  flex: 1; /* lets the main content area grow to fill the available space */
+  flex: 1;
   display: flex;
 
   padding: 24px 40px 16px 0;
@@ -22,7 +22,7 @@
   display: flex;
   flex-direction: column;
 
-  min-height: 0; 
+  min-height: 0;
 
   padding: 16px 64px 36px;
   background: var(--panel);
@@ -44,6 +44,41 @@
 
 .title-section p {
   margin: 0;
+  min-height: 20px;
   color: var(--muted);
   font-size: 16px;
+}
+
+.step-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+
+.step-content-start {
+  justify-content: flex-start;
+  align-items: center;
+  padding-top: 48px;
+}
+
+.step-content-center {
+  justify-content: center;
+}
+
+.actions {
+  display: flex;
+  justify-content: center;
+  gap: 24px;
+
+  margin-top: 20px;
+}
+
+.step-placeholder {
+  margin: auto;
+  text-align: center;
+}
+
+.step-placeholder h1 {
+  margin-bottom: 10px;
 }

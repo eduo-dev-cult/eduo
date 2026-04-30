@@ -9,6 +9,32 @@ import "./MainContent.css";
 export default function MainContent({ activePage }) {
   const [currentStep, setCurrentStep] = useState(1);
 
+  const [generationSettings, setGenerationSettings] = useState({
+    questionTypes: ["multipleChoice"],
+    numberOfQuestions: 10,
+    collectionId: "default",
+    focusArea: "entireMaterial",
+    specificTopics: "",
+  });
+
+  const getSubtitle = () => {
+    switch (currentStep) {
+      case 1:
+        return "Upload or paste material to generate questions from";
+      case 2:
+        return "Configure how your questions should be generated";
+      case 3:
+        return "Preview and save your generated questions";
+      default:
+        return "";
+    }
+  };
+
+  const getStepContentClass = () => {
+    if (currentStep === 1) return "step-content step-content-start";
+    return "step-content step-content-center";
+  };
+
   const goToNextStep = () => {
     setCurrentStep((prevStep) => Math.min(prevStep + 1, 3));
   };
@@ -17,10 +43,39 @@ export default function MainContent({ activePage }) {
     setCurrentStep((prevStep) => Math.max(prevStep - 1, 1));
   };
 
+  const handleGenerate = () => {
+    const payload = {
+      questionTypes: generationSettings.questionTypes,
+      numberOfQuestions: Number(generationSettings.numberOfQuestions),
+      collectionId: generationSettings.collectionId,
+      focusArea: generationSettings.focusArea,
+      specificTopics:
+        generationSettings.focusArea === "specificTopics"
+          ? generationSettings.specificTopics
+              .split(",")
+              .map((topic) => topic.trim())
+              .filter(Boolean)
+          : [],
+    };
+
+    console.log("Generation payload:", payload);
+
+    setCurrentStep(3);
+  };
+
   const getButtonText = () => {
     if (currentStep === 1) return "Continue";
     if (currentStep === 2) return "Generate";
     return "Save";
+  };
+
+  const handleMainButtonClick = () => {
+    if (currentStep === 2) {
+      handleGenerate();
+      return;
+    }
+
+    goToNextStep();
   };
 
   if (activePage !== "generate") {
@@ -44,26 +99,33 @@ export default function MainContent({ activePage }) {
     <main className="main-content">
       <section className="content-card">
         <div className="title-section">
-          <h1>Generate questions from material</h1>
-          <p>Upload or paste material and let Eduo create questions based on it</p>
+          <h1>Create questions from material</h1>
+          <p>{getSubtitle()}</p>
         </div>
 
         <Stepper currentStep={currentStep} onStepClick={setCurrentStep} />
 
-        <div className="step-content">
+        <div className={getStepContentClass()}>
           {currentStep === 1 && <UploadBox />}
-          {currentStep === 2 && <SettingsPanel />}
-          {currentStep === 3 && <PreviewSave />}
+
+          {currentStep === 2 && (
+            <SettingsPanel
+              settings={generationSettings}
+              setSettings={setGenerationSettings}
+            />
+          )}
+
+          {currentStep === 3 && <PreviewSave settings={generationSettings} />}
         </div>
 
         <div className="actions">
           {currentStep > 1 && (
-            <button className="secondary-button" onClick={goToPreviousStep}>
+            <button className="button secondary-button" onClick={goToPreviousStep}>
               Back
             </button>
           )}
 
-          <button className="continue-button" onClick={goToNextStep}>
+          <button className="button primary-button" onClick={handleMainButtonClick}>
             {getButtonText()}
           </button>
         </div>

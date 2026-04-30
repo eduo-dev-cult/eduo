@@ -1,12 +1,12 @@
-/* Upload box */
-
 .upload-box {
+  width: 100%;
   max-width: 600px;
   min-height: 305px;
-  margin: 0 auto;
+
   border: 1px solid var(--border);
   border-radius: var(--radius-md);
   background: var(--background);
+
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -31,8 +31,7 @@
   color: #5f5f5f;
 }
 
-.select-file-button,
-.continue-button {
+.select-file-button {
   background: var(--blue);
   color: white;
   border: none;
@@ -42,20 +41,11 @@
   cursor: pointer;
 }
 
-.select-file-button:hover,
-.continue-button:hover {
+.select-file-button:hover {
   background: var(--blue-dark);
 }
 
 .upload-help {
   margin-top: 20px;
   color: var(--muted);
-}
-
-.actions {
-  display: flex;
-  justify-content: flex-end;
-  gap: 12px;
-  max-width: 600px;
-  margin: 22px auto 0;
 }
