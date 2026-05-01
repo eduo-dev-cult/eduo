@@ -66,6 +66,11 @@
   justify-content: center;
 }
 
+.step-content-preview {
+  justify-content: flex-start;
+  padding-top: 20px;
+}
+
 .actions {
   display: flex;
   justify-content: center;
