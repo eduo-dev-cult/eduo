@@ -27,3 +27,18 @@ spring.sql.init.mode=always
 ###########################################
 ####### END DATABASE ######################
 ###########################################
+
+###########################################
+##### BEGIN WEB CONFFIG #####################
+###########################################
+# So that we do not need to hardcode there variables.
+
+ollama.base-url=http://localhost:11434
+# Can be changed to change model, see what Docker supports first.
+ollama.model=gemma:2b
+# Set to false if you do not want autotest at app startup
+ollama.test-on-startup=true
+
+###########################################
+##### END WEB CONFFIG #####################
+###########################################
