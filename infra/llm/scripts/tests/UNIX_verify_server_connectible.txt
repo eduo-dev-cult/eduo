@@ -1,4 +1,4 @@
 Run this command in another terminal, await AI response (can take a couple of seconds):
 curl -v http://localhost:11434/api/generate \
   -H "Content-Type: application/json" \
-  -d '{"model":"gemma:2b","prompt":"Hello","stream":false}'
+  -d '{"model":"<your-configured-model>","prompt":"Hello","stream":false}'

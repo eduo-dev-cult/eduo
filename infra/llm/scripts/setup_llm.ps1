@@ -1,7 +1,47 @@
+# abort all changes if error (safer)
 $ErrorActionPreference = "Stop"
 
-$MODEL = "gemma:2b"
-$URL = "http://localhost:11434"
+# Resolve the infra/llm directory from the script location so the rest of the
+# paths still work when the script is started from another folder.
+$LlmDir = Split-Path -Parent $PSScriptRoot
+
+# Default to the same Spring profile config file the application reads.
+$DefaultConfigFile = Join-Path $LlmDir "..\..\src\main\resources\application-ollama.properties"
+
+# Always read from the same Spring profile config file as the application.
+$ConfigFile = $DefaultConfigFile
+
+function Get-PropertyValue {
+    param(
+        # FilePath: properties file to read from.
+        [string]$FilePath,
+
+        # Key: property name to look up.
+        [string]$Key,
+
+        # DefaultValue: fallback when the property is missing.
+        [string]$DefaultValue
+    )
+
+    if (Test-Path $FilePath) {
+        # Read the last matching key=value entry so later definitions win.
+        $match = Get-Content $FilePath |
+            Where-Object { $_ -match "^\s*$([regex]::Escape($Key))=(.+)$" } |
+            Select-Object -Last 1
+
+        if ($match) {
+            # Remove the "key=" prefix and trim surrounding whitespace.
+            return ($match -replace "^\s*$([regex]::Escape($Key))=", "").Trim()
+        }
+    }
+
+    # Fall back to a safe default so the script still works without the file.
+    return $DefaultValue
+}
+
+# Read model and base URL directly from application-ollama.properties.
+$MODEL = Get-PropertyValue -FilePath $ConfigFile -Key "ollama.model" -DefaultValue "gemma:2b"
+$URL = Get-PropertyValue -FilePath $ConfigFile -Key "ollama.base-url" -DefaultValue "http://localhost:11434"
 
 Write-Host "Checking if Ollama is already running on $URL..."
 
@@ -22,7 +62,7 @@ if ($USE_DOCKER) {
     }
 
     Write-Host "Starting Ollama via Docker..."
-    docker compose up -d
+    docker compose -f (Join-Path $LlmDir "docker-compose.yml") up -d
 
     Write-Host "Waiting for Ollama to be ready..."
 
@@ -59,6 +99,7 @@ if ($ollamaExists -and -not $USE_DOCKER) {
 Write-Host ""
 Write-Host "===================================="
 Write-Host "Setup complete."
+Write-Host "Config file: $ConfigFile"
 Write-Host "Ollama running at: $URL"
 Write-Host "Model: $MODEL"
 Write-Host "Test with:"
