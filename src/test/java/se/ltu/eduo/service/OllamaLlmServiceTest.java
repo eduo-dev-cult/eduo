@@ -17,11 +17,22 @@ import static org.junit.jupiter.api.Assumptions.assumeTrue;
 
 class OllamaLlmServiceTest {
 
+    private static final boolean in_swedish = true; // Set to true to print prompts and responses in Swedish, false for English. Only for demonstration.
     private static final String OLLAMA_CONFIG_RESOURCE = "application-ollama.properties";
     private static final String DEFAULT_BASE_URL = "http://localhost:11434";
     private static final String DEFAULT_MODEL = "gemma:2b";
+    
 
-    private static final String STUDY_QUESTIONS_PROMPT = """
+    private static final String STUDY_QUESTIONS_PROMPT = in_swedish ? """
+            Svara med exakt fem korta flervalsfrågor om agil teori.
+            Använd detta format:
+            1. Fråga
+               A) Alternativ
+               B) Alternativ
+               C) Alternativ
+               D) Alternativ
+               Svar: X
+            """ : """
             Reply with exactly five short multiple choice study questions about Agile theory.
             Use this format:
             1. Question
@@ -32,7 +43,14 @@ class OllamaLlmServiceTest {
                Answer: X
             """;
 
-    private static final String MODEL_QUESTION_PROMPT = """
+
+    private static final String MODEL_QUESTION_PROMPT = in_swedish ? """
+            Svara med exakt information om modellen du kör, inklusive namn, version och eventuella relevanta detaljer om dess kapabiliteter eller begränsningar. Formatera ditt svar enligt följande:
+                Modellnamn: [ditt modellnamn]
+                Version: [din modellversion]
+                Kapabiliteter: [kort beskrivning av vad din modell kan göra bra]
+                Begränsningar: [kort beskrivning av eventuella kända begränsningar eller svagheter hos din modell]
+            """ : """
             Reply with exact information about the model you are running on, including name, version, and any relevant details about its capabilities or limitations. Format your response as follows:
                 Model Name: [your model name]
                 Version: [your model version]
@@ -67,8 +85,8 @@ class OllamaLlmServiceTest {
         String response = service.generateStudyQuestions(STUDY_QUESTIONS_PROMPT);
 
         assertThat(response).isNotBlank();  // If Ollama is running and responding, we should get a non-blank response.
-        System.out.println("Ollama LLM model info as per model response: " + modelInfoResponse);
-        System.out.println("Ollama response: " + response);
+        System.out.println("Ollama LLM model info as per model response: \n\n" + modelInfoResponse + "\n\n");
+        System.out.println("Ollama MCQ generation prompt response: \n\n" + response);
     }
 
     // Helper method to check if Ollama is running before executing tests that depend on it.
