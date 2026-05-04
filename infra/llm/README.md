@@ -23,10 +23,11 @@ There are also scripts provided which automate the process  of:
 
 The script does the following automated:
 
+- Reads `ollama.base-url` and `ollama.model` from `src/main/resources/application-ollama.properties`
 - Checks if Ollama is already running, otherwise starts it.
 - Starts Docker container if needed
 - Waits until the API is ready
-- Pulls the required model (`gemma:2b`)
+- Pulls the configured model
 - Makes the docker container run the model in the backgrund,  awaiting query on:
   
   ```url
@@ -48,12 +49,14 @@ Run the script:
 ./scripts/setup_llm.sh
 ```
 
+The script uses the model selected in `src/main/resources/application-ollama.properties`.
+
 #### Verify that it works:
 
 ```bash
 curl -s http://localhost:11434/api/generate \
   -H "Content-Type: application/json" \
-  -d '{"model":"gemma:2b","prompt":"Hello","stream":false}' \
+  -d '{"model":"<your-configured-model>","prompt":"Hello","stream":false}' \
 | jq -r '.response'
 ```
 
@@ -63,8 +66,10 @@ Expected output  (might take a couple of seconds first time, loading model into 
 ### Windows (PowerShell)
 
 ```powershell
-powershell -ExecutionPolicy Bypass -File scripts/setup.ps1
+powershell -ExecutionPolicy Bypass -File scripts/setup_llm.ps1
 ```
+
+The script uses the model selected in `src/main/resources/application-ollama.properties`.
 
 #### Verify that it works:
 
@@ -72,7 +77,7 @@ powershell -ExecutionPolicy Bypass -File scripts/setup.ps1
 $response = Invoke-RestMethod -Uri "http://localhost:11434/api/generate" `
   -Method Post `
   -ContentType "application/json" `
-  -Body '{"model":"gemma:2b","prompt":"Hello","stream":false}'
+  -Body '{"model":"<your-configured-model>","prompt":"Hello","stream":false}'
 
 $response.response
 ```
@@ -120,7 +125,7 @@ docker ps
 Then, input that container name in the following command:
 
 ```bash
-docker exec -it <container_name> ollama pull gemma:2b
+docker exec -it <container_name> ollama pull <your-configured-model>
 ```
 
 #### 5. Test the model and endpoint:
@@ -130,7 +135,7 @@ docker exec -it <container_name> ollama pull gemma:2b
 ```bash
 curl -s http://localhost:11434/api/generate \
   -H "Content-Type: application/json" \
-  -d '{"model":"gemma:2b","prompt":"Hello","stream":false}' \
+  -d '{"model":"<your-configured-model>","prompt":"Hello","stream":false}' \
 | jq -r '.response'
 ```
 
@@ -140,7 +145,7 @@ curl -s http://localhost:11434/api/generate \
 $response = Invoke-RestMethod -Uri "http://localhost:11434/api/generate" `
   -Method Post `
   -ContentType "application/json" `
-  -Body '{"model":"gemma:2b","prompt":"Hello","stream":false}'
+  -Body '{"model":"<your-configured-model>","prompt":"Hello","stream":false}'
 
 $response.response
 ```
@@ -150,7 +155,7 @@ $response.response
 *A short response from the LLM model.*
 
 ## Stopping the container
-
+Run this from this directory (where the `docker-compose.yml` is.):
 ```bash
 docker compose down
 ```
