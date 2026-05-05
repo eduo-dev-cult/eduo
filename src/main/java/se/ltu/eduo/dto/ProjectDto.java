@@ -13,7 +13,7 @@ import java.util.UUID;
 @Value
 public class ProjectDto implements Serializable {
     UUID id;
-    Integer userIdId;
+    Integer userId;
     String name;
     Instant createdAt;
     Instant updatedAt;
