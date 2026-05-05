@@ -11,7 +11,7 @@ import java.util.UUID;
  */
 @Value
 public class QuizDto implements Serializable {
-    UUID quiz_id;
+    UUID quizId;
     String name;
     String rawContent;
     Instant createdAt;
