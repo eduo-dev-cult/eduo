@@ -8,7 +8,6 @@ import se.ltu.eduo.dto.LoginRequest;
 import se.ltu.eduo.dto.RegisterRequest;
 import se.ltu.eduo.dto.UserDto;
 import se.ltu.eduo.mapper.UserMapper;
-import se.ltu.eduo.repository.UserRepository;
 import se.ltu.eduo.service.AuthService;
 
 import java.net.URI;
@@ -19,7 +18,6 @@ import java.net.URI;
 public class UserController {
 
     private final AuthService authService;
-    private final UserRepository userRepository;
     private final UserMapper userMapper;
 
     @PostMapping
@@ -37,14 +35,6 @@ public class UserController {
                 .map(userMapper::toDto)
                 .map(ResponseEntity::ok)
                 .orElse(ResponseEntity.status(401).build());
-    }
-
-    @GetMapping("/{id}")
-    public ResponseEntity<UserDto> getUser(@PathVariable Integer id) {
-        return userRepository.findById(id)
-                .map(userMapper::toDto)
-                .map(ResponseEntity::ok)
-                .orElse(ResponseEntity.notFound().build());
     }
 
     @DeleteMapping("/{id}")
