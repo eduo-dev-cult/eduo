@@ -75,7 +75,6 @@ class ProjectControllerTest {
                                 {"userId":%d,"name":"Algorithms 101"}
                                 """.formatted(userId)))
                 .andExpect(status().isCreated())
-                .andExpect(header().exists("Location"))
                 .andExpect(jsonPath("$.id").isString())
                 .andExpect(jsonPath("$.name").value("Algorithms 101"));
     }
@@ -161,7 +160,6 @@ class ProjectControllerTest {
 
         mockMvc.perform(multipart("/projects/{id}/materials", project.getId()).file(file))
                 .andExpect(status().isCreated())
-                .andExpect(header().exists("Location"))
                 .andExpect(jsonPath("$.filename").value("slides.pdf"))
                 .andExpect(jsonPath("$.fileType").value("application/pdf"))
                 .andExpect(jsonPath("$.fileSizeBytes").value(3));
@@ -221,7 +219,6 @@ class ProjectControllerTest {
                                 {"sourceMaterialIds":["%s"]}
                                 """.formatted(material.getId())))
                 .andExpect(status().isCreated())
-                .andExpect(header().exists("Location"))
                 .andExpect(jsonPath("$.id").isString())
                 .andExpect(jsonPath("$.quiz").exists())
                 .andExpect(jsonPath("$.quiz.rawContent").isString());

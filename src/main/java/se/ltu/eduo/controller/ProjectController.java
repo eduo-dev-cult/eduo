@@ -2,23 +2,23 @@ package se.ltu.eduo.controller;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
-import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 import se.ltu.eduo.dto.*;
 import se.ltu.eduo.mapper.GenerationMapper;
 import se.ltu.eduo.mapper.ProjectMapper;
 import se.ltu.eduo.mapper.QuizMapper;
 import se.ltu.eduo.model.project.Generation;
+import se.ltu.eduo.model.project.Project;
 import se.ltu.eduo.model.project.Quiz;
 import se.ltu.eduo.model.project.SourceMaterial;
 import se.ltu.eduo.service.LlmService;
 import se.ltu.eduo.service.ProjectService;
 
 import java.io.IOException;
-import java.net.URI;
 import java.nio.charset.StandardCharsets;
 import java.util.UUID;
 
@@ -39,10 +39,11 @@ public class ProjectController {
 
     @PostMapping
     public ResponseEntity<ProjectDto> createProject(@RequestBody CreateProjectRequest request) {
-        var project = projectService.createProject(request.userId(), request.name());
-        URI location = ServletUriComponentsBuilder.fromCurrentRequest()
-                .path("/{id}").buildAndExpand(project.getId()).toUri();
-        return ResponseEntity.created(location).body(projectMapper.toDto(project));
+        //fixme ide reports xss risk in method
+        if(request.name().isEmpty()) {return  ResponseEntity.badRequest().build();}
+        Project project = projectService.createProject(request.userId(), request.name());
+        return ResponseEntity.status(HttpStatus.CREATED)
+                             .body(projectMapper.toDto(project));
     }
 
     @GetMapping("/{projectId}")
@@ -69,14 +70,13 @@ public class ProjectController {
     @PostMapping("/{projectId}/materials")
     public ResponseEntity<ProjectDto.SourceMaterialDto> uploadMaterial(@PathVariable UUID projectId,
                                                                        @RequestParam("file") MultipartFile file) throws IOException {
+        //fixme ide reports xss risk in method
         SourceMaterial material = projectService.createSourceMaterial(
                 projectId,
                 file.getOriginalFilename(),
                 file.getContentType(),
                 file.getBytes());
-        URI location = ServletUriComponentsBuilder.fromCurrentRequest()
-                .path("/{id}").buildAndExpand(material.getId()).toUri();
-        return ResponseEntity.created(location).body(toSourceMaterialDto(material));
+        return ResponseEntity.status(HttpStatus.CREATED).body(toSourceMaterialDto(material));
     }
 
     @GetMapping("/{projectId}/materials/{materialId}")
@@ -116,9 +116,7 @@ public class ProjectController {
         // a re-fetch (re-fetching returns a stale L1-cached entity with quiz=null).
         generation.setQuiz(quiz);
 
-        URI location = ServletUriComponentsBuilder.fromCurrentRequest()
-                .path("/{id}").buildAndExpand(generation.getId()).toUri();
-        return ResponseEntity.created(location).body(generationMapper.toDto(generation));
+        return ResponseEntity.status(HttpStatus.CREATED).body(generationMapper.toDto(generation));
     }
 
     @GetMapping("/{projectId}/generations/{generationId}")
