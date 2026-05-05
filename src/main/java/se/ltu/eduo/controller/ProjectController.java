@@ -40,7 +40,7 @@ public class ProjectController {
     @PostMapping
     public ResponseEntity<ProjectDto> createProject(@RequestBody CreateProjectRequest request) {
         //fixme ide reports xss risk in method
-        if(request.name().isEmpty()) {return  ResponseEntity.badRequest().build();}
+        if(request.name() == null || request.name().isBlank()) {return  ResponseEntity.badRequest().build();}
         Project project = projectService.createProject(request.userId(), request.name());
         return ResponseEntity.status(HttpStatus.CREATED)
                              .body(projectMapper.toDto(project));
