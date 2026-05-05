@@ -57,8 +57,13 @@ if ($USE_DOCKER) {
     Write-Host "Checking Docker..."
 
     if (-not (Get-Command docker -ErrorAction SilentlyContinue)) {
-        Write-Error "Docker is not installed."
-        exit 1
+        $install = Read-Host "Docker is not installed. Install Docker Desktop via winget? [y/N]"
+        if ($install -eq 'y' -or $install -eq 'Y') {
+            Write-Host "Installing Docker Desktop via winget..."
+            winget install --id Docker.DockerDesktop -e --accept-source-agreements --accept-package-agreements
+            Write-Host "Docker Desktop installed. Please start it, then re-run this script."
+            exit 0
+        }
     }
 
     Write-Host "Starting Ollama via Docker..."
