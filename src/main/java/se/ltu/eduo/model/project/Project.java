@@ -31,7 +31,7 @@ public class Project {
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "user_id", nullable = false, updatable = false)
-    private User userId;
+    private User owner;
 
     @Column(name = "name", nullable = false)
     private String name;
@@ -50,8 +50,8 @@ public class Project {
     @OneToMany(mappedBy = "project", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Generation> generations = new ArrayList<>();
 
-    public Project(User user, String name) {
-        this.userId = user;
+    public Project(User owner, String name) {
+        this.owner = owner;
         this.name = name;
     }
 }
