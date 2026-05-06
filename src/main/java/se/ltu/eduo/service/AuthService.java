@@ -3,6 +3,7 @@ package se.ltu.eduo.service;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import se.ltu.eduo.exception.UsernameAlreadyExistsException;
 import se.ltu.eduo.model.User;
 import se.ltu.eduo.model.UserCredential;
 import se.ltu.eduo.repository.UserCredentialRepository;
@@ -28,9 +29,11 @@ public class AuthService {
      * @return the newly created {@link User}
      */
     @Transactional
-    public User createUser(String firstName, String lastName, String username, String password) {
+    public User createUser(String firstName, String lastName, String username, String password) throws UsernameAlreadyExistsException
+    {
         //check uniqueness
-        if (credentialRepository.findByUsername(username) != null) throw new IllegalArgumentException("Username already exists");
+        if (credentialRepository.findByUsername(username) != null)
+            throw new UsernameAlreadyExistsException(username);
 
         User user = new User();
         user.setFirstName(firstName);
