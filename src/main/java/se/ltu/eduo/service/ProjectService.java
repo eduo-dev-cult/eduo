@@ -43,8 +43,10 @@ public class ProjectService {
      * @return the created project
      */
     @Transactional
-    public Project createProject(Integer userId, String name) {
-        User user = userRepository.findById(userId).orElseThrow(() -> new EntityNotFoundException("User not found by that ID: " + userId));
+    public Project createProject(Integer userId, String name) throws EntityNotFoundException
+    {
+        User user = userRepository.findById(userId)
+                                  .orElseThrow(() -> new EntityNotFoundException("User not found by this ID: " + userId));
         Project project = new Project(user, name);
         return projectRepository.save(project);
     }
@@ -53,7 +55,7 @@ public class ProjectService {
      * Returns a project by ID, throwing if it does not exist.
      */
     @Transactional(readOnly = true)
-    public Project getProject(UUID projectId) {
+    public Project getProject(UUID projectId) throws EntityNotFoundException{
         return projectRepository.findById(projectId)
                                 .orElseThrow(() -> new EntityNotFoundException("Project not found with this ID: " + projectId));
     }
