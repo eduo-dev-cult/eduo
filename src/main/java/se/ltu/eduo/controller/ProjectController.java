@@ -1,5 +1,6 @@
 package se.ltu.eduo.controller;
 
+import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -41,20 +42,33 @@ public class ProjectController {
     public ResponseEntity<ProjectDto> createProject(@RequestBody CreateProjectRequest request) {
         //fixme ide reports xss risk in method
         if(request.name() == null || request.name().isBlank()) {return  ResponseEntity.badRequest().build();}
-        Project project = projectService.createProject(request.userId(), request.name());
-        return ResponseEntity.status(HttpStatus.CREATED)
-                             .body(projectMapper.toDto(project));
+        try {
+            Project project = projectService.createProject(request.userId(), request.name());
+            return ResponseEntity.status(HttpStatus.CREATED).body(projectMapper.toDto(project));
+        } catch (EntityNotFoundException e) {
+            return ResponseEntity.notFound().build();
+        }
     }
 
     @GetMapping("/{projectId}")
     public ResponseEntity<ProjectDto> getProject(@PathVariable UUID projectId) {
-        return ResponseEntity.ok(projectMapper.toDto(projectService.getProject(projectId)));
+        try
+        {
+            return ResponseEntity.ok(projectMapper.toDto(projectService.getProject(projectId)));
+        } catch (EntityNotFoundException e){
+            return ResponseEntity.notFound().build();
+        }
+
     }
 
     @PatchMapping("/{projectId}")
     public ResponseEntity<ProjectDto> updateProject(@PathVariable UUID projectId,
                                                     @RequestBody UpdateProjectRequest request) {
-        return ResponseEntity.ok(projectMapper.toDto(projectService.updateProject(projectId, request.name())));
+        try {
+            return ResponseEntity.ok(projectMapper.toDto(projectService.updateProject(projectId, request.name())));
+        } catch (EntityNotFoundException e) {
+            return ResponseEntity.notFound().build();
+        }
     }
 
     @DeleteMapping("/{projectId}")
@@ -121,7 +135,13 @@ public class ProjectController {
 
     @GetMapping("/{projectId}/generations/{generationId}")
     public ResponseEntity<GenerationDto> getGeneration(@PathVariable UUID generationId) {
-        return ResponseEntity.ok(generationMapper.toDto(projectService.getGeneration(generationId)));
+        try
+        {
+            return ResponseEntity.ok(generationMapper.toDto(projectService.getGeneration(generationId)));
+        } catch (EntityNotFoundException e)
+        {
+            return ResponseEntity.notFound().build();
+        }
     }
 
     @DeleteMapping("/{projectId}/generations/{generationId}")
