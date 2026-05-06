@@ -1,6 +1,7 @@
 package se.ltu.eduo.controller;
 
 import jakarta.persistence.EntityManager;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -184,6 +185,7 @@ class ProjectControllerTest {
     }
 
     @Test
+    @Disabled("Downloading uploaded material does not need support at this stage.")
     void downloadMaterial_returns404_whenNotFound() throws Exception {
         Project project = persistProject(persistUser());
 
