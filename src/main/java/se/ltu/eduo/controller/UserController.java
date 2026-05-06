@@ -7,7 +7,9 @@ import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 import se.ltu.eduo.dto.LoginRequest;
 import se.ltu.eduo.dto.RegisterRequest;
 import se.ltu.eduo.dto.UserDto;
+import se.ltu.eduo.exception.UsernameAlreadyExistsException;
 import se.ltu.eduo.mapper.UserMapper;
+import se.ltu.eduo.model.User;
 import se.ltu.eduo.service.AuthService;
 
 import java.net.URI;
@@ -22,11 +24,17 @@ public class UserController {
 
     @PostMapping
     public ResponseEntity<UserDto> register(@RequestBody RegisterRequest request) {
-        var user = authService.createUser(
-                request.firstName(), request.lastName(), request.username(), request.password());
-        URI location = ServletUriComponentsBuilder.fromCurrentRequest()
-                .path("/{id}").buildAndExpand(user.getId()).toUri();
-        return ResponseEntity.created(location).body(userMapper.toDto(user));
+        try
+        {
+            User user = authService.createUser(
+                    request.firstName(), request.lastName(), request.username(), request.password());
+            return ResponseEntity.status(201).body(userMapper.toDto(user)); //fixme xss warning
+        } catch (UsernameAlreadyExistsException e)
+        {
+            return ResponseEntity.status(409).build();
+        }
+
+
     }
 
     @PostMapping("/login")
