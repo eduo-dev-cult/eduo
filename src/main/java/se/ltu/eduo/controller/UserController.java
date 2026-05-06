@@ -1,6 +1,7 @@
 package se.ltu.eduo.controller;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import se.ltu.eduo.dto.LoginRequest;
@@ -25,10 +26,10 @@ public class UserController {
         {
             User user = authService.createUser(
                     request.firstName(), request.lastName(), request.username(), request.password());
-            return ResponseEntity.status(201).body(userMapper.toDto(user)); //fixme xss warning
+            return ResponseEntity.status(HttpStatus.CREATED).body(userMapper.toDto(user)); //fixme xss warning
         } catch (UsernameAlreadyExistsException e)
         {
-            return ResponseEntity.status(409).build();
+            return ResponseEntity.status(HttpStatus.CONFLICT).build();
         }
 
 
@@ -39,7 +40,7 @@ public class UserController {
         return authService.logInUser(request.username(), request.password())
                 .map(userMapper::toDto)
                 .map(ResponseEntity::ok)
-                .orElse(ResponseEntity.status(401).build());
+                .orElse(ResponseEntity.status(HttpStatus.UNAUTHORIZED).build());
     }
 
     @DeleteMapping("/{id}")
