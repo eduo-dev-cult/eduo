@@ -58,7 +58,7 @@ public class AuthService {
      * @return Optional with user on successful login, empty Optional if credentials are invalid
      */
     @Transactional
-    public Optional<User> LogInUser(String username, String password) {
+    public Optional<User> logInUser(String username, String password) {
         UserCredential credential = credentialRepository.findUserByUsernameAndPassword(username, password);
         if (credential == null) return Optional.empty();
         Optional<User> user = userRepository.findById(credential.getUser().getId());
@@ -78,7 +78,7 @@ public class AuthService {
      * @param userId ID of the user to delete
      */
     @Transactional
-    public void DeleteUser(Integer userId) {
+    public void deleteUser(Integer userId) {
         userRepository.deleteById(userId);
         //fails silently if id does not exist - might be fine?
     }

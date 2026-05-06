@@ -36,7 +36,7 @@ public class UserController {
 
     @PostMapping("/login")
     public ResponseEntity<UserDto> login(@RequestBody LoginRequest request) {
-        return authService.LogInUser(request.username(), request.password())
+        return authService.logInUser(request.username(), request.password())
                 .map(userMapper::toDto)
                 .map(ResponseEntity::ok)
                 .orElse(ResponseEntity.status(401).build());
@@ -44,7 +44,7 @@ public class UserController {
 
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteUser(@PathVariable Integer id) {
-        authService.DeleteUser(id);
+        authService.deleteUser(id);
         return ResponseEntity.noContent().build();
     }
 }
