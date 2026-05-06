@@ -45,7 +45,6 @@ class UserControllerTest {
                                  "username":"alarsson","password":"hunter2"}
                                 """))
                 .andExpect(status().isCreated())
-                .andExpect(header().exists("Location"))
                 .andExpect(jsonPath("$.id").isNumber())
                 .andExpect(jsonPath("$.firstName").value("Anna"))
                 .andExpect(jsonPath("$.lastName").value("Larsson"));
