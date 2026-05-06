@@ -23,106 +23,7 @@ B) To transport oxygen through the plant
 C) To absorb light energy for photosynthesis
 D) To store glucose in the roots
 
-Correct answer: C
-
----
-
-2. Which gas do plants take in during photosynthesis?
-
-A) Oxygen
-B) Carbon dioxide
-C) Nitrogen
-D) Hydrogen
-
-Correct answer: B
-
----
-
-3. What is produced as a by-product of photosynthesis?
-
-A) Oxygen
-B) Carbon dioxide
-C) Salt
-D) Protein
-
-Correct answer: A
-
----
-
-4. Where in the plant cell does photosynthesis mainly take place?
-
-A) Nucleus
-B) Mitochondria
-C) Chloroplasts
-D) Cell membrane
-
-Correct answer: C
-
----
-
-5. What are the main inputs needed for photosynthesis?
-
-A) Oxygen, glucose, and soil
-B) Carbon dioxide, water, and light energy
-C) Protein, oxygen, and minerals
-D) Nitrogen, glucose, and darkness
-
-Correct answer: B
-
----
-
-6. What is glucose used for in plants?
-
-A) As an energy source and building material
-B) To absorb sunlight directly
-C) To remove oxygen from the air
-D) As a replacement for water
-
-Correct answer: A
-
----
-
-7. Why is sunlight important in photosynthesis?
-
-A) It keeps the plant warm enough to grow
-B) It provides the energy needed to make glucose
-C) It helps the roots absorb minerals
-D) It turns oxygen into carbon dioxide
-
-Correct answer: B
-
----
-
-8. Which part of the plant usually absorbs most sunlight?
-
-A) Roots
-B) Stem
-C) Leaves
-D) Flowers
-
-Correct answer: C
-
----
-
-9. Why is photosynthesis important for animals and humans?
-
-A) It removes all water from the environment
-B) It produces oxygen and forms the base of many food chains
-C) It prevents plants from growing too quickly
-D) It creates minerals in the soil
-
-Correct answer: B
-
----
-
-10. What happens to water during photosynthesis?
-
-A) It is used together with carbon dioxide to help produce glucose
-B) It is changed directly into soil
-C) It blocks sunlight from entering the leaf
-D) It is released as the main energy source
-
-Correct answer: A`,
+Correct answer: C`,
   generatedFrom: {
     fileName: "source/filename.filetype",
     fileType: "filetype",
@@ -132,6 +33,12 @@ Correct answer: A`,
     numberOfQuestions: 10,
     focusArea: "entireMaterial",
     specificTopics: [],
+    difficulty: ["Medium"],
+    outputContent: {
+      questions: true,
+      correctAnswers: true,
+      answerExplanations: false,
+    },
   },
   createdAt: new Date().toISOString(),
 };
@@ -167,6 +74,12 @@ export default function MainContent({ activePage }) {
     collectionId: "default",
     focusArea: "entireMaterial",
     specificTopics: "",
+    difficulty: ["Medium"],
+    outputContent: {
+      questions: true,
+      correctAnswers: true,
+      answerExplanations: false,
+    },
   });
 
   const [generationResult, setGenerationResult] = useState(null);
@@ -215,6 +128,11 @@ export default function MainContent({ activePage }) {
               .map((topic) => topic.trim())
               .filter(Boolean)
           : [],
+      difficulty: generationSettings.difficulty,
+      outputContent: {
+        ...generationSettings.outputContent,
+        questions: true,
+      },
     };
   };
 
@@ -232,8 +150,12 @@ export default function MainContent({ activePage }) {
         setGenerationResult({
           ...mockGenerationResult,
           generatedFrom: {
-            fileName: selectedFile?.name ?? mockGenerationResult.generatedFrom.fileName,
-            fileType: selectedFile?.type || selectedFile?.name?.split(".").pop() || "file",
+            fileName:
+              selectedFile?.name ?? mockGenerationResult.generatedFrom.fileName,
+            fileType:
+              selectedFile?.type ||
+              selectedFile?.name?.split(".").pop() ||
+              "file",
           },
           settings: payload,
         });
@@ -264,6 +186,7 @@ export default function MainContent({ activePage }) {
       }
 
       const data = await response.json();
+
       setGenerationResult(
         normalizeGenerationResponse(data, selectedFile, payload)
       );

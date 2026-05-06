@@ -23,12 +23,39 @@ export default function SettingsPanel({ settings, setSettings }) {
     });
   };
 
+  const toggleDifficulty = (level) => {
+    setSettings((prev) => {
+      const selected = prev.difficulty.includes(level);
+
+      const updatedDifficulty = selected
+        ? prev.difficulty.filter((item) => item !== level)
+        : [...prev.difficulty, level];
+
+      return {
+        ...prev,
+        difficulty:
+          updatedDifficulty.length > 0 ? updatedDifficulty : prev.difficulty,
+      };
+    });
+  };
+
+  const toggleOutputContent = (key) => {
+    if (key === "questions") return;
+
+    setSettings((prev) => ({
+      ...prev,
+      outputContent: {
+        ...prev.outputContent,
+        [key]: !prev.outputContent[key],
+        questions: true,
+      },
+    }));
+  };
+
   return (
     <div className="settings-panel">
       <div className="settings-grid">
-        {/* LEFT COLUMN */}
         <div className="settings-column">
-          {/* 1 */}
           <section className="settings-section">
             <h2>1. Question Type</h2>
 
@@ -46,7 +73,11 @@ export default function SettingsPanel({ settings, setSettings }) {
                   onClick={() => toggleQuestionType("multipleChoice")}
                 >
                   <span className="question-type-icon">☰</span>
-                  <span>Multiple<br />Choice</span>
+                  <span>
+                    Multiple
+                    <br />
+                    Choice
+                  </span>
                 </button>
 
                 <button
@@ -57,7 +88,11 @@ export default function SettingsPanel({ settings, setSettings }) {
                   onClick={() => toggleQuestionType("openEnded")}
                 >
                   <span className="question-type-icon">✎</span>
-                  <span>Open-<br />Ended</span>
+                  <span>
+                    Open-
+                    <br />
+                    Ended
+                  </span>
                 </button>
 
                 <button
@@ -68,15 +103,18 @@ export default function SettingsPanel({ settings, setSettings }) {
                   onClick={() => toggleQuestionType("trueFalse")}
                 >
                   <span className="question-type-icon">✓</span>
-                  <span>True/<br />False</span>
+                  <span>
+                    True/
+                    <br />
+                    False
+                  </span>
                 </button>
               </div>
             </div>
           </section>
 
-          {/* 3 */}
           <section className="settings-section">
-            <h2>3. Number of Questions</h2>
+            <h2>2. Number of Questions</h2>
 
             <div className="settings-box">
               <p>Select how many questions to generate</p>
@@ -118,23 +156,6 @@ export default function SettingsPanel({ settings, setSettings }) {
                       updateSetting("numberOfQuestions", 1);
                     }
                   }}
-                  onKeyDown={(e) => {
-                    if (e.key === "ArrowUp") {
-                      e.preventDefault();
-                      updateSetting(
-                        "numberOfQuestions",
-                        Math.min(50, Number(settings.numberOfQuestions || 1) + 1)
-                      );
-                    }
-
-                    if (e.key === "ArrowDown") {
-                      e.preventDefault();
-                      updateSetting(
-                        "numberOfQuestions",
-                        Math.max(1, Number(settings.numberOfQuestions || 1) - 1)
-                      );
-                    }
-                  }}
                 />
 
                 <button
@@ -153,13 +174,36 @@ export default function SettingsPanel({ settings, setSettings }) {
               <small>Maximum 50 questions</small>
             </div>
           </section>
+
+          <section className="settings-section">
+            <h2>3. Difficulty Level</h2>
+
+            <div className="settings-box">
+              <p>Choose one or more difficulty levels</p>
+
+              <div className="difficulty-options">
+                {["Easy", "Medium", "Hard"].map((level) => (
+                  <button
+                    key={level}
+                    type="button"
+                    className={`difficulty-button ${
+                      settings.difficulty.includes(level) ? "selected" : ""
+                    }`}
+                    onClick={() => toggleDifficulty(level)}
+                  >
+                    {level}
+                  </button>
+                ))}
+              </div>
+
+              <small>At least one difficulty level must be selected</small>
+            </div>
+          </section>
         </div>
 
-        {/* RIGHT COLUMN */}
         <div className="settings-column">
-          {/* 2 */}
           <section className="settings-section">
-            <h2>2. Choose Collection</h2>
+            <h2>4. Choose Collection</h2>
 
             <div className="settings-box">
               <p>Choose a Collection to save questions in</p>
@@ -173,15 +217,14 @@ export default function SettingsPanel({ settings, setSettings }) {
                 <option value="lecture">Lecture Questions</option>
               </select>
 
-              <button className="create-collection-button">
+              <button className="create-collection-button" type="button">
                 + Create new Collection
               </button>
             </div>
           </section>
 
-          {/* 4 */}
           <section className="settings-section">
-            <h2>4. Focus Area</h2>
+            <h2>5. Focus Area</h2>
 
             <div className="settings-box">
               <p>Choose what the questions should focus on</p>
@@ -228,10 +271,41 @@ export default function SettingsPanel({ settings, setSettings }) {
                 placeholder="e.g. recursion, inheritance, algorithms"
                 value={settings.specificTopics}
                 disabled={settings.focusArea !== "specificTopics"}
-                onChange={(e) =>
-                  updateSetting("specificTopics", e.target.value)
-                }
+                onChange={(e) => updateSetting("specificTopics", e.target.value)}
               />
+            </div>
+          </section>
+
+          <section className="settings-section">
+            <h2>6. Output Content</h2>
+
+            <div className="settings-box output-content-box">
+              <p>Choose what the AI should generate</p>
+
+              <label className="checkbox-option">
+                <input type="checkbox" checked disabled />
+                <span>Questions</span>
+              </label>
+
+              <label className="checkbox-option">
+                <input
+                  type="checkbox"
+                  checked={settings.outputContent.correctAnswers}
+                  onChange={() => toggleOutputContent("correctAnswers")}
+                />
+                <span>Correct Answers</span>
+              </label>
+
+              <label className="checkbox-option">
+                <input
+                  type="checkbox"
+                  checked={settings.outputContent.answerExplanations}
+                  onChange={() => toggleOutputContent("answerExplanations")}
+                />
+                <span>Answer Explanations</span>
+              </label>
+
+              <small>Questions are always included</small>
             </div>
           </section>
         </div>

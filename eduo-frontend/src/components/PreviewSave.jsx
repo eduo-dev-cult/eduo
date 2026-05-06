@@ -6,27 +6,51 @@ const exportOptions = [
   { id: "word", label: "WORD", icon: "📘" },
 ];
 
-function formatQuestionTypes(questionTypes) {
-  if (!questionTypes) return "Not selected";
+function formatList(values, formatter) {
+  if (!values) return "Not selected";
 
-  if (Array.isArray(questionTypes)) {
-    return questionTypes
-      .map((type) => {
-        if (type === "multipleChoice") return "Multiple Choice";
-        if (type === "shortAnswer") return "Short Answer";
-        if (type === "essay") return "Essay";
-        return type;
-      })
-      .join(", ");
+  if (Array.isArray(values)) {
+    return values.map(formatter).join(", ");
   }
 
-  return questionTypes;
+  return formatter(values);
+}
+
+function formatQuestionType(type) {
+  if (type === "multipleChoice") return "Multiple Choice";
+  if (type === "openEnded") return "Open-Ended";
+  if (type === "trueFalse") return "True/False";
+  return type;
+}
+
+function formatDifficulty(level) {
+  if (!level) return "Not selected";
+  return level;
 }
 
 function formatFocusArea(focusArea) {
   if (focusArea === "entireMaterial") return "Entire Material";
+  if (focusArea === "keyConcepts") return "Key Concepts Only";
   if (focusArea === "specificTopics") return "Specific Topics";
   return focusArea ?? "Not selected";
+}
+
+function formatOutputContent(outputContent) {
+  if (!outputContent) return "Questions";
+
+  const selected = [];
+
+  if (outputContent.questions) selected.push("Questions");
+  if (outputContent.correctAnswers) selected.push("Correct Answers");
+  if (outputContent.answerExplanations) selected.push("Answer Explanations");
+
+  return selected.join(", ");
+}
+
+function formatCollection(collectionId) {
+  if (collectionId === "exam-prep") return "Exam Prep";
+  if (collectionId === "lecture") return "Lecture Questions";
+  return "My Collection";
 }
 
 export default function PreviewSave({
@@ -129,21 +153,23 @@ export default function PreviewSave({
           </div>
 
           <div className="generated-summary-list">
-            <div className="generated-summary-item">
+            <div className="generated-summary-item wide-summary-item">
               <span className="summary-label">File</span>
               <span className="summary-value">{fileName}</span>
             </div>
 
             <div className="generated-summary-item">
-              <span className="summary-label">Question type</span>
+              <span className="summary-label">Question types</span>
               <span className="summary-value">
-                {formatQuestionTypes(settings.questionTypes)}
+                {formatList(settings.questionTypes, formatQuestionType)}
               </span>
             </div>
 
             <div className="generated-summary-item">
-              <span className="summary-label">Collection</span>
-              <span className="summary-value">My Collection</span>
+              <span className="summary-label">Difficulty</span>
+              <span className="summary-value">
+                {formatList(settings.difficulty, formatDifficulty)}
+              </span>
             </div>
 
             <div className="generated-summary-item">
@@ -157,6 +183,20 @@ export default function PreviewSave({
               <span className="summary-label">Focus area</span>
               <span className="summary-value">
                 {formatFocusArea(settings.focusArea)}
+              </span>
+            </div>
+
+            <div className="generated-summary-item wide-summary-item">
+              <span className="summary-label">Output content</span>
+              <span className="summary-value">
+                {formatOutputContent(settings.outputContent)}
+              </span>
+            </div>
+
+            <div className="generated-summary-item wide-summary-item">
+              <span className="summary-label">Collection</span>
+              <span className="summary-value">
+                {formatCollection(settings.collectionId)}
               </span>
             </div>
           </div>
