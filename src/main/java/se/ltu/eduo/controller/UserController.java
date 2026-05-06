@@ -3,7 +3,6 @@ package se.ltu.eduo.controller;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 import se.ltu.eduo.dto.LoginRequest;
 import se.ltu.eduo.dto.RegisterRequest;
 import se.ltu.eduo.dto.UserDto;
@@ -11,8 +10,6 @@ import se.ltu.eduo.exception.UsernameAlreadyExistsException;
 import se.ltu.eduo.mapper.UserMapper;
 import se.ltu.eduo.model.User;
 import se.ltu.eduo.service.AuthService;
-
-import java.net.URI;
 
 @RestController
 @RequestMapping("/users")
