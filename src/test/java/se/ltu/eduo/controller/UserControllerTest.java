@@ -1,5 +1,6 @@
 package se.ltu.eduo.controller;
 
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -104,9 +105,11 @@ class UserControllerTest {
 
     // ---------------------------------------------------------------
     // GET /users/{id}
+    // currently disabled because it's unclear if retrieving users should be supported outside of login
     // ---------------------------------------------------------------
 
     @Test
+    @Disabled("Endpoint disabled pending evaluation of needs")
     void getUser_returns200WithUserData_whenExists() throws Exception {
         Integer id = authService.createUser("Anna", "Larsson", "alarsson", "hunter2").getId();
 
@@ -117,6 +120,7 @@ class UserControllerTest {
     }
 
     @Test
+    @Disabled("Endpoint disabled pending evaluation of needs")
     void getUser_returns404_whenNotFound() throws Exception {
         mockMvc.perform(get("/users/{id}", Integer.MAX_VALUE))
                 .andExpect(status().isNotFound());
