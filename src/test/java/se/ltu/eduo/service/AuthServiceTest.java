@@ -147,7 +147,7 @@ class AuthServiceTest {
         User user = authService.createUser("Anna", "Larsson", "alarsson", "hunter2");
         Integer userId = user.getId();
 
-        authService.DeleteUser(userId);
+        authService.deleteUser(userId);
 
         assertThat(userRepository.findById(userId)).isEmpty();
     }
