@@ -1,6 +1,7 @@
 package se.ltu.eduo.dto;
 
 import lombok.Value;
+import se.ltu.eduo.model.collection.Collection;
 
 import java.io.Serializable;
 import java.time.Instant;
@@ -8,10 +9,10 @@ import java.util.List;
 import java.util.UUID;
 
 /**
- * DTO for {@link se.ltu.eduo.model.project.Project}
+ * DTO for {@link Collection}
  */
 @Value
-public class ProjectDto implements Serializable {
+public class CollectionDto implements Serializable {
     UUID id;
     Integer ownerId;
     String name;
@@ -21,7 +22,7 @@ public class ProjectDto implements Serializable {
     List<GenerationDto> generations;
 
     /**
-     * DTO for {@link se.ltu.eduo.model.project.SourceMaterial}
+     * DTO for {@link se.ltu.eduo.model.collection.SourceMaterial}
      */
     @Value
     public static class SourceMaterialDto implements Serializable {

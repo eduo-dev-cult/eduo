@@ -2,7 +2,7 @@
 
 ## Blocked
 
-- [ ] `downloadMaterial` — `projectId` path variable is declared but not consumed; project existence not validated. Disabled test pending decision on whether the endpoint needs to stay.
+- [ ] `downloadMaterial` — `collectionId` path variable is declared but not consumed; collection existence not validated. Disabled test pending decision on whether the endpoint needs to stay.
 - [ ] `createGeneration` prompt building — UTF-8 decoding of all file types is incorrect for non-plaintext materials (e.g. PDFs). Known issue; endpoint is incomplete pending proper LLM integration system.
 
 ## Closed
