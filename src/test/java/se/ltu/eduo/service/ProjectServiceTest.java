@@ -3,7 +3,6 @@ package se.ltu.eduo.service;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.EntityNotFoundException;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.jdbc.test.autoconfigure.AutoConfigureTestDatabase;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -32,7 +31,6 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
  */
 @SpringBootTest
 @ActiveProfiles("test")
-@ExtendWith(TestContainersInitializer.class)
 @ContextConfiguration(initializers = TestContainersInitializer.class)
 @AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
 @Transactional
@@ -85,7 +83,7 @@ class ProjectServiceTest {
     }
 
     /**
-     * The returned project should carry the userId and name that were passed in.
+     * The returned project should carry the owner's userId and name that were passed in.
      */
     @Test
     void createProject_storesCorrectUserIdAndName() {
@@ -93,7 +91,7 @@ class ProjectServiceTest {
 
         Project project = projectService.createProject(userId, "Intro to Java");
 
-        assertThat(project.getUserId().getId()).isEqualTo(userId);
+        assertThat(project.getOwner().getId()).isEqualTo(userId);
         assertThat(project.getName()).isEqualTo("Intro to Java");
     }
 
