@@ -2,8 +2,8 @@ package se.ltu.eduo.mapper;
 
 import org.mapstruct.*;
 import se.ltu.eduo.dto.GenerationDto;
-import se.ltu.eduo.model.project.Generation;
-import se.ltu.eduo.model.project.Quiz;
+import se.ltu.eduo.model.collection.Generation;
+import se.ltu.eduo.model.collection.Quiz;
 
 @Mapper(unmappedTargetPolicy = ReportingPolicy.IGNORE, componentModel = MappingConstants.ComponentModel.SPRING)
 public interface GenerationMapper {

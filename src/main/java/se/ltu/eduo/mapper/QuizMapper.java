@@ -2,7 +2,7 @@ package se.ltu.eduo.mapper;
 
 import org.mapstruct.*;
 import se.ltu.eduo.dto.QuizDto;
-import se.ltu.eduo.model.project.Quiz;
+import se.ltu.eduo.model.collection.Quiz;
 
 @Mapper(unmappedTargetPolicy = ReportingPolicy.IGNORE, componentModel = MappingConstants.ComponentModel.SPRING)
 public interface QuizMapper {

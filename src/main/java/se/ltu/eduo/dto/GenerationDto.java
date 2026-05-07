@@ -7,7 +7,7 @@ import java.time.Instant;
 import java.util.UUID;
 
 /**
- * DTO for {@link se.ltu.eduo.model.project.Generation}
+ * DTO for {@link se.ltu.eduo.model.collection.Generation}
  */
 @Value
 public class GenerationDto implements Serializable {
