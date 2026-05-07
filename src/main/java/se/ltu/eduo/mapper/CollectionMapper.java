@@ -9,13 +9,17 @@ public interface CollectionMapper {
     Collection toEntity(CollectionDto collectionDto);
 
     @AfterMapping
-    default void linkSourceMaterials(@MappingTarget Collection collection) {
-        collection.getSourceMaterials().forEach(sourceMaterial -> sourceMaterial.setCollection(collection));
+    default void linkSourceMaterials(@MappingTarget Collection collection)
+    {
+        collection.getSourceMaterials()
+                  .forEach(sourceMaterial -> sourceMaterial.setCollection(collection));
     }
 
     @AfterMapping
-    default void linkGenerations(@MappingTarget Collection collection) {
-        collection.getGenerations().forEach(generation -> generation.setCollection(collection));
+    default void linkGenerations(@MappingTarget Collection collection)
+    {
+        collection.getGenerations()
+                  .forEach(generation -> generation.setCollection(collection));
     }
 
     CollectionDto toDto(Collection collection);
