@@ -1,14 +1,53 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 import Stepper from "./Stepper";
 import UploadBox from "./UploadBox";
 import SettingsPanel from "./SettingsPanel";
 import PreviewSave from "./PreviewSave";
+import GenerationPreferences from "./GenerationPreferences";
 import "./MainContent.css";
 
 const USE_MOCK_GENERATION = true;
 const API_BASE_URL = "http://localhost:8080";
 const GENERATE_ENDPOINT = `${API_BASE_URL}/api/generations`;
+
+const STORAGE_KEY = "eduo_generation_preferences";
+
+const defaultGenerationSettings = {
+  questionTypes: ["multipleChoice"],
+  numberOfQuestions: 10,
+  collectionId: "default",
+  focusArea: "entireMaterial",
+  specificTopics: "",
+  difficulty: ["Medium"],
+  outputContent: {
+    questions: true,
+    correctAnswers: true,
+    answerExplanations: false,
+  },
+};
+
+function getPreferences() {
+  const saved = localStorage.getItem(STORAGE_KEY);
+
+  if (!saved) return defaultGenerationSettings;
+
+  try {
+    const parsed = JSON.parse(saved);
+
+    return {
+      ...defaultGenerationSettings,
+      ...parsed,
+      outputContent: {
+        ...defaultGenerationSettings.outputContent,
+        ...parsed.outputContent,
+        questions: true,
+      },
+    };
+  } catch {
+    return defaultGenerationSettings;
+  }
+}
 
 const mockGenerationResult = {
   id: "mock-generation-1",
@@ -18,10 +57,109 @@ const mockGenerationResult = {
 
 1. What is the primary function of chlorophyll in plants?
 
-A) To absorb water from the soil
-B) To transport oxygen through the plant
-C) To absorb light energy for photosynthesis
-D) To store glucose in the roots
+A) To absorb water from the soil  
+B) To transport oxygen through the plant  
+C) To absorb light energy for photosynthesis  
+D) To store glucose in the roots  
+
+Correct answer: C
+
+---
+
+2. Which of the following best describes photosynthesis?
+
+A) The process of breaking down glucose for energy  
+B) The conversion of light energy into chemical energy  
+C) The absorption of minerals from the soil  
+D) The release of oxygen during respiration  
+
+Correct answer: B
+
+---
+
+3. What is the main role of the mitochondria in a cell?
+
+A) Protein synthesis  
+B) Energy production (ATP)  
+C) DNA storage  
+D) Cell division  
+
+Correct answer: B
+
+---
+
+4. Which gas is primarily taken in by plants during photosynthesis?
+
+A) Oxygen  
+B) Nitrogen  
+C) Carbon dioxide  
+D) Hydrogen  
+
+Correct answer: C
+
+---
+
+5. What is the chemical formula for water?
+
+A) CO₂  
+B) H₂O  
+C) O₂  
+D) NaCl  
+
+Correct answer: B
+
+---
+
+6. Which part of the plant is mainly responsible for photosynthesis?
+
+A) Roots  
+B) Stem  
+C) Leaves  
+D) Flowers  
+
+Correct answer: C
+
+---
+
+7. What happens during cellular respiration?
+
+A) Light energy is converted into chemical energy  
+B) Glucose is broken down to release energy  
+C) Oxygen is produced from carbon dioxide  
+D) Water is split into hydrogen and oxygen  
+
+Correct answer: B
+
+---
+
+8. Which of the following is NOT a product of photosynthesis?
+
+A) Oxygen  
+B) Glucose  
+C) Carbon dioxide  
+D) Energy stored in glucose  
+
+Correct answer: C
+
+---
+
+9. What is ATP primarily used for in cells?
+
+A) Storing genetic information  
+B) Providing energy for cellular processes  
+C) Transporting oxygen  
+D) Building cell walls  
+
+Correct answer: B
+
+---
+
+10. Which organelle contains chlorophyll?
+
+A) Nucleus  
+B) Mitochondria  
+C) Chloroplast  
+D) Ribosome  
 
 Correct answer: C`,
   generatedFrom: {
@@ -68,23 +206,19 @@ export default function MainContent({ activePage }) {
   const [currentStep, setCurrentStep] = useState(1);
   const [selectedFile, setSelectedFile] = useState(null);
 
-  const [generationSettings, setGenerationSettings] = useState({
-    questionTypes: ["multipleChoice"],
-    numberOfQuestions: 10,
-    collectionId: "default",
-    focusArea: "entireMaterial",
-    specificTopics: "",
-    difficulty: ["Medium"],
-    outputContent: {
-      questions: true,
-      correctAnswers: true,
-      answerExplanations: false,
-    },
-  });
+  const [generationSettings, setGenerationSettings] = useState(() =>
+    getPreferences()
+  );
 
   const [generationResult, setGenerationResult] = useState(null);
   const [isGenerating, setIsGenerating] = useState(false);
   const [generationError, setGenerationError] = useState("");
+
+  useEffect(() => {
+    if (activePage === "generate" && currentStep === 1 && !selectedFile) {
+      setGenerationSettings(getPreferences());
+    }
+  }, [activePage, currentStep, selectedFile]);
 
   const getSubtitle = () => {
     switch (currentStep) {
@@ -112,6 +246,15 @@ export default function MainContent({ activePage }) {
 
   const goToPreviousStep = () => {
     setCurrentStep((prevStep) => Math.max(prevStep - 1, 1));
+  };
+
+  const startNewGeneration = () => {
+    setCurrentStep(1);
+    setSelectedFile(null);
+    setGenerationSettings(getPreferences());
+    setGenerationResult(null);
+    setGenerationError("");
+    setIsGenerating(false);
   };
 
   const buildGenerationPayload = () => {
@@ -229,6 +372,16 @@ export default function MainContent({ activePage }) {
     goToNextStep();
   };
 
+  if (activePage === "preferences") {
+    return (
+      <main className="main-content">
+        <section className="content-card">
+          <GenerationPreferences />
+        </section>
+      </main>
+    );
+  }
+
   if (activePage !== "generate") {
     return (
       <main className="main-content">
@@ -237,7 +390,6 @@ export default function MainContent({ activePage }) {
             <h1>
               {activePage === "collections" && "My Collections"}
               {activePage === "material" && "Material"}
-              {activePage === "settings" && "Settings"}
             </h1>
             <p>This page will be implemented later.</p>
           </div>
@@ -310,10 +462,7 @@ export default function MainContent({ activePage }) {
           {currentStep === 3 && (
             <button
               className="button primary-button"
-              onClick={() => {
-                setGenerationResult(null);
-                setCurrentStep(1);
-              }}
+              onClick={startNewGeneration}
               disabled={isGenerating}
             >
               Discard
