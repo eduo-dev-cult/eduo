@@ -94,7 +94,7 @@ User (Integer PK)
 - `GlobalExceptionHandler` — maps exceptions to HTTP status codes
 
 **Services** (`/service`)
-- `ProjectService` — all project-domain writes are `@Transactional`; throws `EntityNotFoundException` for missing IDs (no silent no-ops, except `deleteSourceMaterial` which silently succeeds — be aware of this inconsistency)
+- `ProjectService` — all collection-domain writes are `@Transactional`; throws `EntityNotFoundException` for missing IDs (no silent no-ops, except `deleteSourceMaterial` which silently succeeds — be aware of this inconsistency)
 - `AuthService` — user lifecycle; `createUser` checks username uniqueness; `loginUser` updates `lastLoginAt`
 - `LlmService` (interface) — strategy pattern; `MockLlmService` is the only impl (placeholder for real LLM)
 
