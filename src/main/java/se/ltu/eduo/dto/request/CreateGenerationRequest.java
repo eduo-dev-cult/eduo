@@ -1,34 +1,54 @@
 package se.ltu.eduo.dto.request;
 
 
-import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.AssertTrue;
+import jakarta.validation.constraints.Max;
+import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotEmpty;
 import se.ltu.eduo.model.collection.GenerationFocusArea;
 import se.ltu.eduo.model.collection.GenerationLanguage;
-import java.io.Serializable;
 import java.util.UUID;
 
 public record CreateGenerationRequest(
     // relations
     //UUID collection, unneeded, exists in pathvar
-    @NotEmpty
+    @NotEmpty(message = "Must have at least one source material")
     UUID[] sourceMaterials,
     // endregion relations
 
     // region settings
+    @Min(1)
+    @Max(50)
     int numOfQuestions,
     GenerationLanguage language,
     GenerationFocusArea focusArea,
-    String topics,
+    String topics, //allow empty string?
+
+    //difficulty
     boolean easy,
     boolean medium,
     boolean hard,
+
+    //questiontype
     boolean multipleChoice,
     boolean openEnded,
     boolean trueFalse,
-    boolean questions,
+    @AssertTrue
+    boolean questions, //must always generate questions
+
+    //should there be a quiz description, answer explanations or quiz description (all optional)
     boolean correctAnswers,
     boolean explanations,
     boolean description
     // endregion
-) {}
+) {
+    @AssertTrue(message = "At least one difficulty option must be selected")
+    public boolean isAtLeastOneDifficultySelected() {
+        return easy || medium || hard;
+    }
+
+    @AssertTrue(message = "At least one question type must be selected")
+    public boolean isAtLeastOneQuestionTypeSelected() {
+        return openEnded || trueFalse || questions;
+    }
+}
