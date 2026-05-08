@@ -18,6 +18,7 @@ import se.ltu.eduo.mapper.QuizMapper;
 import se.ltu.eduo.model.collection.*;
 import se.ltu.eduo.service.LlmService;
 import se.ltu.eduo.service.CollectionService;
+import se.ltu.eduo.service.StudyQuestionService;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
@@ -29,10 +30,10 @@ import java.util.UUID;
 public class CollectionController {
 
     private final CollectionService collectionService;
-    private final LlmService llmService;
     private final CollectionMapper collectionMapper;
     private final GenerationMapper generationMapper;
     private final QuizMapper quizMapper;
+    private final StudyQuestionService studyQuestionService;
 
     // -------------------------------------------------------------------------
     // Collections
@@ -103,20 +104,15 @@ public class CollectionController {
     public ResponseEntity<GenerationDto> createGeneration(@PathVariable UUID collectionId,
                                                           @RequestBody CreateGenerationRequest request) {
         //TODO AIn var lite för snabb med att bygga prompts utan att använda det planerade systemet. Måste fixas.
-        Generation generation = collectionService.createGeneration(collectionId, request.sourceMaterialIds());
+        //step 1 validate data
+        //TODO validation
 
-        String prompt = request.sourceMaterialIds().stream()
-                .map(collectionService::getSourceMaterial)
-                .map(m -> new String(m.getFileData(), StandardCharsets.UTF_8))
-                .reduce("", (a, b) -> a + "\n\n" + b);
+        //step 2 call StudyQuestionService with request
+        //TODO proper request type
+        //GenerationDto generationdto = studyQuestionService.generateStudyQuestions(request);
 
-        String rawContent = llmService.generateStudyQuestions(prompt);
-        Quiz quiz = collectionService.createQuiz(generation.getId(), "Quiz", rawContent);
-        // Wire the quiz onto the in-memory entity so the mapper sees it without
-        // a re-fetch (re-fetching returns a stale L1-cached entity with quiz=null).
-        generation.setQuiz(quiz);
-
-        return ResponseEntity.status(HttpStatus.CREATED).body(generationMapper.toDto(generation));
+        //step 3 return generationdto containing generated quiz
+        return ResponseEntity.status(HttpStatus.CREATED).body(generationdto);
     }
 
     @GetMapping("/{collectionId}/generations/{generationId}")
