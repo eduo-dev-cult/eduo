@@ -57,17 +57,17 @@ export default function PreviewSave({
   generationResult,
   isGenerating,
   generationError,
-  selectedFile,
+  selectedFiles,
   settings,
   onRegenerate,
 }) {
   const output = generationResult?.output ?? "";
   const generatedFrom = generationResult?.generatedFrom;
 
-  const fileName =
-    generatedFrom?.fileName ??
-    selectedFile?.name ??
-    "source/filename.filetype";
+  const fileNames =
+    generatedFrom?.fileNames ??
+    selectedFiles?.map((file) => file.name) ??
+    [generatedFrom?.fileName ?? "source/filename.filetype"];
 
   const handleCopyOutput = async () => {
     if (!output) return;
@@ -154,8 +154,13 @@ export default function PreviewSave({
 
           <div className="generated-summary-list">
             <div className="generated-summary-item wide-summary-item">
-              <span className="summary-label">File</span>
-              <span className="summary-value">{fileName}</span>
+              <span className="summary-label">
+                File{fileNames.length > 1 ? "s" : ""}
+              </span>
+
+              <span className="summary-value">
+                {fileNames.join(", ")}
+              </span>
             </div>
 
             <div className="generated-summary-item">
