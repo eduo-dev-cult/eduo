@@ -4,7 +4,7 @@ import org.mapstruct.*;
 import se.ltu.eduo.dto.CollectionDto;
 import se.ltu.eduo.model.collection.Collection;
 
-@Mapper(unmappedTargetPolicy = ReportingPolicy.IGNORE, componentModel = MappingConstants.ComponentModel.SPRING)
+@Mapper(unmappedTargetPolicy = ReportingPolicy.WARN, componentModel = MappingConstants.ComponentModel.SPRING)
 public interface CollectionMapper {
     Collection toEntity(CollectionDto collectionDto);
 
