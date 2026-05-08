@@ -1,5 +1,6 @@
 package se.ltu.eduo.controller;
 
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -106,8 +107,7 @@ public class CollectionController {
     public ResponseEntity<GenerationDto> createGeneration(@PathVariable UUID collectionId,
                                                           @Valid @RequestBody CreateGenerationRequest request) {
         logger.atDebug().log("Received request to create generation for collection");
-        //step 1 validate data
-        //TODO validation
+        //step 1 validate data - handled by @Valid annotation in method header
 
         //step 2 call StudyQuestionService with request
         //TODO proper request type
