@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { getCollections } from "../api/collectionsApi";
 
 import Stepper from "./Stepper";
 import UploadBox from "./UploadBox";
@@ -26,12 +27,6 @@ const defaultGenerationSettings = {
     answerExplanations: false,
   },
 };
-
-const collections = [
-  { id: "default", name: "Default Collection" },
-  { id: "biology", name: "Biology" },
-  { id: "math", name: "Math" },
-];
 
 function getPreferences() {
   const saved = localStorage.getItem(STORAGE_KEY);
@@ -203,6 +198,11 @@ function normalizeGenerationResponse(data, selectedFiles, settings) {
 export default function MainContent({ activePage }) {
   const [currentStep, setCurrentStep] = useState(1);
   const [selectedFiles, setSelectedFiles] = useState([]);
+
+  /* Collections loaded from backend */
+  const [collections, setCollections] = useState([]);
+  const [isLoadingCollections, setIsLoadingCollections] = useState(false);
+  const [collectionsError, setCollectionsError] = useState("");
 
   const [generationSettings, setGenerationSettings] = useState(() =>
     getPreferences()
@@ -421,6 +421,8 @@ export default function MainContent({ activePage }) {
               settings={generationSettings}
               setSettings={setGenerationSettings}
               collections={collections}
+              isLoadingCollections={isLoadingCollections}
+              collectionsError={collectionsError}
             />
           )}
 
