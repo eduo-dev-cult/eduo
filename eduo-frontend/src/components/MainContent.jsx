@@ -10,6 +10,12 @@ const USE_MOCK_GENERATION = true;
 const API_BASE_URL = "http://localhost:8080";
 const GENERATE_ENDPOINT = `${API_BASE_URL}/api/generations`;
 
+const collections = [
+  { id: "default", name: "My Collection" },
+  { id: "exam-prep", name: "Exam Prep" },
+  { id: "lecture", name: "Lecture Questions" },
+];
+
 const mockGenerationResult = {
   id: "mock-generation-1",
   output: `Here are 10 multiple choice questions based on the provided material:
@@ -23,7 +29,106 @@ B) To transport oxygen through the plant
 C) To absorb light energy for photosynthesis
 D) To store glucose in the roots
 
-Correct answer: C`,
+Correct answer: C
+
+---
+
+2. Which gas do plants take in during photosynthesis?
+
+A) Oxygen
+B) Carbon dioxide
+C) Nitrogen
+D) Hydrogen
+
+Correct answer: B
+
+---
+
+3. What is produced as a by-product of photosynthesis?
+
+A) Oxygen
+B) Carbon dioxide
+C) Salt
+D) Protein
+
+Correct answer: A
+
+---
+
+4. Where in the plant cell does photosynthesis mainly take place?
+
+A) Nucleus
+B) Mitochondria
+C) Chloroplasts
+D) Cell membrane
+
+Correct answer: C
+
+---
+
+5. What are the main inputs needed for photosynthesis?
+
+A) Oxygen, glucose, and soil
+B) Carbon dioxide, water, and light energy
+C) Protein, oxygen, and minerals
+D) Nitrogen, glucose, and darkness
+
+Correct answer: B
+
+---
+
+6. What is glucose used for in plants?
+
+A) As an energy source and building material
+B) To absorb sunlight directly
+C) To remove oxygen from the air
+D) As a replacement for water
+
+Correct answer: A
+
+---
+
+7. Why is sunlight important in photosynthesis?
+
+A) It keeps the plant warm enough to grow
+B) It provides the energy needed to make glucose
+C) It helps the roots absorb minerals
+D) It turns oxygen into carbon dioxide
+
+Correct answer: B
+
+---
+
+8. Which part of the plant usually absorbs most sunlight?
+
+A) Roots
+B) Stem
+C) Leaves
+D) Flowers
+
+Correct answer: C
+
+---
+
+9. Why is photosynthesis important for animals and humans?
+
+A) It removes all water from the environment
+B) It produces oxygen and forms the base of many food chains
+C) It prevents plants from growing too quickly
+D) It creates minerals in the soil
+
+Correct answer: B
+
+---
+
+10. What happens to water during photosynthesis?
+
+A) It is used together with carbon dioxide to help produce glucose
+B) It is changed directly into soil
+C) It blocks sunlight from entering the leaf
+D) It is released as the main energy source
+
+Correct answer: A`,
   generatedFrom: {
     fileName: "source/filename.filetype",
     fileType: "filetype",
@@ -31,6 +136,8 @@ Correct answer: C`,
   settings: {
     questionTypes: ["multipleChoice"],
     numberOfQuestions: 10,
+    collectionId: "default",
+    language: "english",
     focusArea: "entireMaterial",
     specificTopics: [],
     difficulty: ["Medium"],
@@ -72,6 +179,7 @@ export default function MainContent({ activePage }) {
     questionTypes: ["multipleChoice"],
     numberOfQuestions: 10,
     collectionId: "default",
+    language: "english",
     focusArea: "entireMaterial",
     specificTopics: "",
     difficulty: ["Medium"],
@@ -89,7 +197,7 @@ export default function MainContent({ activePage }) {
   const getSubtitle = () => {
     switch (currentStep) {
       case 1:
-        return "Upload or paste material to generate questions from";
+        return "Upload material and choose where the questions should be saved";
       case 2:
         return "Configure how your questions should be generated";
       case 3:
@@ -120,6 +228,7 @@ export default function MainContent({ activePage }) {
       questionTypes: generationSettings.questionTypes,
       numberOfQuestions: Number(generationSettings.numberOfQuestions),
       collectionId: generationSettings.collectionId,
+      language: generationSettings.language,
       focusArea: generationSettings.focusArea,
       specificTopics:
         generationSettings.focusArea === "specificTopics"
@@ -261,6 +370,9 @@ export default function MainContent({ activePage }) {
             <UploadBox
               selectedFile={selectedFile}
               onFileSelect={setSelectedFile}
+              settings={generationSettings}
+              setSettings={setGenerationSettings}
+              collections={collections}
             />
           )}
 
