@@ -6,7 +6,9 @@ export default function SideBar({ activePage, setActivePage }) {
       <nav className="nav">
         <button
           type="button"
-          className={`sidebar-button ${activePage === "generate" ? "active" : ""}`}
+          className={`sidebar-button ${
+            activePage === "generate" ? "active" : ""
+          }`}
           onClick={() => setActivePage("generate")}
         >
           Generate
@@ -24,7 +26,9 @@ export default function SideBar({ activePage, setActivePage }) {
 
         <button
           type="button"
-          className={`sidebar-button ${activePage === "material" ? "active" : ""}`}
+          className={`sidebar-button ${
+            activePage === "material" ? "active" : ""
+          }`}
           onClick={() => setActivePage("material")}
         >
           Material
@@ -32,10 +36,12 @@ export default function SideBar({ activePage, setActivePage }) {
 
         <button
           type="button"
-          className={`sidebar-button ${activePage === "settings" ? "active" : ""}`}
-          onClick={() => setActivePage("settings")}
+          className={`sidebar-button ${
+            activePage === "preferences" ? "active" : ""
+          }`}
+          onClick={() => setActivePage("preferences")}
         >
-          Settings
+          Preferences
         </button>
       </nav>
 

@@ -1,39 +1,29 @@
 package se.ltu.eduo.service;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import se.ltu.eduo.model.project.*;
+import se.ltu.eduo.model.collection.Generation;
+
 
 import java.util.List;
 import java.util.UUID;
 
-
+@RequiredArgsConstructor
 @Service
 public class StudyQuestionService {
 
-    private final ProjectService projectService;
+    private final CollectionService collectionService;
     private final FileService fileService;
     private final PromptService promptService;
     private final LlmService llmService;
 
-    public StudyQuestionService(
-            ProjectService projectService,
-            FileService fileService,
-            PromptService promptService,
-            LlmService llmService
-    ) {
-        this.projectService = projectService;
-        this.fileService = fileService;
-        this.promptService = promptService;
-        this.llmService = llmService;
-    }
-
 
     @Transactional
-    public UUID generateStudyQuestions(UUID projectId, UUID sourceMaterialId) {
+    public UUID generateStudyQuestions(UUID collectionId, UUID sourceMaterialId) {
 
         // Vid generering skapas en tabell för generering i databasen
         // Detta kräver både projectId och sourceMaterialId
-        Generation generation = projectService.createGeneration(projectId, List.of(sourceMaterialId));
+        Generation generation = collectionService.createGeneration(collectionId, List.of(sourceMaterialId));
 
         // Efter genererings tabellen har skapad behöver vi en string av filen
         // som ska in till llm.
@@ -47,7 +37,7 @@ public class StudyQuestionService {
         String output = llmService.generateStudyQuestions(prompt);
 
         //Vi behöver skapa en quiz tabell där vi lagrar output
-        projectService.createQuiz(
+        collectionService.createQuiz(
                 generation.getId(),
                 "Quiz " + generation.getId(),
                 output
