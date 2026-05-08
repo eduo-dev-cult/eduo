@@ -191,3 +191,9 @@
   font-size: 13px;
   cursor: pointer;
 }
+
+.collection-error-message {
+  margin: 8px 0 0;
+  color: #9f1d1d;
+  font-size: 13px;
+}

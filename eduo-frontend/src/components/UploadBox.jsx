@@ -7,6 +7,8 @@ export default function UploadBox({
   settings,
   setSettings,
   collections,
+  isLoadingCollections,
+  collectionsError,
 }) {
   const fileInputRef = useRef(null);
   const [isDragging, setIsDragging] = useState(false);
@@ -152,15 +154,29 @@ export default function UploadBox({
           <p>Choose a Collection to save questions in</p>
 
           <select
-            value={settings.collectionId}
+            value={settings.collectionId || ""}
             onChange={(e) => updateSetting("collectionId", e.target.value)}
+            disabled={isLoadingCollections || collections.length === 0}
           >
-            {collections.map((collection) => (
-              <option key={collection.id} value={collection.id}>
-                {collection.name}
-              </option>
-            ))}
+            {isLoadingCollections && (
+              <option value="">Loading collections...</option>
+            )}
+
+            {!isLoadingCollections && collections.length === 0 && (
+              <option value="">No collections available</option>
+            )}
+
+            {!isLoadingCollections &&
+              collections.map((collection) => (
+                <option key={collection.id} value={collection.id}>
+                  {collection.name}
+                </option>
+              ))}
           </select>
+
+          {collectionsError && (
+            <p className="collection-error-message">{collectionsError}</p>
+          )}
 
           <button className="create-collection-button" type="button">
             + Create new Collection
