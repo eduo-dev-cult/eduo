@@ -18,12 +18,10 @@ import se.ltu.eduo.mapper.CollectionMapper;
 import se.ltu.eduo.mapper.GenerationMapper;
 import se.ltu.eduo.mapper.QuizMapper;
 import se.ltu.eduo.model.collection.*;
-import se.ltu.eduo.service.LlmService;
 import se.ltu.eduo.service.CollectionService;
 import se.ltu.eduo.service.StudyQuestionService;
 
 import java.io.IOException;
-import java.nio.charset.StandardCharsets;
 import java.util.UUID;
 
 @RestController
