@@ -1,15 +1,23 @@
 package se.ltu.eduo.mapper;
 
 import org.mapstruct.*;
+import se.ltu.eduo.dto.CollectionDto;
 import se.ltu.eduo.dto.GenerationDto;
 import se.ltu.eduo.model.collection.Generation;
+import se.ltu.eduo.model.collection.GenerationSourceMaterial;
 import se.ltu.eduo.model.collection.Quiz;
 
-@Mapper(unmappedTargetPolicy = ReportingPolicy.IGNORE, componentModel = MappingConstants.ComponentModel.SPRING, uses = {
-        CollectionMapper.class,
-        QuizMapper.class})
+@Mapper(unmappedTargetPolicy = ReportingPolicy.WARN, componentModel = MappingConstants.ComponentModel.SPRING)
 public interface GenerationMapper {
+    @Mapping(target = "sourceMaterials", ignore = true)
     Generation toEntity(GenerationDto generationDto);
+
+    @AfterMapping
+    default void linkSourceMaterials(@MappingTarget Generation generation)
+    {
+        generation.getSourceMaterials()
+                  .forEach(sourceMaterial -> sourceMaterial.setGeneration(generation));
+    }
 
     @AfterMapping
     default void linkQuiz(@MappingTarget Generation generation)
@@ -23,6 +31,14 @@ public interface GenerationMapper {
 
     GenerationDto toDto(Generation generation);
 
+    @Mapping(target = "id", source = "sourceMaterial.id")
+    @Mapping(target = "filename", source = "sourceMaterial.filename")
+    @Mapping(target = "fileType", source = "sourceMaterial.fileType")
+    @Mapping(target = "fileSizeBytes", source = "sourceMaterial.fileSizeBytes")
+    @Mapping(target = "uploadedAt", source = "sourceMaterial.uploadedAt")
+    CollectionDto.SourceMaterialDto toDto(GenerationSourceMaterial gsm);
+
     @BeanMapping(nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE)
+    @Mapping(target = "sourceMaterials", ignore = true)
     Generation partialUpdate(GenerationDto generationDto, @MappingTarget Generation generation);
 }
