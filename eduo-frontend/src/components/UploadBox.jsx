@@ -1,11 +1,24 @@
 import { useRef, useState } from "react";
 import "./UploadBox.css";
 
-export default function UploadBox({ selectedFile, onFileSelect }) {
+export default function UploadBox({
+  selectedFile,
+  onFileSelect,
+  settings,
+  setSettings,
+  collections,
+}) {
   const fileInputRef = useRef(null);
   const [isDragging, setIsDragging] = useState(false);
 
   const allowedTypes = [".pdf", ".txt", ".docx", ".pptx"];
+
+  const updateSetting = (key, value) => {
+    setSettings((prev) => ({
+      ...prev,
+      [key]: value,
+    }));
+  };
 
   const handleFile = (file) => {
     if (!file) return;
@@ -41,51 +54,88 @@ export default function UploadBox({ selectedFile, onFileSelect }) {
   };
 
   return (
-    <div
-      className={`upload-box ${isDragging ? "dragging" : ""}`}
-      onDragOver={handleDragOver}
-      onDragLeave={handleDragLeave}
-      onDrop={handleDrop}
-    >
-      <input
-        ref={fileInputRef}
-        type="file"
-        accept={allowedTypes.join(",")}
-        className="file-input"
-        onChange={handleFileInputChange}
-      />
+    <div className="upload-step-layout">
+      <div
+        className={`upload-box ${isDragging ? "dragging" : ""}`}
+        onDragOver={handleDragOver}
+        onDragLeave={handleDragLeave}
+        onDrop={handleDrop}
+      >
+        <input
+          ref={fileInputRef}
+          type="file"
+          accept={allowedTypes.join(",")}
+          className="file-input"
+          onChange={handleFileInputChange}
+        />
 
-      <div className="file-icon">📄</div>
+        <div className="file-icon">📄</div>
 
-      {selectedFile ? (
-        <>
-          <p className="upload-title">{selectedFile.name}</p>
-          <p className="upload-or">
-            {(selectedFile.size / 1024 / 1024).toFixed(2)} MB selected
-          </p>
+        {selectedFile ? (
+          <>
+            <p className="upload-title">{selectedFile.name}</p>
+            <p className="upload-or">
+              {(selectedFile.size / 1024 / 1024).toFixed(2)} MB selected
+            </p>
 
-          <div className="upload-actions">
-            <button type="button" className="select-file-button" onClick={openFilePicker}>
-              Change File
+            <div className="upload-actions">
+              <button
+                type="button"
+                className="select-file-button"
+                onClick={openFilePicker}
+              >
+                Change File
+              </button>
+
+              <button
+                type="button"
+                className="remove-file-button"
+                onClick={removeFile}
+              >
+                Remove
+              </button>
+            </div>
+          </>
+        ) : (
+          <>
+            <p className="upload-title">Drag and drop file here</p>
+            <p className="upload-or">or</p>
+
+            <button
+              type="button"
+              className="select-file-button"
+              onClick={openFilePicker}
+            >
+              Select File
             </button>
+          </>
+        )}
 
-            <button type="button" className="remove-file-button" onClick={removeFile}>
-              Remove
-            </button>
-          </div>
-        </>
-      ) : (
-        <>
-          <p className="upload-title">Drag and drop file here</p>
-          <p className="upload-or">or</p>
+        <p className="upload-help">Supports PDF, TXT, DOCX and PPTX</p>
+      </div>
 
-          <button type="button" className="select-file-button" onClick={openFilePicker}>
-            Select File
+      <section className="upload-collection-section">
+        <h2>Choose Collection</h2>
+
+        <div className="upload-collection-box">
+          <p>Choose a Collection to save questions in</p>
+
+          <select
+            value={settings.collectionId}
+            onChange={(e) => updateSetting("collectionId", e.target.value)}
+          >
+            {collections.map((collection) => (
+              <option key={collection.id} value={collection.id}>
+                {collection.name}
+              </option>
+            ))}
+          </select>
+
+          <button className="create-collection-button" type="button">
+            + Create new Collection
           </button>
-        </>
-      )}
-
-      <p className="upload-help">Supports PDF, TXT, DOCX and PPTX</p>
+        </div>
+      </section>
     </div>
   );
 }

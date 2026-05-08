@@ -1,5 +1,10 @@
 import "./SettingsPanel.css";
 
+const languageOptions = [
+  { value: "english", label: "English" },
+  { value: "swedish", label: "Swedish" },
+];
+
 export default function SettingsPanel({ settings, setSettings }) {
   const updateSetting = (key, value) => {
     setSettings((prev) => ({
@@ -203,23 +208,21 @@ export default function SettingsPanel({ settings, setSettings }) {
 
         <div className="settings-column">
           <section className="settings-section">
-            <h2>4. Choose Collection</h2>
+            <h2>4. Language</h2>
 
             <div className="settings-box">
-              <p>Choose a Collection to save questions in</p>
+              <p>Choose which language the questions should be generated in</p>
 
               <select
-                value={settings.collectionId}
-                onChange={(e) => updateSetting("collectionId", e.target.value)}
+                value={settings.language}
+                onChange={(e) => updateSetting("language", e.target.value)}
               >
-                <option value="default">My Collection</option>
-                <option value="exam-prep">Exam Prep</option>
-                <option value="lecture">Lecture Questions</option>
+                {languageOptions.map((language) => (
+                  <option key={language.value} value={language.value}>
+                    {language.label}
+                  </option>
+                ))}
               </select>
-
-              <button className="create-collection-button" type="button">
-                + Create new Collection
-              </button>
             </div>
           </section>
 
@@ -303,6 +306,15 @@ export default function SettingsPanel({ settings, setSettings }) {
                   onChange={() => toggleOutputContent("answerExplanations")}
                 />
                 <span>Answer Explanations</span>
+              </label>
+
+              <label className="checkbox-option">
+                <input
+                  type="checkbox"
+                  checked={settings.outputContent.quizDescription}
+                  onChange={() => toggleOutputContent("quizDescription")}
+                />
+                <span>Quiz Description</span>
               </label>
 
               <small>Questions are always included</small>

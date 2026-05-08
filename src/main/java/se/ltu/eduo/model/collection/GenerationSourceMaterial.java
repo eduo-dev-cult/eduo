@@ -1,4 +1,4 @@
-package se.ltu.eduo.model.project;
+package se.ltu.eduo.model.collection;
 
 import jakarta.persistence.*;
 import lombok.Getter;
