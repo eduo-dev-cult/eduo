@@ -17,7 +17,9 @@ import se.ltu.eduo.service.CollectionService;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+import java.util.List;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/collections")
@@ -45,6 +47,15 @@ public class CollectionController {
     @GetMapping("/{collectionId}")
     public ResponseEntity<CollectionDto> getProject(@PathVariable UUID collectionId) {
         return ResponseEntity.ok(collectionMapper.toDto(collectionService.getCollection(collectionId)));
+    }
+
+    @GetMapping("/user/{userId}")
+    public ResponseEntity<List<CollectionDto>> getUserCollections(@PathVariable Integer userId) {
+        List<CollectionDto> collections = collectionService.getUserCollections(userId)
+                                                           .stream()
+                                                           .map(collectionMapper::toDto)
+                                                           .toList();
+        return ResponseEntity.ok().body(collections);
     }
 
     @PatchMapping("/{collectionId}")
