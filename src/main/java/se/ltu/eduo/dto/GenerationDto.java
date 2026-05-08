@@ -7,6 +7,7 @@ import se.ltu.eduo.model.collection.GenerationLanguage;
 
 import java.io.Serializable;
 import java.time.Instant;
+import java.util.List;
 import java.util.UUID;
 
 /**
@@ -14,11 +15,16 @@ import java.util.UUID;
  */
 @Value
 public class GenerationDto implements Serializable {
+    //metadata & id
     UUID id;
-    CollectionDto collection;
     Instant createdAt;
     Instant updatedAt;
-    QuizDto quiz;
+
+    //relations
+    CollectionDto collection; //reduce to id?
+    QuizDto quiz; //the quiz that was generated should be contained due to 1:1
+    List<CollectionDto.SourceMaterialDto> sourceMaterials; //materials used list (metadata only)
+    //settings
     int numOfQuestions;
     GenerationLanguage language;
     GenerationFocusArea focusArea;
