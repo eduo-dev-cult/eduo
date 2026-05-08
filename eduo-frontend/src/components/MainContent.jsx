@@ -27,6 +27,12 @@ const defaultGenerationSettings = {
   },
 };
 
+const collections = [
+  { id: "default", name: "Default Collection" },
+  { id: "biology", name: "Biology" },
+  { id: "math", name: "Math" },
+];
+
 function getPreferences() {
   const saved = localStorage.getItem(STORAGE_KEY);
 
@@ -57,109 +63,10 @@ const mockGenerationResult = {
 
 1. What is the primary function of chlorophyll in plants?
 
-A) To absorb water from the soil  
-B) To transport oxygen through the plant  
-C) To absorb light energy for photosynthesis  
-D) To store glucose in the roots  
-
-Correct answer: C
-
----
-
-2. Which of the following best describes photosynthesis?
-
-A) The process of breaking down glucose for energy  
-B) The conversion of light energy into chemical energy  
-C) The absorption of minerals from the soil  
-D) The release of oxygen during respiration  
-
-Correct answer: B
-
----
-
-3. What is the main role of the mitochondria in a cell?
-
-A) Protein synthesis  
-B) Energy production (ATP)  
-C) DNA storage  
-D) Cell division  
-
-Correct answer: B
-
----
-
-4. Which gas is primarily taken in by plants during photosynthesis?
-
-A) Oxygen  
-B) Nitrogen  
-C) Carbon dioxide  
-D) Hydrogen  
-
-Correct answer: C
-
----
-
-5. What is the chemical formula for water?
-
-A) CO₂  
-B) H₂O  
-C) O₂  
-D) NaCl  
-
-Correct answer: B
-
----
-
-6. Which part of the plant is mainly responsible for photosynthesis?
-
-A) Roots  
-B) Stem  
-C) Leaves  
-D) Flowers  
-
-Correct answer: C
-
----
-
-7. What happens during cellular respiration?
-
-A) Light energy is converted into chemical energy  
-B) Glucose is broken down to release energy  
-C) Oxygen is produced from carbon dioxide  
-D) Water is split into hydrogen and oxygen  
-
-Correct answer: B
-
----
-
-8. Which of the following is NOT a product of photosynthesis?
-
-A) Oxygen  
-B) Glucose  
-C) Carbon dioxide  
-D) Energy stored in glucose  
-
-Correct answer: C
-
----
-
-9. What is ATP primarily used for in cells?
-
-A) Storing genetic information  
-B) Providing energy for cellular processes  
-C) Transporting oxygen  
-D) Building cell walls  
-
-Correct answer: B
-
----
-
-10. Which organelle contains chlorophyll?
-
-A) Nucleus  
-B) Mitochondria  
-C) Chloroplast  
-D) Ribosome  
+A) To absorb water from the soil
+B) To transport oxygen through the plant
+C) To absorb light energy for photosynthesis
+D) To store glucose in the roots
 
 Correct answer: C
 
@@ -265,24 +172,13 @@ Correct answer: A`,
     fileName: "source/filename.filetype",
     fileType: "filetype",
   },
-  settings: {
-    questionTypes: ["multipleChoice"],
-    numberOfQuestions: 10,
-    collectionId: "default",
-    language: "english",
-    focusArea: "entireMaterial",
-    specificTopics: [],
-    difficulty: ["Medium"],
-    outputContent: {
-      questions: true,
-      correctAnswers: true,
-      answerExplanations: false,
-    },
-  },
+  settings: defaultGenerationSettings,
   createdAt: new Date().toISOString(),
 };
 
-function normalizeGenerationResponse(data, selectedFile, settings) {
+function normalizeGenerationResponse(data, selectedFiles, settings) {
+  const firstFile = selectedFiles[0];
+
   return {
     id: data.id ?? data.generationId ?? null,
     output: data.output ?? data.generatedOutput ?? data.text ?? "",
@@ -290,13 +186,14 @@ function normalizeGenerationResponse(data, selectedFile, settings) {
       fileName:
         data.generatedFrom?.fileName ??
         data.fileName ??
-        selectedFile?.name ??
+        firstFile?.name ??
         "Unknown source",
       fileType:
         data.generatedFrom?.fileType ??
         data.fileType ??
-        selectedFile?.type ??
+        firstFile?.type ??
         "Unknown file type",
+      fileNames: selectedFiles.map((file) => file.name),
     },
     settings: data.settings ?? settings,
     createdAt: data.createdAt ?? new Date().toISOString(),
@@ -305,7 +202,7 @@ function normalizeGenerationResponse(data, selectedFile, settings) {
 
 export default function MainContent({ activePage }) {
   const [currentStep, setCurrentStep] = useState(1);
-  const [selectedFile, setSelectedFile] = useState(null);
+  const [selectedFiles, setSelectedFiles] = useState([]);
 
   const [generationSettings, setGenerationSettings] = useState(() =>
     getPreferences()
@@ -316,10 +213,14 @@ export default function MainContent({ activePage }) {
   const [generationError, setGenerationError] = useState("");
 
   useEffect(() => {
-    if (activePage === "generate" && currentStep === 1 && !selectedFile) {
+    if (
+      activePage === "generate" &&
+      currentStep === 1 &&
+      selectedFiles.length === 0
+    ) {
       setGenerationSettings(getPreferences());
     }
-  }, [activePage, currentStep, selectedFile]);
+  }, [activePage, currentStep, selectedFiles.length]);
 
   const getSubtitle = () => {
     switch (currentStep) {
@@ -341,7 +242,7 @@ export default function MainContent({ activePage }) {
   };
 
   const goToNextStep = () => {
-    if (currentStep === 1 && !selectedFile) return;
+    if (currentStep === 1 && selectedFiles.length === 0) return;
     setCurrentStep((prevStep) => Math.min(prevStep + 1, 3));
   };
 
@@ -351,7 +252,7 @@ export default function MainContent({ activePage }) {
 
   const startNewGeneration = () => {
     setCurrentStep(1);
-    setSelectedFile(null);
+    setSelectedFiles([]);
     setGenerationSettings(getPreferences());
     setGenerationResult(null);
     setGenerationError("");
@@ -360,7 +261,7 @@ export default function MainContent({ activePage }) {
 
   const buildGenerationPayload = () => {
     return {
-      fileName: selectedFile?.name,
+      fileNames: selectedFiles.map((file) => file.name),
       questionTypes: generationSettings.questionTypes,
       numberOfQuestions: Number(generationSettings.numberOfQuestions),
       collectionId: generationSettings.collectionId,
@@ -396,11 +297,13 @@ export default function MainContent({ activePage }) {
           ...mockGenerationResult,
           generatedFrom: {
             fileName:
-              selectedFile?.name ?? mockGenerationResult.generatedFrom.fileName,
+              selectedFiles[0]?.name ??
+              mockGenerationResult.generatedFrom.fileName,
             fileType:
-              selectedFile?.type ||
-              selectedFile?.name?.split(".").pop() ||
+              selectedFiles[0]?.type ||
+              selectedFiles[0]?.name?.split(".").pop() ||
               "file",
+            fileNames: selectedFiles.map((file) => file.name),
           },
           settings: payload,
         });
@@ -410,9 +313,9 @@ export default function MainContent({ activePage }) {
 
       const formData = new FormData();
 
-      if (selectedFile) {
-        formData.append("file", selectedFile);
-      }
+      selectedFiles.forEach((file) => {
+        formData.append("files", file);
+      });
 
       formData.append(
         "request",
@@ -433,7 +336,7 @@ export default function MainContent({ activePage }) {
       const data = await response.json();
 
       setGenerationResult(
-        normalizeGenerationResponse(data, selectedFile, payload)
+        normalizeGenerationResponse(data, selectedFiles, payload)
       );
     } catch (error) {
       setGenerationError(error.message);
@@ -513,8 +416,8 @@ export default function MainContent({ activePage }) {
         <div className={getStepContentClass()}>
           {currentStep === 1 && (
             <UploadBox
-              selectedFile={selectedFile}
-              onFileSelect={setSelectedFile}
+              selectedFiles={selectedFiles}
+              onFilesSelect={setSelectedFiles}
               settings={generationSettings}
               setSettings={setGenerationSettings}
               collections={collections}
@@ -533,7 +436,7 @@ export default function MainContent({ activePage }) {
               generationResult={generationResult}
               isGenerating={isGenerating}
               generationError={generationError}
-              selectedFile={selectedFile}
+              selectedFiles={selectedFiles}
               settings={generationSettings}
               setSettings={setGenerationSettings}
               onRegenerate={handleGenerate}
@@ -556,7 +459,7 @@ export default function MainContent({ activePage }) {
             className="button primary-button"
             onClick={handleMainButtonClick}
             disabled={
-              (currentStep === 1 && !selectedFile) ||
+              (currentStep === 1 && selectedFiles.length === 0) ||
               isGenerating ||
               (currentStep === 3 && !generationResult)
             }

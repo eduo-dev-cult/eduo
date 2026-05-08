@@ -2,8 +2,8 @@ import { useRef, useState } from "react";
 import "./UploadBox.css";
 
 export default function UploadBox({
-  selectedFile,
-  onFileSelect,
+  selectedFiles,
+  onFilesSelect,
   settings,
   setSettings,
   collections,
@@ -12,6 +12,7 @@ export default function UploadBox({
   const [isDragging, setIsDragging] = useState(false);
 
   const allowedTypes = [".pdf", ".txt", ".docx", ".pptx"];
+  const files = selectedFiles || [];
 
   const updateSetting = (key, value) => {
     setSettings((prev) => ({
@@ -20,9 +21,13 @@ export default function UploadBox({
     }));
   };
 
-  const handleFile = (file) => {
-    if (!file) return;
-    onFileSelect(file);
+  const handleFiles = (fileList) => {
+    if (!fileList || fileList.length === 0) return;
+
+    const newFiles = Array.from(fileList);
+    onFilesSelect([...files, ...newFiles]);
+
+    fileInputRef.current.value = "";
   };
 
   const openFilePicker = () => {
@@ -30,7 +35,7 @@ export default function UploadBox({
   };
 
   const handleFileInputChange = (event) => {
-    handleFile(event.target.files[0]);
+    handleFiles(event.target.files);
   };
 
   const handleDragOver = (event) => {
@@ -45,11 +50,16 @@ export default function UploadBox({
   const handleDrop = (event) => {
     event.preventDefault();
     setIsDragging(false);
-    handleFile(event.dataTransfer.files[0]);
+    handleFiles(event.dataTransfer.files);
   };
 
-  const removeFile = () => {
-    onFileSelect(null);
+  const removeFile = (fileIndex) => {
+    const updatedFiles = files.filter((_, index) => index !== fileIndex);
+    onFilesSelect(updatedFiles);
+  };
+
+  const removeAllFiles = () => {
+    onFilesSelect([]);
     fileInputRef.current.value = "";
   };
 
@@ -64,6 +74,7 @@ export default function UploadBox({
         <input
           ref={fileInputRef}
           type="file"
+          multiple
           accept={allowedTypes.join(",")}
           className="file-input"
           onChange={handleFileInputChange}
@@ -71,12 +82,32 @@ export default function UploadBox({
 
         <div className="file-icon">📄</div>
 
-        {selectedFile ? (
+        {files.length > 0 ? (
           <>
-            <p className="upload-title">{selectedFile.name}</p>
-            <p className="upload-or">
-              {(selectedFile.size / 1024 / 1024).toFixed(2)} MB selected
+            <p className="upload-title">
+              {files.length} file{files.length > 1 ? "s" : ""} selected
             </p>
+
+            <ul className="selected-files-list">
+              {files.map((file, index) => (
+                <li className="selected-file-item" key={`${file.name}-${index}`}>
+                  <div>
+                    <span className="selected-file-name">{file.name}</span>
+                    <span className="selected-file-size">
+                      {(file.size / 1024 / 1024).toFixed(2)} MB
+                    </span>
+                  </div>
+
+                  <button
+                    type="button"
+                    className="remove-single-file-button"
+                    onClick={() => removeFile(index)}
+                  >
+                    Remove
+                  </button>
+                </li>
+              ))}
+            </ul>
 
             <div className="upload-actions">
               <button
@@ -84,21 +115,21 @@ export default function UploadBox({
                 className="select-file-button"
                 onClick={openFilePicker}
               >
-                Change File
+                Add Files
               </button>
 
               <button
                 type="button"
                 className="remove-file-button"
-                onClick={removeFile}
+                onClick={removeAllFiles}
               >
-                Remove
+                Remove All
               </button>
             </div>
           </>
         ) : (
           <>
-            <p className="upload-title">Drag and drop file here</p>
+            <p className="upload-title">Drag and drop files here</p>
             <p className="upload-or">or</p>
 
             <button
@@ -106,7 +137,7 @@ export default function UploadBox({
               className="select-file-button"
               onClick={openFilePicker}
             >
-              Select File
+              Select Files
             </button>
           </>
         )}
