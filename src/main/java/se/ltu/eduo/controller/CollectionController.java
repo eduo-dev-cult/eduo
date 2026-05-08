@@ -1,6 +1,8 @@
 package se.ltu.eduo.controller;
 
 import lombok.RequiredArgsConstructor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -28,6 +30,8 @@ import java.util.UUID;
 @RequestMapping("/collections")
 @RequiredArgsConstructor
 public class CollectionController {
+
+    private static final Logger logger =  LoggerFactory.getLogger(CollectionController.class);
 
     private final CollectionService collectionService;
     private final CollectionMapper collectionMapper;
@@ -102,8 +106,8 @@ public class CollectionController {
 
     @PostMapping("/{collectionId}/generations")
     public ResponseEntity<GenerationDto> createGeneration(@PathVariable UUID collectionId,
-                                                          @RequestBody CreateGenerationRequest request) {
-        //TODO AIn var lite för snabb med att bygga prompts utan att använda det planerade systemet. Måste fixas.
+                                                          @Valid @RequestBody CreateGenerationRequest request) {
+        logger.atDebug().log("Received request to create generation for collection");
         //step 1 validate data
         //TODO validation
 
@@ -112,7 +116,7 @@ public class CollectionController {
         //GenerationDto generationdto = studyQuestionService.generateStudyQuestions(request);
 
         //step 3 return generationdto containing generated quiz
-        return ResponseEntity.status(HttpStatus.CREATED).body(generationdto);
+        return ResponseEntity.status(HttpStatus.CREATED).build(); //fixme should have content
     }
 
     @GetMapping("/{collectionId}/generations/{generationId}")
