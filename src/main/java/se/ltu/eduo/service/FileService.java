@@ -9,14 +9,14 @@ import java.util.UUID;
 @Service
 public class FileService {
 
-    private final ProjectService projectService;
+    private final CollectionService collectionService;
 
-    public FileService(ProjectService projectService) {
-        this.projectService = projectService;
+    public FileService(CollectionService collectionService) {
+        this.collectionService = collectionService;
     }
 
     public String getFileAsString(UUID sourceMaterialId) {
-        byte[] fileData = projectService.getSourceMaterial(sourceMaterialId).getFileData();
+        byte[] fileData = collectionService.getSourceMaterial(sourceMaterialId).getFileData();
         return new String(fileData, StandardCharsets.UTF_8);
     }
 }
