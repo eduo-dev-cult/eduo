@@ -1,6 +1,20 @@
 import { useRef, useState } from "react";
 import "./UploadBox.css";
 
+/*
+ * Handles different possible collection id field names.
+ */
+function getCollectionId(collection) {
+  return collection?.id ?? collection?.collectionId;
+}
+
+/*
+ * Handles different possible collection name field names.
+ */
+function getCollectionName(collection) {
+  return collection?.name ?? collection?.collectionName ?? "Unnamed collection";
+}
+
 export default function UploadBox({
   selectedFiles,
   onFilesSelect,
@@ -9,6 +23,7 @@ export default function UploadBox({
   collections,
   isLoadingCollections,
   collectionsError,
+  onCreateCollection,
 }) {
   const fileInputRef = useRef(null);
   const [isDragging, setIsDragging] = useState(false);
@@ -16,6 +31,9 @@ export default function UploadBox({
   const allowedTypes = [".pdf", ".txt", ".docx", ".pptx"];
   const files = selectedFiles || [];
 
+  /*
+   * Updates one field in the generation settings object.
+   */
   const updateSetting = (key, value) => {
     setSettings((prev) => ({
       ...prev,
@@ -23,6 +41,9 @@ export default function UploadBox({
     }));
   };
 
+  /*
+   * Adds selected or dropped files to the current file list.
+   */
   const handleFiles = (fileList) => {
     if (!fileList || fileList.length === 0) return;
 
@@ -92,9 +113,13 @@ export default function UploadBox({
 
             <ul className="selected-files-list">
               {files.map((file, index) => (
-                <li className="selected-file-item" key={`${file.name}-${index}`}>
+                <li
+                  className="selected-file-item"
+                  key={`${file.name}-${index}`}
+                >
                   <div>
                     <span className="selected-file-name">{file.name}</span>
+
                     <span className="selected-file-size">
                       {(file.size / 1024 / 1024).toFixed(2)} MB
                     </span>
@@ -155,7 +180,9 @@ export default function UploadBox({
 
           <select
             value={settings.collectionId || ""}
-            onChange={(e) => updateSetting("collectionId", e.target.value)}
+            onChange={(event) =>
+              updateSetting("collectionId", event.target.value)
+            }
             disabled={isLoadingCollections || collections.length === 0}
           >
             {isLoadingCollections && (
@@ -167,18 +194,29 @@ export default function UploadBox({
             )}
 
             {!isLoadingCollections &&
-              collections.map((collection) => (
-                <option key={collection.id} value={collection.id}>
-                  {collection.name}
-                </option>
-              ))}
+              collections.map((collection) => {
+                const collectionId = getCollectionId(collection);
+                const collectionName = getCollectionName(collection);
+
+                return (
+                  <option key={collectionId} value={collectionId}>
+                    {collectionName}
+                  </option>
+                );
+              })}
           </select>
 
           {collectionsError && (
-            <p className="collection-error-message">{collectionsError}</p>
+            <p className="collection-error-message">
+              {collectionsError}
+            </p>
           )}
 
-          <button className="create-collection-button" type="button">
+          <button
+            className="create-collection-button"
+            type="button"
+            onClick={onCreateCollection}
+          >
             + Create new Collection
           </button>
         </div>
