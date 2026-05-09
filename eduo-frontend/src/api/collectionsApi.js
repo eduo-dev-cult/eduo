@@ -47,16 +47,12 @@ async function handleResponse(response, defaultMessage) {
 /**
  * Fetches all collections belonging to a specific user.
  *
- * NOTE:
- * This endpoint does NOT currently exist in the backend.
- * The frontend prepares for it here so integration becomes easier later.
- *
- * Suggested backend endpoint:
- * GET /users/{userId}/collections
+ * Backend endpoint:
+ * GET /collections/user/{userId}
  */
 export async function getCollections(userId) {
   const response = await fetch(
-    `${API_BASE_URL}/users/${userId}/collections`
+    `${API_BASE_URL}/collections/user/${userId}`
   );
 
   return handleResponse(

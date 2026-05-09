@@ -12,6 +12,12 @@ function App() {
   // Keeps track of which main page/view is currently shown in the app.
   const [activePage, setActivePage] = useState("generate");
 
+  // Stores the currently logged in demo user returned from the backend.
+  const [currentUser, setCurrentUser] = useState(null);
+
+  // Prevents the app from trying to load user-specific data before login is done.
+  const [isDemoLoginDone, setIsDemoLoginDone] = useState(false);
+
   /*
    * Temporary demo login.
    *
@@ -37,14 +43,30 @@ function App() {
 
         if (!response.ok) {
           console.error("Demo login failed with status:", response.status);
+          return;
         }
+
+        const user = await response.json();
+        setCurrentUser(user);
       } catch (error) {
         console.error("Failed to auto-login demo user:", error);
+      } finally {
+        setIsDemoLoginDone(true);
       }
     };
 
     loginDemoUser();
   }, []);
+
+  if (!isDemoLoginDone) {
+    return (
+      <div className="app">
+        <main className="page">
+          <p>Loading demo user...</p>
+        </main>
+      </div>
+    );
+  }
 
   return (
     <div className="app">
@@ -56,7 +78,7 @@ function App() {
 
       {/* Main page content. The shown content depends on activePage. */}
       <div className="page">
-        <MainContent activePage={activePage} />
+        <MainContent activePage={activePage} currentUser={currentUser} />
       </div>
     </div>
   );

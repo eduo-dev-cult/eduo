@@ -1,5 +1,8 @@
 import { useEffect, useState } from "react";
-import { getCollections } from "../api/collectionsApi";
+import {
+  getCollections,
+  createCollection,
+} from "../api/collectionsApi";
 
 import Stepper from "./Stepper";
 import UploadBox from "./UploadBox";
@@ -9,6 +12,7 @@ import GenerationPreferences from "./GenerationPreferences";
 import "./MainContent.css";
 
 const USE_MOCK_GENERATION = true;
+
 const API_BASE_URL = "http://localhost:8080";
 const GENERATE_ENDPOINT = `${API_BASE_URL}/api/generations`;
 
@@ -17,10 +21,11 @@ const STORAGE_KEY = "eduo_generation_preferences";
 const defaultGenerationSettings = {
   questionTypes: ["multipleChoice"],
   numberOfQuestions: 10,
-  collectionId: "default",
+  collectionId: "",
   focusArea: "entireMaterial",
   specificTopics: "",
   difficulty: ["Medium"],
+
   outputContent: {
     questions: true,
     correctAnswers: true,
@@ -28,6 +33,31 @@ const defaultGenerationSettings = {
   },
 };
 
+/*
+ * Handles different possible collection id field names.
+ * This makes the frontend safer if backend DTO names change slightly.
+ */
+function getCollectionId(collection) {
+  return collection?.id ?? collection?.collectionId;
+}
+
+/*
+ * Handles different possible collection name field names.
+ */
+function getCollectionName(collection) {
+  return collection?.name ?? collection?.collectionName ?? "Unnamed collection";
+}
+
+/*
+ * Handles different possible user id field names.
+ */
+function getUserId(user) {
+  return user?.id ?? user?.userId;
+}
+
+/*
+ * Loads saved generation preferences from localStorage.
+ */
 function getPreferences() {
   const saved = localStorage.getItem(STORAGE_KEY);
 
@@ -39,9 +69,12 @@ function getPreferences() {
     return {
       ...defaultGenerationSettings,
       ...parsed,
+
       outputContent: {
         ...defaultGenerationSettings.outputContent,
         ...parsed.outputContent,
+
+        // Questions should always be included.
         questions: true,
       },
     };
@@ -50,8 +83,12 @@ function getPreferences() {
   }
 }
 
+/*
+ * Temporary mock result while generation backend is not fully connected.
+ */
 const mockGenerationResult = {
   id: "mock-generation-1",
+
   output: `Here are 10 multiple choice questions based on the provided material:
 
 ---
@@ -163,64 +200,191 @@ C) It blocks sunlight from entering the leaf
 D) It is released as the main energy source
 
 Correct answer: A`,
+
   generatedFrom: {
     fileName: "source/filename.filetype",
     fileType: "filetype",
   },
+
   settings: defaultGenerationSettings,
+
   createdAt: new Date().toISOString(),
 };
 
+/*
+ * Normalizes backend generation responses into the structure
+ * PreviewSave expects.
+ */
 function normalizeGenerationResponse(data, selectedFiles, settings) {
   const firstFile = selectedFiles[0];
 
   return {
     id: data.id ?? data.generationId ?? null,
-    output: data.output ?? data.generatedOutput ?? data.text ?? "",
+
+    output:
+      data.output ??
+      data.generatedOutput ??
+      data.text ??
+      "",
+
     generatedFrom: {
       fileName:
         data.generatedFrom?.fileName ??
         data.fileName ??
         firstFile?.name ??
         "Unknown source",
+
       fileType:
         data.generatedFrom?.fileType ??
         data.fileType ??
         firstFile?.type ??
         "Unknown file type",
+
       fileNames: selectedFiles.map((file) => file.name),
     },
+
     settings: data.settings ?? settings,
-    createdAt: data.createdAt ?? new Date().toISOString(),
+
+    createdAt:
+      data.createdAt ??
+      new Date().toISOString(),
   };
 }
 
-export default function MainContent({ activePage }) {
+export default function MainContent({
+  activePage,
+  currentUser,
+}) {
   const [currentStep, setCurrentStep] = useState(1);
   const [selectedFiles, setSelectedFiles] = useState([]);
 
-  /* Collections loaded from backend */
+  // Collections belonging to the currently logged-in user.
   const [collections, setCollections] = useState([]);
   const [isLoadingCollections, setIsLoadingCollections] = useState(false);
   const [collectionsError, setCollectionsError] = useState("");
 
-  const [generationSettings, setGenerationSettings] = useState(() =>
-    getPreferences()
-  );
+  const [generationSettings, setGenerationSettings] =
+    useState(() => getPreferences());
 
   const [generationResult, setGenerationResult] = useState(null);
   const [isGenerating, setIsGenerating] = useState(false);
   const [generationError, setGenerationError] = useState("");
 
+  /*
+   * Loads collections for the logged-in user.
+   * This is reused both on startup and after creating a new collection.
+   */
+  const loadCollections = async (userId) => {
+    try {
+      setIsLoadingCollections(true);
+      setCollectionsError("");
+
+      const loadedCollections = await getCollections(userId);
+
+      console.log("Loaded collections:", loadedCollections);
+
+      setCollections(loadedCollections);
+
+      if (loadedCollections.length > 0) {
+        const firstCollectionId = getCollectionId(loadedCollections[0]);
+
+        setGenerationSettings((prevSettings) => ({
+          ...prevSettings,
+          collectionId:
+            prevSettings.collectionId ||
+            firstCollectionId ||
+            "",
+        }));
+      }
+    } catch (error) {
+      console.error("Failed to load collections:", error);
+      setCollectionsError(error.message);
+    } finally {
+      setIsLoadingCollections(false);
+    }
+  };
+
+  /*
+   * Loads collections when currentUser becomes available from App.jsx.
+   */
+  useEffect(() => {
+    const userId = getUserId(currentUser);
+
+    console.log("Current user in MainContent:", currentUser);
+
+    if (!userId) return;
+
+    loadCollections(userId);
+  }, [currentUser]);
+
+  /*
+   * Creates a new collection for the current user.
+   * For now this uses prompt, which is simple for the prototype.
+   */
+  const handleCreateCollection = async () => {
+    const userId = getUserId(currentUser);
+
+    if (!userId) {
+      setCollectionsError("No logged-in user found.");
+      return;
+    }
+
+    const name = window.prompt("Collection name:");
+
+    if (!name || name.trim() === "") {
+      return;
+    }
+
+    try {
+      setIsLoadingCollections(true);
+      setCollectionsError("");
+
+      const newCollection = await createCollection({
+        userId,
+        name: name.trim(),
+      });
+
+      const newCollectionId = getCollectionId(newCollection);
+
+      setCollections((prevCollections) => [
+        ...prevCollections,
+        newCollection,
+      ]);
+
+      setGenerationSettings((prevSettings) => ({
+        ...prevSettings,
+        collectionId: newCollectionId,
+      }));
+    } catch (error) {
+      console.error("Failed to create collection:", error);
+      setCollectionsError(error.message);
+    } finally {
+      setIsLoadingCollections(false);
+    }
+  };
+
+  /*
+   * Resets generation settings when returning to step 1
+   * without selected files.
+   */
   useEffect(() => {
     if (
       activePage === "generate" &&
       currentStep === 1 &&
       selectedFiles.length === 0
     ) {
-      setGenerationSettings(getPreferences());
+      setGenerationSettings((prevSettings) => ({
+        ...getPreferences(),
+
+        // Keep selected collection when resetting other preferences.
+        collectionId: prevSettings.collectionId,
+      }));
     }
-  }, [activePage, currentStep, selectedFiles.length]);
+  }, [
+    activePage,
+    currentStep,
+    selectedFiles.length,
+  ]);
 
   const getSubtitle = () => {
     switch (currentStep) {
@@ -243,22 +407,35 @@ export default function MainContent({ activePage }) {
 
   const goToNextStep = () => {
     if (currentStep === 1 && selectedFiles.length === 0) return;
-    setCurrentStep((prevStep) => Math.min(prevStep + 1, 3));
+
+    setCurrentStep((prevStep) =>
+      Math.min(prevStep + 1, 3)
+    );
   };
 
   const goToPreviousStep = () => {
-    setCurrentStep((prevStep) => Math.max(prevStep - 1, 1));
+    setCurrentStep((prevStep) =>
+      Math.max(prevStep - 1, 1)
+    );
   };
 
   const startNewGeneration = () => {
     setCurrentStep(1);
     setSelectedFiles([]);
-    setGenerationSettings(getPreferences());
+
+    setGenerationSettings((prevSettings) => ({
+      ...getPreferences(),
+      collectionId: prevSettings.collectionId,
+    }));
+
     setGenerationResult(null);
     setGenerationError("");
     setIsGenerating(false);
   };
 
+  /*
+   * Builds the generation request payload.
+   */
   const buildGenerationPayload = () => {
     return {
       fileNames: selectedFiles.map((file) => file.name),
@@ -267,6 +444,7 @@ export default function MainContent({ activePage }) {
       collectionId: generationSettings.collectionId,
       language: generationSettings.language,
       focusArea: generationSettings.focusArea,
+
       specificTopics:
         generationSettings.focusArea === "specificTopics"
           ? generationSettings.specificTopics
@@ -274,7 +452,9 @@ export default function MainContent({ activePage }) {
               .map((topic) => topic.trim())
               .filter(Boolean)
           : [],
+
       difficulty: generationSettings.difficulty,
+
       outputContent: {
         ...generationSettings.outputContent,
         questions: true,
@@ -291,20 +471,27 @@ export default function MainContent({ activePage }) {
 
     try {
       if (USE_MOCK_GENERATION) {
-        await new Promise((resolve) => setTimeout(resolve, 700));
+        await new Promise((resolve) =>
+          setTimeout(resolve, 700)
+        );
 
         setGenerationResult({
           ...mockGenerationResult,
+
           generatedFrom: {
             fileName:
               selectedFiles[0]?.name ??
               mockGenerationResult.generatedFrom.fileName,
+
             fileType:
               selectedFiles[0]?.type ||
               selectedFiles[0]?.name?.split(".").pop() ||
               "file",
-            fileNames: selectedFiles.map((file) => file.name),
+
+            fileNames:
+              selectedFiles.map((file) => file.name),
           },
+
           settings: payload,
         });
 
@@ -319,15 +506,21 @@ export default function MainContent({ activePage }) {
 
       formData.append(
         "request",
-        new Blob([JSON.stringify(payload)], {
-          type: "application/json",
-        })
+        new Blob(
+          [JSON.stringify(payload)],
+          {
+            type: "application/json",
+          }
+        )
       );
 
-      const response = await fetch(GENERATE_ENDPOINT, {
-        method: "POST",
-        body: formData,
-      });
+      const response = await fetch(
+        GENERATE_ENDPOINT,
+        {
+          method: "POST",
+          body: formData,
+        }
+      );
 
       if (!response.ok) {
         throw new Error("Could not generate questions.");
@@ -336,7 +529,11 @@ export default function MainContent({ activePage }) {
       const data = await response.json();
 
       setGenerationResult(
-        normalizeGenerationResponse(data, selectedFiles, payload)
+        normalizeGenerationResponse(
+          data,
+          selectedFiles,
+          payload
+        )
       );
     } catch (error) {
       setGenerationError(error.message);
@@ -345,6 +542,9 @@ export default function MainContent({ activePage }) {
     }
   };
 
+  /*
+   * Placeholder save logic.
+   */
   const handleSave = () => {
     const savePayload = {
       generationId: generationResult?.id,
@@ -396,6 +596,7 @@ export default function MainContent({ activePage }) {
               {activePage === "collections" && "My Collections"}
               {activePage === "material" && "Material"}
             </h1>
+
             <p>This page will be implemented later.</p>
           </div>
         </section>
@@ -411,7 +612,10 @@ export default function MainContent({ activePage }) {
           <p>{getSubtitle()}</p>
         </div>
 
-        <Stepper currentStep={currentStep} onStepClick={setCurrentStep} />
+        <Stepper
+          currentStep={currentStep}
+          onStepClick={setCurrentStep}
+        />
 
         <div className={getStepContentClass()}>
           {currentStep === 1 && (
@@ -423,6 +627,7 @@ export default function MainContent({ activePage }) {
               collections={collections}
               isLoadingCollections={isLoadingCollections}
               collectionsError={collectionsError}
+              onCreateCollection={handleCreateCollection}
             />
           )}
 
