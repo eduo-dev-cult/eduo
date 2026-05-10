@@ -1,4 +1,4 @@
-package se.ltu.eduo.model.project;
+package se.ltu.eduo.model.collection;
 
 import jakarta.persistence.*;
 import lombok.Getter;
@@ -28,7 +28,7 @@ public class Quiz {
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
     @Column(name = "quiz_id", updatable = false, nullable = false)
-    private UUID quiz_id;
+    private UUID id;
 
     @OneToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "generation_id", nullable = false, updatable = false)
