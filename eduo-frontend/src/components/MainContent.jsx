@@ -15,6 +15,12 @@ import {
 import { uploadMaterials } from "../api/materialsApi";
 
 /*
+ * Generation API.
+ * Sends CreateGenerationRequest to backend.
+ */
+import { createGeneration } from "../api/generationsApi";
+
+/*
  * UI components used in the generation flow.
  */
 import Stepper from "./Stepper";
@@ -24,23 +30,6 @@ import PreviewSave from "./PreviewSave";
 import GenerationPreferences from "./GenerationPreferences";
 
 import "./MainContent.css";
-
-/*
- * Temporary flag while generation backend
- * is still under development.
- *
- * true  = use mock output
- * false = use real backend
- */
-const USE_MOCK_GENERATION = true;
-
-/*
- * Backend API configuration.
- */
-const API_BASE_URL = "http://localhost:8080";
-
-const GENERATE_ENDPOINT =
-  `${API_BASE_URL}/api/generations`;
 
 /*
  * LocalStorage key for saved generation preferences.
@@ -58,14 +47,6 @@ const defaultGenerationSettings = {
 
   numberOfQuestions: 10,
 
-  /*
-   * Collection where:
-   * - uploaded materials are stored
-   * - generated questions are saved
-   *
-   * Important:
-   * This must eventually be a real collection UUID from backend.
-   */
   collectionId: "",
 
   focusArea: "entireMaterial",
@@ -73,6 +54,8 @@ const defaultGenerationSettings = {
   specificTopics: "",
 
   difficulty: ["Medium"],
+
+  language: "English",
 
   outputContent: {
     questions: true,
@@ -103,9 +86,6 @@ function getUserId(user) {
 function getPreferences() {
   const saved = localStorage.getItem(STORAGE_KEY);
 
-  /*
-   * No saved settings found.
-   */
   if (!saved) {
     return defaultGenerationSettings;
   }
@@ -113,17 +93,6 @@ function getPreferences() {
   try {
     const parsed = JSON.parse(saved);
 
-    /*
-     * Fix for older saved preferences.
-     *
-     * Earlier, collectionId could be saved as "default".
-     * That breaks uploads because backend expects a UUID:
-     * /collections/{collectionId}/materials
-     *
-     * So if localStorage contains "default",
-     * we replace it with "" and let the app select
-     * a real collection from backend instead.
-     */
     const safeCollectionId =
       parsed.collectionId === "default"
         ? ""
@@ -138,17 +107,10 @@ function getPreferences() {
       outputContent: {
         ...defaultGenerationSettings.outputContent,
         ...parsed.outputContent,
-
-        /*
-         * Questions should always exist.
-         */
         questions: true,
       },
     };
   } catch {
-    /*
-     * Invalid localStorage data.
-     */
     return defaultGenerationSettings;
   }
 }
@@ -162,18 +124,12 @@ function normalizeMaterialMetadata(
   fallbackFile
 ) {
   return {
-    /*
-     * Backend material ID.
-     */
     id:
       material?.id ??
       material?.materialId ??
       material?.sourceMaterialId ??
       null,
 
-    /*
-     * Uploaded file name.
-     */
     fileName:
       material?.fileName ??
       material?.filename ??
@@ -181,9 +137,6 @@ function normalizeMaterialMetadata(
       fallbackFile?.name ??
       "Unknown file",
 
-    /*
-     * MIME type.
-     */
     fileType:
       material?.fileType ??
       material?.contentType ??
@@ -191,26 +144,17 @@ function normalizeMaterialMetadata(
       fallbackFile?.type ??
       "Unknown file type",
 
-    /*
-     * File size in bytes.
-     */
     size:
       material?.size ??
       material?.fileSize ??
       fallbackFile?.size ??
       null,
 
-    /*
-     * Which collection the material belongs to.
-     */
     collectionId:
       material?.collectionId ??
       material?.collection?.id ??
       null,
 
-    /*
-     * Keep original backend object for debugging/future use.
-     */
     raw: material,
   };
 }
@@ -232,136 +176,6 @@ function createFilesSignature(files, collectionId) {
 }
 
 /*
- * Temporary mock generation result
- * while generation backend is unfinished.
- */
-const mockGenerationResult = {
-  id: "mock-generation-1",
-
-  output: `Here are 10 multiple choice questions based on the provided material:
-
----
-
-1. What is the primary function of chlorophyll in plants?
-
-A) To absorb water from the soil
-B) To transport oxygen through the plant
-C) To absorb light energy for photosynthesis
-D) To store glucose in the roots
-
-Correct answer: C
-
----
-
-2. Which gas do plants take in during photosynthesis?
-
-A) Oxygen
-B) Carbon dioxide
-C) Nitrogen
-D) Hydrogen
-
-Correct answer: B
-
----
-
-3. What is produced as a by-product of photosynthesis?
-
-A) Oxygen
-B) Carbon dioxide
-C) Salt
-D) Protein
-
-Correct answer: A
-
----
-
-4. Where in the plant cell does photosynthesis mainly take place?
-
-A) Nucleus
-B) Mitochondria
-C) Chloroplasts
-D) Cell membrane
-
-Correct answer: C
-
----
-
-5. What are the main inputs needed for photosynthesis?
-
-A) Oxygen, glucose, and soil
-B) Carbon dioxide, water, and light energy
-C) Protein, oxygen, and minerals
-D) Nitrogen, glucose, and darkness
-
-Correct answer: B
-
----
-
-6. What is glucose used for in plants?
-
-A) As an energy source and building material
-B) To absorb sunlight directly
-C) To remove oxygen from the air
-D) As a replacement for water
-
-Correct answer: A
-
----
-
-7. Why is sunlight important in photosynthesis?
-
-A) It keeps the plant warm enough to grow
-B) It provides the energy needed to make glucose
-C) It helps the roots absorb minerals
-D) It turns oxygen into carbon dioxide
-
-Correct answer: B
-
----
-
-8. Which part of the plant usually absorbs most sunlight?
-
-A) Roots
-B) Stem
-C) Leaves
-D) Flowers
-
-Correct answer: C
-
----
-
-9. Why is photosynthesis important for animals and humans?
-
-A) It removes all water from the environment
-B) It produces oxygen and forms the base of many food chains
-C) It prevents plants from growing too quickly
-D) It creates minerals in the soil
-
-Correct answer: B
-
----
-
-10. What happens to water during photosynthesis?
-
-A) It is used together with carbon dioxide to help produce glucose
-B) It is changed directly into soil
-C) It blocks sunlight from entering the leaf
-D) It is released as the main energy source
-
-Correct answer: A`,
-
-  generatedFrom: {
-    fileName: "source/filename.filetype",
-    fileType: "filetype",
-    fileNames: [],
-  },
-
-  settings: defaultGenerationSettings,
-
-  createdAt: new Date().toISOString(),
-};
-
-/*
  * Converts backend generation response into
  * the format expected by PreviewSave.
  */
@@ -381,6 +195,8 @@ function normalizeGenerationResponse(
       data.output ??
       data.generatedOutput ??
       data.text ??
+      data.rawContent ??
+      data.quiz?.rawContent ??
       "",
 
     generatedFrom: {
@@ -407,7 +223,7 @@ function normalizeGenerationResponse(
       materials: uploadedMaterialsMetadata,
     },
 
-    settings: data.settings ?? settings,
+    settings,
 
     createdAt:
       data.createdAt ??
@@ -419,76 +235,45 @@ export default function MainContent({
   activePage,
   currentUser,
 }) {
-  /*
-   * Current step in the generation flow.
-   */
   const [currentStep, setCurrentStep] =
     useState(1);
 
-  /*
-   * Browser File objects selected by the user.
-   */
   const [selectedFiles, setSelectedFiles] =
     useState([]);
 
-  /*
-   * Metadata returned from backend after upload.
-   * This is saved for later use on page 3.
-   */
   const [
     uploadedMaterialsMetadata,
     setUploadedMaterialsMetadata,
   ] = useState([]);
 
-  /*
-   * Used to avoid uploading the exact same files twice.
-   */
   const [
     uploadedFilesSignature,
     setUploadedFilesSignature,
   ] = useState("");
 
-  /*
-   * Collections belonging to the current user.
-   */
   const [collections, setCollections] =
     useState([]);
 
-  /*
-   * Loading state while fetching collections.
-   */
   const [
     isLoadingCollections,
     setIsLoadingCollections,
   ] = useState(false);
 
-  /*
-   * Error state for collections.
-   */
   const [
     collectionsError,
     setCollectionsError,
   ] = useState("");
 
-  /*
-   * Loading state while uploading materials.
-   */
   const [
     isUploadingMaterials,
     setIsUploadingMaterials,
   ] = useState(false);
 
-  /*
-   * Error state for material upload.
-   */
   const [
     materialUploadError,
     setMaterialUploadError,
   ] = useState("");
 
-  /*
-   * Upload feedback shown in UploadBox.
-   */
   const [
     materialUploadStatus,
     setMaterialUploadStatus,
@@ -497,37 +282,22 @@ export default function MainContent({
     message: "",
   });
 
-  /*
-   * Current generation settings.
-   */
   const [
     generationSettings,
     setGenerationSettings,
   ] = useState(() => getPreferences());
 
-  /*
-   * Generated result returned from backend/mock.
-   */
   const [
     generationResult,
     setGenerationResult,
   ] = useState(null);
 
-  /*
-   * Loading state while generating questions.
-   */
   const [isGenerating, setIsGenerating] =
     useState(false);
 
-  /*
-   * Error state for generation.
-   */
   const [generationError, setGenerationError] =
     useState("");
 
-  /*
-   * Loads collections belonging to current user.
-   */
   const loadCollections = async (userId) => {
     try {
       setIsLoadingCollections(true);
@@ -536,17 +306,8 @@ export default function MainContent({
       const loadedCollections =
         await getCollections(userId);
 
-      console.log(
-        "Loaded collections:",
-        loadedCollections
-      );
-
       setCollections(loadedCollections);
 
-      /*
-       * Auto-select first collection if no collection
-       * is already selected.
-       */
       if (loadedCollections.length > 0) {
         const firstCollectionId =
           getCollectionId(loadedCollections[0]);
@@ -572,10 +333,6 @@ export default function MainContent({
     }
   };
 
-  /*
-   * Creates a new collection for the current user.
-   * This function is passed down to UploadBox.
-   */
   const handleCreateCollection = async () => {
     const userId = getUserId(currentUser);
 
@@ -608,17 +365,11 @@ export default function MainContent({
       const newCollectionId =
         getCollectionId(newCollection);
 
-      /*
-       * Add the new collection to the existing list.
-       */
       setCollections((prevCollections) => [
         ...prevCollections,
         newCollection,
       ]);
 
-      /*
-       * Select the newly created collection automatically.
-       */
       setGenerationSettings((prevSettings) => ({
         ...prevSettings,
         collectionId: newCollectionId,
@@ -635,9 +386,6 @@ export default function MainContent({
     }
   };
 
-  /*
-   * Load collections when currentUser becomes available.
-   */
   useEffect(() => {
     const userId = getUserId(currentUser);
 
@@ -648,10 +396,6 @@ export default function MainContent({
     loadCollections(userId);
   }, [currentUser]);
 
-  /*
-   * If selected files change, old uploaded metadata
-   * is no longer valid.
-   */
   useEffect(() => {
     setUploadedMaterialsMetadata([]);
     setUploadedFilesSignature("");
@@ -662,9 +406,6 @@ export default function MainContent({
     });
   }, [selectedFiles]);
 
-  /*
-   * Subtitle below the page title.
-   */
   const getSubtitle = () => {
     switch (currentStep) {
       case 1:
@@ -681,10 +422,6 @@ export default function MainContent({
     }
   };
 
-  /*
-   * Uploads files to backend and stores
-   * returned metadata in frontend state.
-   */
   const uploadSelectedFilesToCollection =
     async () => {
       if (selectedFiles.length === 0) {
@@ -719,10 +456,6 @@ export default function MainContent({
           generationSettings.collectionId
         );
 
-      /*
-       * If same upload already succeeded:
-       * reuse metadata instead of uploading again.
-       */
       if (
         uploadedFilesSignature ===
           currentSignature &&
@@ -798,11 +531,6 @@ export default function MainContent({
       }
     };
 
-  /*
-   * Used by stepper navigation.
-   * Stepper should allow navigation even without files,
-   * but upload files if possible.
-   */
   const uploadIfPossibleFromStepper =
     async () => {
       const hasFiles = selectedFiles.length > 0;
@@ -818,9 +546,6 @@ export default function MainContent({
       return await uploadSelectedFilesToCollection();
     };
 
-  /*
-   * Handles clicks on stepper numbers.
-   */
   const handleStepClick = async (
     targetStep
   ) => {
@@ -843,9 +568,6 @@ export default function MainContent({
     setCurrentStep(targetStep);
   };
 
-  /*
-   * Starts a completely new generation flow.
-   */
   const startNewGeneration = () => {
     setCurrentStep(1);
 
@@ -879,168 +601,70 @@ export default function MainContent({
   };
 
   /*
-   * Builds payload sent to generation backend.
+   * Builds CreateGenerationRequest sent to backend.
+   *
+   * Backend currently expects:
+   * {
+   *   sourceMaterialIds: [...]
+   * }
+   *
+   * Settings are kept separately in frontend state
+   * until backend DTO supports them.
    */
   const buildGenerationPayload = () => {
     return {
-      fileNames: selectedFiles.map(
-        (file) => file.name
-      ),
-
-      materialIds:
+      sourceMaterialIds:
         uploadedMaterialsMetadata
           .map((material) => material.id)
           .filter(Boolean),
-
-      materials:
-        uploadedMaterialsMetadata,
-
-      questionTypes:
-        generationSettings.questionTypes,
-
-      numberOfQuestions: Number(
-        generationSettings.numberOfQuestions
-      ),
-
-      collectionId:
-        generationSettings.collectionId,
-
-      language:
-        generationSettings.language,
-
-      focusArea:
-        generationSettings.focusArea,
-
-      specificTopics:
-        generationSettings.focusArea ===
-        "specificTopics"
-          ? generationSettings.specificTopics
-              .split(",")
-              .map((topic) =>
-                topic.trim()
-              )
-              .filter(Boolean)
-          : [],
-
-      difficulty:
-        generationSettings.difficulty,
-
-      outputContent: {
-        ...generationSettings.outputContent,
-        questions: true,
-      },
     };
   };
 
-  /*
-   * Sends generation request to backend.
-   */
   const handleGenerate = async () => {
     setIsGenerating(true);
     setGenerationError("");
     setCurrentStep(3);
 
-    const payload =
-      buildGenerationPayload();
-
     try {
-      if (USE_MOCK_GENERATION) {
-        await new Promise((resolve) =>
-          setTimeout(resolve, 700)
-        );
+      const payload =
+        buildGenerationPayload();
 
-        setGenerationResult({
-          ...mockGenerationResult,
-
-          generatedFrom: {
-            fileName:
-              uploadedMaterialsMetadata[0]?.fileName ??
-              selectedFiles[0]?.name ??
-              mockGenerationResult.generatedFrom.fileName,
-
-            fileType:
-              uploadedMaterialsMetadata[0]?.fileType ??
-              (
-                selectedFiles[0]?.type ||
-                selectedFiles[0]?.name
-                  ?.split(".")
-                  .pop() ||
-                "file"
-              ),
-
-            fileNames:
-              uploadedMaterialsMetadata.length > 0
-                ? uploadedMaterialsMetadata.map(
-                    (material) =>
-                      material.fileName
-                  )
-                : selectedFiles.map(
-                    (file) => file.name
-                  ),
-
-            materials:
-              uploadedMaterialsMetadata,
-          },
-
-          settings: payload,
-        });
-
-        return;
-      }
-
-      const formData = new FormData();
-
-      selectedFiles.forEach((file) => {
-        formData.append("files", file);
-      });
-
-      formData.append(
-        "request",
-
-        new Blob(
-          [JSON.stringify(payload)],
-          {
-            type: "application/json",
-          }
-        )
+      console.log(
+        "Generation request payload:",
+        payload
       );
 
       const response =
-        await fetch(
-          GENERATE_ENDPOINT,
-          {
-            method: "POST",
-            body: formData,
-          }
+        await createGeneration(
+          generationSettings.collectionId,
+          payload
         );
 
-      if (!response.ok) {
-        throw new Error(
-          "Could not generate questions."
-        );
-      }
-
-      const data =
-        await response.json();
+      console.log(
+        "Generation response:",
+        response
+      );
 
       setGenerationResult(
         normalizeGenerationResponse(
-          data,
+          response,
           selectedFiles,
-          payload,
+          generationSettings,
           uploadedMaterialsMetadata
         )
       );
     } catch (error) {
+      console.error(
+        "Failed to generate:",
+        error
+      );
+
       setGenerationError(error.message);
     } finally {
       setIsGenerating(false);
     }
   };
 
-  /*
-   * Placeholder save logic.
-   */
   const handleSave = () => {
     const savePayload = {
       generationId:
@@ -1068,9 +692,6 @@ export default function MainContent({
     );
   };
 
-  /*
-   * Returns correct button text depending on state.
-   */
   const getButtonText = () => {
     if (currentStep === 1) {
       return isUploadingMaterials
@@ -1087,9 +708,6 @@ export default function MainContent({
     return "Save to Collection";
   };
 
-  /*
-   * Main action button logic.
-   */
   const handleMainButtonClick =
     async () => {
       if (currentStep === 1) {
@@ -1116,9 +734,6 @@ export default function MainContent({
       }
     };
 
-  /*
-   * Preferences page.
-   */
   if (activePage === "preferences") {
     return (
       <main className="main-content">
@@ -1129,9 +744,6 @@ export default function MainContent({
     );
   }
 
-  /*
-   * Placeholder pages.
-   */
   if (activePage !== "generate") {
     return (
       <main className="main-content">
@@ -1156,9 +768,6 @@ export default function MainContent({
     );
   }
 
-  /*
-   * Main generation flow UI.
-   */
   return (
     <main className="main-content">
       <section className="content-card">

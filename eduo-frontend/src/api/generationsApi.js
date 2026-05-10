@@ -42,15 +42,20 @@ async function handleResponse(response, defaultMessage) {
 }
 
 /**
- * Sends a generation request to the backend.
+ * Sends a CreateGenerationRequest to the backend.
  *
  * Backend endpoint:
  * POST /collections/{collectionId}/generations
  *
- * The request body should contain the uploaded material/file ids
- * together with the settings selected in the frontend.
+ * The request body contains:
+ * - selected collection id
+ * - uploaded material ids
+ * - selected generation settings
  */
-export async function createGeneration(collectionId, generationRequest) {
+export async function createGeneration(
+  collectionId,
+  generationRequest
+) {
   const response = await fetch(
     `${API_BASE_URL}/collections/${collectionId}/generations`,
     {
