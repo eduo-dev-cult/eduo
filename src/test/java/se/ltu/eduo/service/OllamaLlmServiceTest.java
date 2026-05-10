@@ -1,5 +1,6 @@
 package se.ltu.eduo.service;
 
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.springframework.web.client.RestClient; // To test against a real Ollama instance, we need to use the same RestClient that the service uses.
 
@@ -57,6 +58,8 @@ class OllamaLlmServiceTest {
                 Capabilities: [brief description of what your model can do well]
                 Limitations: [brief description of any known limitations or weaknesses of your model]
             """;
+    
+    @Disabled("Requires a running Ollama instance")
     @Test
     /**
      * This test verifies that the OllamaLlmService can successfully connect to the Ollama API and
