@@ -30,6 +30,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
  */
 @DataJpaTest
 @ActiveProfiles("test")
+@ExtendWith(TestContainersInitializer.class)
 @ContextConfiguration(initializers = TestContainersInitializer.class)
 @AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
 class UserRepositoryTest {

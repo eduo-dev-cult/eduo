@@ -31,6 +31,7 @@ import static org.assertj.core.api.Assertions.assertThat;
  */
 @SpringBootTest
 @ActiveProfiles("test")
+@ExtendWith(TestContainersInitializer.class)
 @ContextConfiguration(initializers = TestContainersInitializer.class)
 @AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
 @Transactional
@@ -85,7 +86,7 @@ class AuthServiceTest {
     void loginUser_returnsUser_whenCredentialsAreValid() {
         authService.createUser("Anna", "Larsson", "alarsson", "hunter2");
 
-        Optional<User> result = authService.logInUser("alarsson", "hunter2");
+        Optional<User> result = authService.LogInUser("alarsson", "hunter2");
 
         assertThat(result).isPresent();
         assertThat(result.get().getFirstName()).isEqualTo("Anna");
@@ -99,7 +100,7 @@ class AuthServiceTest {
     void loginUser_updatesLastLoginAt_onSuccess() {
         User user = authService.createUser("Anna", "Larsson", "alarsson", "hunter2");
 
-        authService.logInUser("alarsson", "hunter2");
+        authService.LogInUser("alarsson", "hunter2");
 
         assertThat(credentialRepository.findById(user.getId()))
                 .isPresent()
@@ -119,7 +120,7 @@ class AuthServiceTest {
     void loginUser_returnsEmpty_whenPasswordIsWrong() {
         authService.createUser("Anna", "Larsson", "alarsson", "hunter2");
 
-        Optional<User> result = authService.logInUser("alarsson", "wrongpassword");
+        Optional<User> result = authService.LogInUser("alarsson", "wrongpassword");
 
         assertThat(result).isEmpty();
     }
@@ -130,7 +131,7 @@ class AuthServiceTest {
      */
     @Test
     void loginUser_returnsEmpty_whenUsernameIsUnknown() {
-        Optional<User> result = authService.logInUser("nobody", "irrelevant");
+        Optional<User> result = authService.LogInUser("nobody", "irrelevant");
 
         assertThat(result).isEmpty();
     }
@@ -147,7 +148,7 @@ class AuthServiceTest {
         User user = authService.createUser("Anna", "Larsson", "alarsson", "hunter2");
         Integer userId = user.getId();
 
-        authService.deleteUser(userId);
+        authService.DeleteUser(userId);
 
         assertThat(userRepository.findById(userId)).isEmpty();
     }
@@ -160,7 +161,7 @@ class AuthServiceTest {
         User user = authService.createUser("Anna", "Larsson", "alarsson", "hunter2");
         Integer userId = user.getId();
 
-        authService.deleteUser(userId);
+        authService.DeleteUser(userId);
 
         entityManager.flush();
         entityManager.clear();
@@ -177,7 +178,7 @@ class AuthServiceTest {
      */
     @Test
     void deleteUser_doesNotThrow_whenUserDoesNotExist() {
-        authService.deleteUser(Integer.MAX_VALUE);
+        authService.DeleteUser(Integer.MAX_VALUE);
         // no assertion needed — the test passes if no exception is thrown
     }
 }

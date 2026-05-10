@@ -1,8 +1,3 @@
-
-# API documentation
-Swagger's interaktiva UI (tillgänglig när applikationen körs): http://localhost:8080/swagger-ui/index.html
-Dokumentation i JSON-format: http://localhost:8080/v3/api-docs
-
 # Build instructions
 
 ## Local LLM

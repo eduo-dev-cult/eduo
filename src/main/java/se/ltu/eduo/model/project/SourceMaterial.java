@@ -1,4 +1,4 @@
-package se.ltu.eduo.model.collection;
+package se.ltu.eduo.model.project;
 
 import jakarta.persistence.*;
 import lombok.Getter;
@@ -29,7 +29,7 @@ public class SourceMaterial {
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "project_id", nullable = false, updatable = false)
-    private Collection collection;
+    private Project project;
 
     @Column(name = "filename", nullable = false)
     private String filename;
@@ -56,8 +56,8 @@ public class SourceMaterial {
     @Column(name = "uploaded_at", nullable = false, updatable = false)
     private Instant uploadedAt;
 
-    public SourceMaterial(Collection collection, String filename, String fileType, byte[] fileData) {
-        this.collection = collection;
+    public SourceMaterial(Project project, String filename, String fileType, byte[] fileData) {
+        this.project = project;
         this.filename = filename;
         this.fileType = fileType;
         this.fileData = fileData;

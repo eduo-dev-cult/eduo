@@ -5,14 +5,14 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import se.ltu.eduo.model.User;
-import se.ltu.eduo.model.collection.*;
+import se.ltu.eduo.model.project.*;
 import se.ltu.eduo.repository.*;
 
 import java.util.List;
 import java.util.UUID;
 
 /**
- * Coordinates creation, retrieval, and deletion of collections and their
+ * Coordinates creation, retrieval, and deletion of projects and their
  * associated domain objects. All methods that write to the database are
  * transactional. Read methods are marked read-only as a performance hint
  * to the persistence provider.
@@ -21,9 +21,9 @@ import java.util.UUID;
  */
 @Service
 @RequiredArgsConstructor
-public class CollectionService {
+public class ProjectService {
 
-    private final CollectionRepository collectionRepository;
+    private final ProjectRepository projectRepository;
     private final SourceMaterialRepository sourceMaterialRepository;
     private final GenerationRepository generationRepository;
     private final GenerationSourceMaterialRepository generationSourceMaterialRepository;
@@ -31,68 +31,61 @@ public class CollectionService {
     private final UserRepository userRepository;
 
     // -------------------------------------------------------------------------
-    //region collections
+    //region Projects
     // Standard CRUD behaviours.
     // -------------------------------------------------------------------------
 
     /**
-     * Creates and persists a new collection owned by the given user.
+     * Creates and persists a new project owned by the given user.
      * Time of creation is that of the invocation.
-     * @param userId the owner of the collection
-     * @param name the name of the collection
-     * @return the created collection
+     * @param userId the owner of the project
+     * @param name the name of the project
+     * @return the created project
      */
     @Transactional
-    public Collection createCollection(Integer userId, String name) throws EntityNotFoundException
-    {
-        User user = userRepository.findById(userId)
-                                  .orElseThrow(() -> new EntityNotFoundException("User not found by this ID: " + userId));
-        Collection collection = new Collection(user, name);
-        return collectionRepository.save(collection);
+    public Project createProject(Integer userId, String name) {
+        User user = userRepository.findById(userId).orElseThrow(() -> new EntityNotFoundException("User not found by that ID: " + userId));
+        Project project = new Project(user, name);
+        return projectRepository.save(project);
     }
 
     /**
-     * Returns a collection by ID, throwing if it does not exist.
+     * Returns a project by ID, throwing if it does not exist.
      */
     @Transactional(readOnly = true)
-    public Collection getCollection(UUID collectionId) throws EntityNotFoundException{
-        return collectionRepository.findById(collectionId)
-                                   .orElseThrow(() -> new EntityNotFoundException("collection not found with this ID: " + collectionId));
-    }
-
-    @Transactional(readOnly = true)
-    public List<Collection> getUserCollections(Integer userId) throws EntityNotFoundException{
-        return collectionRepository.findAllByOwnerId(userId);
+    public Project getProject(UUID projectId) {
+        return projectRepository.findById(projectId)
+                                .orElseThrow(() -> new EntityNotFoundException("Project not found with this ID: " + projectId));
     }
 
     /**
-     * Updates the name of an existing collection and returns the saved state.
+     * Updates the name of an existing project and returns the saved state.
      * {@code updatedAt} is managed by {@link org.hibernate.annotations.UpdateTimestamp}
      * and refreshes automatically on save.
      */
     @Transactional
-    public Collection updateCollection(UUID collectionId, String name) {
-        Collection collection = collectionRepository.findById(collectionId)
-                                                    .orElseThrow(() -> new EntityNotFoundException("collection not found with this ID: " + collectionId));
-        collection.setName(name);
-        return collectionRepository.save(collection);
+    public Project updateProject(UUID projectId, String name) {
+        Project project = projectRepository.findById(projectId)
+                                           .orElseThrow(() -> new EntityNotFoundException("Project not found with this ID: " + projectId));
+        project.setName(name);
+        return projectRepository.save(project);
     }
 
     /**
-     * Deletes a collection and all of its associated source materials, generations,
+     * Deletes a project and all of its associated source materials, generations,
      * and quizzes. Cascade rules on the entity handle child deletion — this
-     * method is the single authorised entry point for collection deletion so that
+     * method is the single authorised entry point for project deletion so that
      * any future pre-deletion checks (e.g. ownership verification) have one
      * place to live.
      */
     @Transactional
-    public void deleteCollection(UUID collectionId) {
-        Collection collection = collectionRepository.findById(collectionId)
-                                                    .orElseThrow(() -> new EntityNotFoundException("collection not found with this ID: " + collectionId));
-        collectionRepository.delete(collection);
+    public void deleteProject(UUID projectId) {
+        Project project = projectRepository.findById(projectId)
+                                           .orElseThrow(() -> new EntityNotFoundException("Project not found with this ID: " + projectId));
+        projectRepository.delete(project);
     }
 
-    //endregion collections
+    //endregion projects
 
     // -------------------------------------------------------------------------
     //region Source material
@@ -100,16 +93,16 @@ public class CollectionService {
     // -------------------------------------------------------------------------
 
     /**
-     * Uploads a file and associates it with the given collection.
+     * Uploads a file and associates it with the given project.
      */
     @Transactional
-    public SourceMaterial createSourceMaterial(UUID collectionId,
+    public SourceMaterial createSourceMaterial(UUID projectId,
                                                String filename,
                                                String fileType,
                                                byte[] fileData) {
-        Collection collection = collectionRepository.findById(collectionId)
-                                                    .orElseThrow(() -> new EntityNotFoundException("collection not found with this ID: " + collectionId));
-        SourceMaterial material = new SourceMaterial(collection, filename, fileType, fileData);
+        Project project = projectRepository.findById(projectId)
+                                           .orElseThrow(() -> new EntityNotFoundException("Project not found with this ID: " + projectId));
+        SourceMaterial material = new SourceMaterial(project, filename, fileType, fileData);
         return sourceMaterialRepository.save(material);
     }
 
@@ -138,7 +131,7 @@ public class CollectionService {
     // -------------------------------------------------------------------------
 
     /**
-     * Creates a generation attempt for the given collection, recording which
+     * Creates a generation attempt for the given project, recording which
      * source materials were selected for this run. Loads all materials in a
      * single query via {@code findAllById} to avoid N+1 lookups.
      *
@@ -146,11 +139,11 @@ public class CollectionService {
      * {@link #createQuiz(UUID, String, String)} once the AI response is available.
      */
     @Transactional
-    public Generation createGeneration(UUID collectionId, List<UUID> sourceMaterialIds) {
-        Collection collection = collectionRepository.findById(collectionId)
-                                                    .orElseThrow(() -> new EntityNotFoundException("collection not found: " + collectionId));
+    public Generation createGeneration(UUID projectId, List<UUID> sourceMaterialIds) {
+        Project project = projectRepository.findById(projectId)
+                                           .orElseThrow(() -> new EntityNotFoundException("Project not found: " + projectId));
 
-        Generation generation = generationRepository.save(new Generation(collection));
+        Generation generation = generationRepository.save(new Generation(project));
 
         List<SourceMaterial> materials = sourceMaterialRepository.findAllById(sourceMaterialIds);
         List<GenerationSourceMaterial> joins = materials.stream()

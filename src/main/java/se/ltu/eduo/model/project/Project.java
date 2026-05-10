@@ -1,4 +1,4 @@
-package se.ltu.eduo.model.collection;
+package se.ltu.eduo.model.project;
 
 import jakarta.persistence.*;
 import lombok.Getter;
@@ -18,20 +18,20 @@ import java.util.UUID;
  * materials and generation attempts. Owned by a single user.
  */
 @Entity
-@Table(name = "collection", schema = "eduo")
+@Table(name = "project", schema = "eduo")
 @Getter
 @Setter
 @NoArgsConstructor
-public class Collection {
+public class Project {
 
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
-    @Column(name = "collection_id", updatable = false, nullable = false)
+    @Column(name = "project_id", updatable = false, nullable = false)
     private UUID id;
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "user_id", nullable = false, updatable = false)
-    private User owner;
+    private User userId;
 
     @Column(name = "name", nullable = false)
     private String name;
@@ -44,14 +44,14 @@ public class Collection {
     @Column(name = "updated_at", nullable = false)
     private Instant updatedAt;
 
-    @OneToMany(mappedBy = "collection", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(mappedBy = "project", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<SourceMaterial> sourceMaterials = new ArrayList<>();
 
-    @OneToMany(mappedBy = "collection", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(mappedBy = "project", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Generation> generations = new ArrayList<>();
 
-    public Collection(User owner, String name) {
-        this.owner = owner;
+    public Project(User user, String name) {
+        this.userId = user;
         this.name = name;
     }
 }

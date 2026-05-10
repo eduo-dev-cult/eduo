@@ -17,7 +17,8 @@ import org.testcontainers.containers.PostgreSQLContainer;
  * after it starts, so the eduo schema exists before Hibernate creates tables.
  */
 public class TestContainersInitializer implements
-        ApplicationContextInitializer<ConfigurableApplicationContext> {
+        ApplicationContextInitializer<ConfigurableApplicationContext>,
+        AfterAllCallback {
 
     private static final PostgreSQLContainer<?> postgres = new PostgreSQLContainer<>("postgres:15")
             .withDatabaseName("eduo-test")
@@ -27,14 +28,19 @@ public class TestContainersInitializer implements
 
     @Override
     public void initialize(ConfigurableApplicationContext applicationContext) {
-        if (!postgres.isRunning()) {
-            postgres.start();
-        }
+        postgres.start();
 
         TestPropertyValues.of(
                 "spring.datasource.url=" + postgres.getJdbcUrl(),
                 "spring.datasource.username=" + postgres.getUsername(),
                 "spring.datasource.password=" + postgres.getPassword()
         ).applyTo(applicationContext.getEnvironment());
+    }
+
+    @Override
+    public void afterAll(ExtensionContext context) {
+        if (postgres != null) {
+            postgres.close();
+        }
     }
 }

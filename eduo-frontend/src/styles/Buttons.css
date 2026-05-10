@@ -1,49 +1,48 @@
-/* Generic reusable buttons */
-
 .button {
-  min-width: 150px;
-  height: 44px;
-
-  padding: 0 24px;
-
+  border: 1px solid var(--blue);
   border-radius: var(--radius-sm);
+  padding: 10px 16px;
   font-size: 16px;
-  font-weight: 700;
-  font-family: inherit;
-
   cursor: pointer;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-
-  transition: background 0.15s ease, color 0.15s ease;
+  font-family: inherit;
 }
 
 .primary-button {
   background: var(--blue);
   color: white;
-  border: 1px solid var(--blue);
+  border: none;
+  border-radius: var(--radius-sm);  
+  padding: 10px 16px;
+  font-size: 16px;
+  cursor: pointer;
 }
 
 .primary-button:hover {
   background: var(--blue-dark);
+  color: white;
 }
 
 .secondary-button {
-  background: white;
+  background: transparent;
   color: var(--blue);
   border: 1px solid var(--blue);
+  border-radius: var(--radius-sm);
+  padding: 10px 16px;
+  font-size: 16px;
+  cursor: pointer;
 }
 
 .secondary-button:hover {
-  background: #eef4fb;
+  background: var(--blue);
+  color: white;
 }
 
 .fixed-width-button {
-  width: 150px;
+  width: 135px;
+  font-weight: 700;
 }
 
-.button:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
+.sidebar-button {
+  width: 100%;
+  padding: 12px;
 }

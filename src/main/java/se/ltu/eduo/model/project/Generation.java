@@ -1,4 +1,4 @@
-package se.ltu.eduo.model.collection;
+package se.ltu.eduo.model.project;
 
 import jakarta.persistence.*;
 import lombok.Getter;
@@ -31,7 +31,7 @@ public class Generation {
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "project_id", nullable = false, updatable = false)
-    private Collection collection;
+    private Project project;
 
     @CreationTimestamp
     @Column(name = "created_at", nullable = false, updatable = false)
@@ -51,7 +51,7 @@ public class Generation {
     @OneToOne(mappedBy = "generation", cascade = CascadeType.ALL, orphanRemoval = true)
     private Quiz quiz;
 
-    public Generation(Collection collection) {
-        this.collection = collection;
+    public Generation(Project project) {
+        this.project = project;
     }
 }

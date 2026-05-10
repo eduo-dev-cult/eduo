@@ -2,35 +2,36 @@ import "./Stepper.css";
 
 export default function Stepper({ currentStep, onStepClick }) {
   const steps = [
-    { number: 1, label: "Add Material" },
+    { number: 1, label: "Add material" },
     { number: 2, label: "Settings" },
-    { number: 3, label: "Preview & Save" },
+    { number: 3, label: "Preview and Save" },
   ];
 
   return (
     <div className="stepper">
       {steps.map((step, index) => {
         const isActive = currentStep === step.number;
-        const isCompleted = currentStep > step.number;
+        const isClickable = step.number <= currentStep;
 
         return (
           <div className="stepper-item" key={step.number}>
             <button
               type="button"
-              className={`step-group ${isActive ? "active" : ""}`}
-              onClick={() => onStepClick(step.number)}
+              className={`step-group ${isClickable ? "clickable" : ""}`}
+              onClick={() => {
+                if (isClickable) {
+                  onStepClick(step.number);
+                }
+              }}
+              disabled={!isClickable}
             >
-              <span
-                className={`step ${
-                  isActive || isCompleted ? "active-step" : ""
-                }`}
-              >
+              <div className={`step ${isActive ? "active-step" : ""}`}>
                 {step.number}
-              </span>
+              </div>
 
               <span
                 className={`step-text ${
-                  isActive ? "active" : !isCompleted ? "muted" : ""
+                  isActive ? "active" : step.number > currentStep ? "muted" : ""
                 }`}
               >
                 {step.label}

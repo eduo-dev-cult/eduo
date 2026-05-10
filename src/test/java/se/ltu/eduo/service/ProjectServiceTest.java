@@ -3,6 +3,7 @@ package se.ltu.eduo.service;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.EntityNotFoundException;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.jdbc.test.autoconfigure.AutoConfigureTestDatabase;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -10,7 +11,7 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.transaction.annotation.Transactional;
 import se.ltu.eduo.TestContainersInitializer;
-import se.ltu.eduo.model.collection.*;
+import se.ltu.eduo.model.project.*;
 import se.ltu.eduo.repository.*;
 
 import java.util.List;
@@ -31,10 +32,11 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
  */
 @SpringBootTest
 @ActiveProfiles("test")
+@ExtendWith(TestContainersInitializer.class)
 @ContextConfiguration(initializers = TestContainersInitializer.class)
 @AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
 @Transactional
-class CollectionServiceTest {
+class ProjectServiceTest {
 
     @Autowired
     private EntityManager entityManager;
@@ -43,10 +45,10 @@ class CollectionServiceTest {
     private AuthService authService;
 
     @Autowired
-    private CollectionService collectionService;
+    private ProjectService projectService;
 
     @Autowired
-    private CollectionRepository collectionRepository;
+    private ProjectRepository projectRepository;
 
     @Autowired
     private SourceMaterialRepository sourceMaterialRepository;
@@ -73,26 +75,26 @@ class CollectionServiceTest {
      * A newly created project should be persisted and have a generated UUID.
      */
     @Test
-    void createProject_persistsCollectionWithGeneratedId() {
+    void createProject_persistsProjectWithGeneratedId() {
         Integer userId = persistUser();
 
-        Collection collection = collectionService.createCollection(userId, "Intro to Java");
+        Project project = projectService.createProject(userId, "Intro to Java");
 
-        assertThat(collection.getId()).isNotNull();
-        assertThat(collectionRepository.findById(collection.getId())).isPresent();
+        assertThat(project.getId()).isNotNull();
+        assertThat(projectRepository.findById(project.getId())).isPresent();
     }
 
     /**
-     * The returned project should carry the owner's userId and name that were passed in.
+     * The returned project should carry the userId and name that were passed in.
      */
     @Test
-    void createCollection_storesCorrectUserIdAndName() {
+    void createProject_storesCorrectUserIdAndName() {
         Integer userId = persistUser();
 
-        Collection collection = collectionService.createCollection(userId, "Intro to Java");
+        Project project = projectService.createProject(userId, "Intro to Java");
 
-        assertThat(collection.getOwner().getId()).isEqualTo(userId);
-        assertThat(collection.getName()).isEqualTo("Intro to Java");
+        assertThat(project.getUserId().getId()).isEqualTo(userId);
+        assertThat(project.getName()).isEqualTo("Intro to Java");
     }
 
     // ---------------------------------------------------------------
@@ -103,11 +105,11 @@ class CollectionServiceTest {
      * Fetching a project by its ID should return the same project.
      */
     @Test
-    void getProject_returnsCollection_whenExists() {
+    void getProject_returnsProject_whenExists() {
         Integer userId = persistUser();
-        Collection created = collectionService.createCollection(userId, "Intro to Java");
+        Project created = projectService.createProject(userId, "Intro to Java");
 
-        Collection found = collectionService.getCollection(created.getId());
+        Project found = projectService.getProject(created.getId());
 
         assertThat(found.getId()).isEqualTo(created.getId());
     }
@@ -117,8 +119,8 @@ class CollectionServiceTest {
      * rather than return null or an empty Optional.
      */
     @Test
-    void getCollection_throwsEntityNotFoundException_whenNotFound() {
-        assertThatThrownBy(() -> collectionService.getCollection(UUID.randomUUID()))
+    void getProject_throwsEntityNotFoundException_whenNotFound() {
+        assertThatThrownBy(() -> projectService.getProject(UUID.randomUUID()))
                 .isInstanceOf(EntityNotFoundException.class);
     }
 
@@ -130,11 +132,11 @@ class CollectionServiceTest {
      * The name field should reflect the new value after update.
      */
     @Test
-    void updateCollection_updatesName() {
+    void updateProject_updatesName() {
         Integer userId = persistUser();
-        Collection collection = collectionService.createCollection(userId, "Old Name");
+        Project project = projectService.createProject(userId, "Old Name");
 
-        Collection updated = collectionService.updateCollection(collection.getId(), "New Name");
+        Project updated = projectService.updateProject(project.getId(), "New Name");
 
         assertThat(updated.getName()).isEqualTo("New Name");
     }
@@ -143,8 +145,8 @@ class CollectionServiceTest {
      * Updating a non-existent project ID should throw EntityNotFoundException.
      */
     @Test
-    void updateCollection_throwsEntityNotFoundException_whenNotFound() {
-        assertThatThrownBy(() -> collectionService.updateCollection(UUID.randomUUID(), "New Name"))
+    void updateProject_throwsEntityNotFoundException_whenNotFound() {
+        assertThatThrownBy(() -> projectService.updateProject(UUID.randomUUID(), "New Name"))
                 .isInstanceOf(EntityNotFoundException.class);
     }
 
@@ -156,19 +158,19 @@ class CollectionServiceTest {
      * Deleting a project should remove the project row from the database.
      */
     @Test
-    void deleteProject_removesCollectionRow() {
+    void deleteProject_removesProjectRow() {
         Integer userId = persistUser();
-        Collection collection = collectionService.createCollection(userId, "Intro to Java");
-        UUID projectId = collection.getId();
+        Project project = projectService.createProject(userId, "Intro to Java");
+        UUID projectId = project.getId();
 
-        assertThat(collectionRepository.findById(projectId)).isPresent();
+        assertThat(projectRepository.findById(projectId)).isPresent();
 
-        collectionService.deleteCollection(projectId);
+        projectService.deleteProject(projectId);
 
         entityManager.flush();
         entityManager.clear();
 
-        assertThat(collectionRepository.findById(projectId)).isEmpty();
+        assertThat(projectRepository.findById(projectId)).isEmpty();
     }
 
     /**
@@ -177,8 +179,8 @@ class CollectionServiceTest {
      * future ownership checks, so it must always validate the ID exists.
      */
     @Test
-    void deleteCollection_throwsEntityNotFoundException_whenNotFound() {
-        assertThatThrownBy(() -> collectionService.deleteCollection(UUID.randomUUID()))
+    void deleteProject_throwsEntityNotFoundException_whenNotFound() {
+        assertThatThrownBy(() -> projectService.deleteProject(UUID.randomUUID()))
                 .isInstanceOf(EntityNotFoundException.class);
     }
 
@@ -187,17 +189,17 @@ class CollectionServiceTest {
      * associated with it.
      */
     @Test
-    void deleteCollection_cascadesToSourceMaterials() {
+    void deleteProject_cascadesToSourceMaterials() {
         Integer userId = persistUser();
-        Collection collection = collectionService.createCollection(userId, "Intro to Java");
-        SourceMaterial material = collectionService.createSourceMaterial(
-                collection.getId(), "notes.pdf", "application/pdf", new byte[]{1, 2, 3});
+        Project project = projectService.createProject(userId, "Intro to Java");
+        SourceMaterial material = projectService.createSourceMaterial(
+                project.getId(), "notes.pdf", "application/pdf", new byte[]{1, 2, 3});
         UUID materialId = material.getId();
 
         entityManager.flush();
         entityManager.clear();
 
-        collectionService.deleteCollection(collection.getId());
+        projectService.deleteProject(project.getId());
 
 
 
@@ -209,16 +211,16 @@ class CollectionServiceTest {
      * (and their descendant quizzes) associated with it.
      */
     @Test
-    void deleteCollection_cascadesToGenerations() {
+    void deleteProject_cascadesToGenerations() {
         Integer userId = persistUser();
-        Collection collection = collectionService.createCollection(userId, "Intro to Java");
-        Generation generation = collectionService.createGeneration(collection.getId(), List.of());
+        Project project = projectService.createProject(userId, "Intro to Java");
+        Generation generation = projectService.createGeneration(project.getId(), List.of());
         UUID generationId = generation.getId();
 
         entityManager.flush();
         entityManager.clear();
 
-        collectionService.deleteCollection(collection.getId());
+        projectService.deleteProject(project.getId());
 
         assertThat(generationRepository.findById(generationId)).isEmpty();
     }
@@ -246,11 +248,11 @@ class CollectionServiceTest {
     @Test
     void createSourceMaterial_persistsMaterialWithCorrectMetadata() {
         Integer userId = persistUser();
-        Collection collection = collectionService.createCollection(userId, "Intro to Java");
+        Project project = projectService.createProject(userId, "Intro to Java");
         byte[] data = {1, 2, 3, 4};
 
-        SourceMaterial material = collectionService.createSourceMaterial(
-                collection.getId(), "slides.pdf", "application/pdf", data);
+        SourceMaterial material = projectService.createSourceMaterial(
+                project.getId(), "slides.pdf", "application/pdf", data);
 
         assertThat(material.getId()).isNotNull();
         assertThat(sourceMaterialRepository.findById(material.getId())).isPresent();
@@ -265,7 +267,7 @@ class CollectionServiceTest {
      */
     @Test
     void createSourceMaterial_throwsEntityNotFoundException_whenProjectNotFound() {
-        assertThatThrownBy(() -> collectionService.createSourceMaterial(
+        assertThatThrownBy(() -> projectService.createSourceMaterial(
                 UUID.randomUUID(), "slides.pdf", "application/pdf", new byte[]{1}))
                 .isInstanceOf(EntityNotFoundException.class);
     }
@@ -280,11 +282,11 @@ class CollectionServiceTest {
     @Test
     void getSourceMaterial_returnsMaterial_whenExists() {
         Integer userId = persistUser();
-        Collection collection = collectionService.createCollection(userId, "Intro to Java");
-        SourceMaterial created = collectionService.createSourceMaterial(
-                collection.getId(), "notes.txt", "text/plain", new byte[]{42});
+        Project project = projectService.createProject(userId, "Intro to Java");
+        SourceMaterial created = projectService.createSourceMaterial(
+                project.getId(), "notes.txt", "text/plain", new byte[]{42});
 
-        SourceMaterial found = collectionService.getSourceMaterial(created.getId());
+        SourceMaterial found = projectService.getSourceMaterial(created.getId());
 
         assertThat(found.getId()).isEqualTo(created.getId());
     }
@@ -294,7 +296,7 @@ class CollectionServiceTest {
      */
     @Test
     void getSourceMaterial_throwsEntityNotFoundException_whenNotFound() {
-        assertThatThrownBy(() -> collectionService.getSourceMaterial(UUID.randomUUID()))
+        assertThatThrownBy(() -> projectService.getSourceMaterial(UUID.randomUUID()))
                 .isInstanceOf(EntityNotFoundException.class);
     }
 
@@ -308,12 +310,12 @@ class CollectionServiceTest {
     @Test
     void deleteSourceMaterial_removesMaterialRow() {
         Integer userId = persistUser();
-        Collection collection = collectionService.createCollection(userId, "Intro to Java");
-        SourceMaterial material = collectionService.createSourceMaterial(
-                collection.getId(), "notes.pdf", "application/pdf", new byte[]{1, 2, 3});
+        Project project = projectService.createProject(userId, "Intro to Java");
+        SourceMaterial material = projectService.createSourceMaterial(
+                project.getId(), "notes.pdf", "application/pdf", new byte[]{1, 2, 3});
         UUID materialId = material.getId();
 
-        collectionService.deleteSourceMaterial(materialId);
+        projectService.deleteSourceMaterial(materialId);
 
         entityManager.flush();
         entityManager.clear();
@@ -331,9 +333,9 @@ class CollectionServiceTest {
     @Test
     void createGeneration_persistsGenerationLinkedToProject() {
         Integer userId = persistUser();
-        Collection collection = collectionService.createCollection(userId, "Intro to Java");
+        Project project = projectService.createProject(userId, "Intro to Java");
 
-        Generation generation = collectionService.createGeneration(collection.getId(), List.of());
+        Generation generation = projectService.createGeneration(project.getId(), List.of());
 
         assertThat(generation.getId()).isNotNull();
         assertThat(generationRepository.findById(generation.getId())).isPresent();
@@ -347,13 +349,13 @@ class CollectionServiceTest {
     @Test
     void createGeneration_linksSelectedSourceMaterials() {
         Integer userId = persistUser();
-        Collection collection = collectionService.createCollection(userId, "Intro to Java");
-        SourceMaterial mat1 = collectionService.createSourceMaterial(
-                collection.getId(), "a.pdf", "application/pdf", new byte[]{1});
-        SourceMaterial mat2 = collectionService.createSourceMaterial(
-                collection.getId(), "b.pdf", "application/pdf", new byte[]{2});
+        Project project = projectService.createProject(userId, "Intro to Java");
+        SourceMaterial mat1 = projectService.createSourceMaterial(
+                project.getId(), "a.pdf", "application/pdf", new byte[]{1});
+        SourceMaterial mat2 = projectService.createSourceMaterial(
+                project.getId(), "b.pdf", "application/pdf", new byte[]{2});
 
-        collectionService.createGeneration(collection.getId(), List.of(mat1.getId(), mat2.getId()));
+        projectService.createGeneration(project.getId(), List.of(mat1.getId(), mat2.getId()));
 
         assertThat(generationSourceMaterialRepository.count()).isEqualTo(2);
     }
@@ -363,7 +365,7 @@ class CollectionServiceTest {
      */
     @Test
     void createGeneration_throwsEntityNotFoundException_whenProjectNotFound() {
-        assertThatThrownBy(() -> collectionService.createGeneration(UUID.randomUUID(), List.of()))
+        assertThatThrownBy(() -> projectService.createGeneration(UUID.randomUUID(), List.of()))
                 .isInstanceOf(EntityNotFoundException.class);
     }
 
@@ -377,10 +379,10 @@ class CollectionServiceTest {
     @Test
     void getGeneration_returnsGeneration_whenExists() {
         Integer userId = persistUser();
-        Collection collection = collectionService.createCollection(userId, "Intro to Java");
-        Generation created = collectionService.createGeneration(collection.getId(), List.of());
+        Project project = projectService.createProject(userId, "Intro to Java");
+        Generation created = projectService.createGeneration(project.getId(), List.of());
 
-        Generation found = collectionService.getGeneration(created.getId());
+        Generation found = projectService.getGeneration(created.getId());
 
         assertThat(found.getId()).isEqualTo(created.getId());
     }
@@ -390,7 +392,7 @@ class CollectionServiceTest {
      */
     @Test
     void getGeneration_throwsEntityNotFoundException_whenNotFound() {
-        assertThatThrownBy(() -> collectionService.getGeneration(UUID.randomUUID()))
+        assertThatThrownBy(() -> projectService.getGeneration(UUID.randomUUID()))
                 .isInstanceOf(EntityNotFoundException.class);
     }
 
@@ -404,11 +406,11 @@ class CollectionServiceTest {
     @Test
     void deleteGeneration_removesGenerationRow() {
         Integer userId = persistUser();
-        Collection collection = collectionService.createCollection(userId, "Intro to Java");
-        Generation generation = collectionService.createGeneration(collection.getId(), List.of());
+        Project project = projectService.createProject(userId, "Intro to Java");
+        Generation generation = projectService.createGeneration(project.getId(), List.of());
         UUID generationId = generation.getId();
 
-        collectionService.deleteGeneration(generationId);
+        projectService.deleteGeneration(generationId);
 
         entityManager.flush();
         entityManager.clear();
@@ -427,13 +429,13 @@ class CollectionServiceTest {
     @Test
     void createQuiz_persistsQuizWithCorrectContent() {
         Integer userId = persistUser();
-        Collection collection = collectionService.createCollection(userId, "Intro to Java");
-        Generation generation = collectionService.createGeneration(collection.getId(), List.of());
+        Project project = projectService.createProject(userId, "Intro to Java");
+        Generation generation = projectService.createGeneration(project.getId(), List.of());
 
-        Quiz quiz = collectionService.createQuiz(generation.getId(), "Week 1 Quiz", "{\"questions\":[]}");
+        Quiz quiz = projectService.createQuiz(generation.getId(), "Week 1 Quiz", "{\"questions\":[]}");
 
-        assertThat(quiz.getId()).isNotNull();
-        assertThat(quizRepository.findById(quiz.getId())).isPresent();
+        assertThat(quiz.getQuiz_id()).isNotNull();
+        assertThat(quizRepository.findById(quiz.getQuiz_id())).isPresent();
         assertThat(quiz.getName()).isEqualTo("Week 1 Quiz");
         assertThat(quiz.getRawContent()).isEqualTo("{\"questions\":[]}");
     }
@@ -443,7 +445,7 @@ class CollectionServiceTest {
      */
     @Test
     void createQuiz_throwsEntityNotFoundException_whenGenerationNotFound() {
-        assertThatThrownBy(() -> collectionService.createQuiz(UUID.randomUUID(), "Quiz", "content"))
+        assertThatThrownBy(() -> projectService.createQuiz(UUID.randomUUID(), "Quiz", "content"))
                 .isInstanceOf(EntityNotFoundException.class);
     }
 
@@ -457,13 +459,13 @@ class CollectionServiceTest {
     @Test
     void getQuiz_returnsQuiz_whenExists() {
         Integer userId = persistUser();
-        Collection collection = collectionService.createCollection(userId, "Intro to Java");
-        Generation generation = collectionService.createGeneration(collection.getId(), List.of());
-        Quiz created = collectionService.createQuiz(generation.getId(), "Week 1 Quiz", "raw content");
+        Project project = projectService.createProject(userId, "Intro to Java");
+        Generation generation = projectService.createGeneration(project.getId(), List.of());
+        Quiz created = projectService.createQuiz(generation.getId(), "Week 1 Quiz", "raw content");
 
-        Quiz found = collectionService.getQuiz(created.getId());
+        Quiz found = projectService.getQuiz(created.getQuiz_id());
 
-        assertThat(found.getId()).isEqualTo(created.getId());
+        assertThat(found.getQuiz_id()).isEqualTo(created.getQuiz_id());
     }
 
     /**
@@ -471,7 +473,7 @@ class CollectionServiceTest {
      */
     @Test
     void getQuiz_throwsEntityNotFoundException_whenNotFound() {
-        assertThatThrownBy(() -> collectionService.getQuiz(UUID.randomUUID()))
+        assertThatThrownBy(() -> projectService.getQuiz(UUID.randomUUID()))
                 .isInstanceOf(EntityNotFoundException.class);
     }
 
@@ -485,11 +487,11 @@ class CollectionServiceTest {
     @Test
     void updateQuiz_updatesNameAndRawContent() {
         Integer userId = persistUser();
-        Collection collection = collectionService.createCollection(userId, "Intro to Java");
-        Generation generation = collectionService.createGeneration(collection.getId(), List.of());
-        Quiz quiz = collectionService.createQuiz(generation.getId(), "Old Name", "old content");
+        Project project = projectService.createProject(userId, "Intro to Java");
+        Generation generation = projectService.createGeneration(project.getId(), List.of());
+        Quiz quiz = projectService.createQuiz(generation.getId(), "Old Name", "old content");
 
-        Quiz updated = collectionService.updateQuiz(quiz.getId(), "New Name", "new content");
+        Quiz updated = projectService.updateQuiz(quiz.getQuiz_id(), "New Name", "new content");
 
         assertThat(updated.getName()).isEqualTo("New Name");
         assertThat(updated.getRawContent()).isEqualTo("new content");
@@ -500,7 +502,7 @@ class CollectionServiceTest {
      */
     @Test
     void updateQuiz_throwsEntityNotFoundException_whenNotFound() {
-        assertThatThrownBy(() -> collectionService.updateQuiz(UUID.randomUUID(), "Name", "content"))
+        assertThatThrownBy(() -> projectService.updateQuiz(UUID.randomUUID(), "Name", "content"))
                 .isInstanceOf(EntityNotFoundException.class);
     }
 
@@ -514,12 +516,12 @@ class CollectionServiceTest {
     @Test
     void deleteQuiz_removesQuizRow() {
         Integer userId = persistUser();
-        Collection collection = collectionService.createCollection(userId, "Intro to Java");
-        Generation generation = collectionService.createGeneration(collection.getId(), List.of());
-        Quiz quiz = collectionService.createQuiz(generation.getId(), "Week 1 Quiz", "content");
-        UUID quizId = quiz.getId();
+        Project project = projectService.createProject(userId, "Intro to Java");
+        Generation generation = projectService.createGeneration(project.getId(), List.of());
+        Quiz quiz = projectService.createQuiz(generation.getId(), "Week 1 Quiz", "content");
+        UUID quizId = quiz.getQuiz_id();
 
-        collectionService.deleteQuiz(quizId);
+        projectService.deleteQuiz(quizId);
 
         entityManager.flush();
         entityManager.clear();

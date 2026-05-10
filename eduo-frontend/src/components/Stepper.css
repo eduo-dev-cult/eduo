@@ -14,24 +14,21 @@
   display: flex;
   align-items: center;
   gap: 14px;
+  font-size: 16px;
+  white-space: nowrap;
 
   border: none;
   background: transparent;
   padding: 0;
-
-  font-size: 16px;
   font-family: inherit;
-  white-space: nowrap;
+}
 
+.step-group.clickable {
   cursor: pointer;
 }
 
-.step-group:hover .step {
-  transform: scale(1.04);
-}
-
-.step-group:hover .step-text {
-  color: var(--text);
+.step-group:disabled {
+  cursor: default;
 }
 
 /* Step circle */
@@ -39,21 +36,17 @@
   width: 46px;
   height: 46px;
   border-radius: 50%;
-
   background: var(--inactive);
   color: #555;
-
   display: flex;
   align-items: center;
   justify-content: center;
-
   font-size: 26px;
   font-weight: 700;
-
-  transition: transform 0.15s ease, background 0.15s ease, color 0.15s ease;
+  transition: all 0.2s ease;
 }
 
-/* Active or completed step */
+/* Active step */
 .active-step {
   background: var(--blue);
   color: white;
@@ -69,7 +62,7 @@
   font-weight: 600;
 }
 
-/* Future steps */
+/* Inactive faded text (step 2 & 3 initially) */
 .step-text.muted {
   color: #d7d7d0;
 }
