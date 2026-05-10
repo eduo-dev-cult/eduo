@@ -197,3 +197,34 @@
   color: #9f1d1d;
   font-size: 13px;
 }
+
+.upload-status-message {
+  width: 100%;
+  max-width: 480px;
+  margin: 12px 0 0;
+  padding: 9px 12px;
+
+  border-radius: 7px;
+
+  font-size: 13px;
+  font-weight: 700;
+  text-align: center;
+}
+
+.upload-status-loading {
+  background: #eef4fb;
+  color: var(--blue);
+  border: 1px solid var(--blue);
+}
+
+.upload-status-success {
+  background: #eef8ef;
+  color: #247a35;
+  border: 1px solid #8bcf98;
+}
+
+.upload-status-error {
+  background: #fff0f0;
+  color: #9f1d1d;
+  border: 1px solid #e0a0a0;
+}

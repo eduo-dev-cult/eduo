@@ -1,12 +1,22 @@
 import { useEffect, useState } from "react";
 
+/*
+ * Collection API functions.
+ */
 import {
   getCollections,
   createCollection,
 } from "../api/collectionsApi";
 
+/*
+ * Material upload API.
+ * Returns metadata for uploaded files.
+ */
 import { uploadMaterials } from "../api/materialsApi";
 
+/*
+ * UI components used in the generation flow.
+ */
 import Stepper from "./Stepper";
 import UploadBox from "./UploadBox";
 import SettingsPanel from "./SettingsPanel";
@@ -18,6 +28,9 @@ import "./MainContent.css";
 /*
  * Temporary flag while generation backend
  * is still under development.
+ *
+ * true  = use mock output
+ * false = use real backend
  */
 const USE_MOCK_GENERATION = true;
 
@@ -25,30 +38,38 @@ const USE_MOCK_GENERATION = true;
  * Backend API configuration.
  */
 const API_BASE_URL = "http://localhost:8080";
-const GENERATE_ENDPOINT = `${API_BASE_URL}/api/generations`;
+
+const GENERATE_ENDPOINT =
+  `${API_BASE_URL}/api/generations`;
 
 /*
  * LocalStorage key for saved generation preferences.
  */
-const STORAGE_KEY = "eduo_generation_preferences";
+const STORAGE_KEY =
+  "eduo_generation_preferences";
 
 /*
- * Default generation settings used when:
- * - the app starts for the first time
- * - no saved preferences exist
+ * Default generation settings used:
+ * - on first app start
+ * - if no saved preferences exist
  */
 const defaultGenerationSettings = {
   questionTypes: ["multipleChoice"],
+
   numberOfQuestions: 10,
 
   /*
-   * The selected collection where:
-   * - uploaded materials belong
+   * Collection where:
+   * - uploaded materials are stored
    * - generated questions are saved
+   *
+   * Important:
+   * This must eventually be a real collection UUID from backend.
    */
   collectionId: "",
 
   focusArea: "entireMaterial",
+
   specificTopics: "",
 
   difficulty: ["Medium"],
@@ -61,26 +82,16 @@ const defaultGenerationSettings = {
 };
 
 /*
- * Handles different possible collection id field names.
- * Makes frontend safer if backend DTO names change slightly.
+ * Handles different possible backend field names
+ * for collection IDs.
  */
 function getCollectionId(collection) {
   return collection?.id ?? collection?.collectionId;
 }
 
 /*
- * Handles different possible collection name field names.
- */
-function getCollectionName(collection) {
-  return (
-    collection?.name ??
-    collection?.collectionName ??
-    "Unnamed collection"
-  );
-}
-
-/*
- * Handles different possible user id field names.
+ * Handles different possible backend field names
+ * for user IDs.
  */
 function getUserId(user) {
   return user?.id ?? user?.userId;
@@ -92,6 +103,9 @@ function getUserId(user) {
 function getPreferences() {
   const saved = localStorage.getItem(STORAGE_KEY);
 
+  /*
+   * No saved settings found.
+   */
   if (!saved) {
     return defaultGenerationSettings;
   }
@@ -99,28 +113,127 @@ function getPreferences() {
   try {
     const parsed = JSON.parse(saved);
 
+    /*
+     * Fix for older saved preferences.
+     *
+     * Earlier, collectionId could be saved as "default".
+     * That breaks uploads because backend expects a UUID:
+     * /collections/{collectionId}/materials
+     *
+     * So if localStorage contains "default",
+     * we replace it with "" and let the app select
+     * a real collection from backend instead.
+     */
+    const safeCollectionId =
+      parsed.collectionId === "default"
+        ? ""
+        : parsed.collectionId;
+
     return {
       ...defaultGenerationSettings,
       ...parsed,
+
+      collectionId: safeCollectionId,
 
       outputContent: {
         ...defaultGenerationSettings.outputContent,
         ...parsed.outputContent,
 
         /*
-         * Questions should always exist in generated output.
+         * Questions should always exist.
          */
         questions: true,
       },
     };
   } catch {
+    /*
+     * Invalid localStorage data.
+     */
     return defaultGenerationSettings;
   }
 }
 
 /*
+ * Converts backend material metadata into
+ * a consistent frontend format.
+ */
+function normalizeMaterialMetadata(
+  material,
+  fallbackFile
+) {
+  return {
+    /*
+     * Backend material ID.
+     */
+    id:
+      material?.id ??
+      material?.materialId ??
+      material?.sourceMaterialId ??
+      null,
+
+    /*
+     * Uploaded file name.
+     */
+    fileName:
+      material?.fileName ??
+      material?.filename ??
+      material?.name ??
+      fallbackFile?.name ??
+      "Unknown file",
+
+    /*
+     * MIME type.
+     */
+    fileType:
+      material?.fileType ??
+      material?.contentType ??
+      material?.mimeType ??
+      fallbackFile?.type ??
+      "Unknown file type",
+
+    /*
+     * File size in bytes.
+     */
+    size:
+      material?.size ??
+      material?.fileSize ??
+      fallbackFile?.size ??
+      null,
+
+    /*
+     * Which collection the material belongs to.
+     */
+    collectionId:
+      material?.collectionId ??
+      material?.collection?.id ??
+      null,
+
+    /*
+     * Keep original backend object for debugging/future use.
+     */
+    raw: material,
+  };
+}
+
+/*
+ * Creates a lightweight signature for uploaded files.
+ * Used to avoid duplicate uploads of the exact same files.
+ */
+function createFilesSignature(files, collectionId) {
+  return JSON.stringify({
+    collectionId,
+
+    files: files.map((file) => ({
+      name: file.name,
+      size: file.size,
+      lastModified: file.lastModified,
+    })),
+  });
+}
+
+/*
  * Temporary mock generation result
- * while backend generation is unfinished.
+ * while generation backend is unfinished.
  */
 const mockGenerationResult = {
   id: "mock-generation-1",
@@ -240,6 +353,7 @@ Correct answer: A`,
   generatedFrom: {
     fileName: "source/filename.filetype",
     fileType: "filetype",
+    fileNames: [],
   },
 
   settings: defaultGenerationSettings,
@@ -248,18 +362,17 @@ Correct answer: A`,
 };
 
 /*
- * Normalizes backend responses into the structure
- * PreviewSave expects.
- *
- * This helps protect the frontend if backend DTOs
- * change slightly.
+ * Converts backend generation response into
+ * the format expected by PreviewSave.
  */
 function normalizeGenerationResponse(
   data,
   selectedFiles,
-  settings
+  settings,
+  uploadedMaterialsMetadata
 ) {
   const firstFile = selectedFiles[0];
+  const firstMaterial = uploadedMaterialsMetadata[0];
 
   return {
     id: data.id ?? data.generationId ?? null,
@@ -274,19 +387,24 @@ function normalizeGenerationResponse(
       fileName:
         data.generatedFrom?.fileName ??
         data.fileName ??
+        firstMaterial?.fileName ??
         firstFile?.name ??
         "Unknown source",
 
       fileType:
         data.generatedFrom?.fileType ??
         data.fileType ??
+        firstMaterial?.fileType ??
         firstFile?.type ??
         "Unknown file type",
 
-      /*
-       * Needed because several files can now be uploaded.
-       */
-      fileNames: selectedFiles.map((file) => file.name),
+      fileNames:
+        data.generatedFrom?.fileNames ??
+        uploadedMaterialsMetadata.map(
+          (material) => material.fileName
+        ),
+
+      materials: uploadedMaterialsMetadata,
     },
 
     settings: data.settings ?? settings,
@@ -302,61 +420,113 @@ export default function MainContent({
   currentUser,
 }) {
   /*
-   * Current step in generation flow.
+   * Current step in the generation flow.
    */
-  const [currentStep, setCurrentStep] = useState(1);
+  const [currentStep, setCurrentStep] =
+    useState(1);
 
   /*
-   * Files selected by the user.
+   * Browser File objects selected by the user.
    */
-  const [selectedFiles, setSelectedFiles] = useState([]);
+  const [selectedFiles, setSelectedFiles] =
+    useState([]);
 
   /*
-   * Collections belonging to the logged-in user.
+   * Metadata returned from backend after upload.
+   * This is saved for later use on page 3.
    */
-  const [collections, setCollections] = useState([]);
+  const [
+    uploadedMaterialsMetadata,
+    setUploadedMaterialsMetadata,
+  ] = useState([]);
 
   /*
-   * Loading/error state for collections.
+   * Used to avoid uploading the exact same files twice.
    */
-  const [isLoadingCollections, setIsLoadingCollections] =
-    useState(false);
-
-  const [collectionsError, setCollectionsError] =
-    useState("");
+  const [
+    uploadedFilesSignature,
+    setUploadedFilesSignature,
+  ] = useState("");
 
   /*
-   * Loading/error state for material uploads.
+   * Collections belonging to the current user.
    */
-  const [isUploadingMaterials, setIsUploadingMaterials] =
-    useState(false);
-
-  const [materialUploadError, setMaterialUploadError] =
-    useState("");
+  const [collections, setCollections] =
+    useState([]);
 
   /*
-   * All generation settings currently selected in GUI.
+   * Loading state while fetching collections.
    */
-  const [generationSettings, setGenerationSettings] =
-    useState(() => getPreferences());
+  const [
+    isLoadingCollections,
+    setIsLoadingCollections,
+  ] = useState(false);
 
   /*
-   * Generated output state.
+   * Error state for collections.
    */
-  const [generationResult, setGenerationResult] =
-    useState(null);
+  const [
+    collectionsError,
+    setCollectionsError,
+  ] = useState("");
 
   /*
-   * Loading/error state for generation.
+   * Loading state while uploading materials.
+   */
+  const [
+    isUploadingMaterials,
+    setIsUploadingMaterials,
+  ] = useState(false);
+
+  /*
+   * Error state for material upload.
+   */
+  const [
+    materialUploadError,
+    setMaterialUploadError,
+  ] = useState("");
+
+  /*
+   * Upload feedback shown in UploadBox.
+   */
+  const [
+    materialUploadStatus,
+    setMaterialUploadStatus,
+  ] = useState({
+    type: "",
+    message: "",
+  });
+
+  /*
+   * Current generation settings.
+   */
+  const [
+    generationSettings,
+    setGenerationSettings,
+  ] = useState(() => getPreferences());
+
+  /*
+   * Generated result returned from backend/mock.
+   */
+  const [
+    generationResult,
+    setGenerationResult,
+  ] = useState(null);
+
+  /*
+   * Loading state while generating questions.
    */
   const [isGenerating, setIsGenerating] =
     useState(false);
 
+  /*
+   * Error state for generation.
+   */
   const [generationError, setGenerationError] =
     useState("");
 
   /*
-   * Loads all collections belonging to the logged-in user.
+   * Loads collections belonging to current user.
    */
   const loadCollections = async (userId) => {
     try {
@@ -374,8 +544,8 @@ export default function MainContent({
       setCollections(loadedCollections);
 
       /*
-       * Automatically select first collection
-       * if no collection is currently selected.
+       * Auto-select first collection if no collection
+       * is already selected.
        */
       if (loadedCollections.length > 0) {
         const firstCollectionId =
@@ -403,25 +573,8 @@ export default function MainContent({
   };
 
   /*
-   * Loads collections when currentUser becomes available.
-   */
-  useEffect(() => {
-    const userId = getUserId(currentUser);
-
-    console.log(
-      "Current user in MainContent:",
-      currentUser
-    );
-
-    if (!userId) {
-      return;
-    }
-
-    loadCollections(userId);
-  }, [currentUser]);
-
-  /*
    * Creates a new collection for the current user.
+   * This function is passed down to UploadBox.
    */
   const handleCreateCollection = async () => {
     const userId = getUserId(currentUser);
@@ -456,7 +609,7 @@ export default function MainContent({
         getCollectionId(newCollection);
 
       /*
-       * Add new collection directly to state.
+       * Add the new collection to the existing list.
        */
       setCollections((prevCollections) => [
         ...prevCollections,
@@ -464,7 +617,7 @@ export default function MainContent({
       ]);
 
       /*
-       * Automatically select newly created collection.
+       * Select the newly created collection automatically.
        */
       setGenerationSettings((prevSettings) => ({
         ...prevSettings,
@@ -483,33 +636,34 @@ export default function MainContent({
   };
 
   /*
-   * Resets generation settings when returning to step 1
-   * without files selected.
+   * Load collections when currentUser becomes available.
    */
   useEffect(() => {
-    if (
-      activePage === "generate" &&
-      currentStep === 1 &&
-      selectedFiles.length === 0
-    ) {
-      setGenerationSettings((prevSettings) => ({
-        ...getPreferences(),
+    const userId = getUserId(currentUser);
 
-        /*
-         * Keep selected collection when resetting.
-         */
-        collectionId:
-          prevSettings.collectionId,
-      }));
+    if (!userId) {
+      return;
     }
-  }, [
-    activePage,
-    currentStep,
-    selectedFiles.length,
-  ]);
+
+    loadCollections(userId);
+  }, [currentUser]);
 
   /*
-   * Subtitle below page title.
+   * If selected files change, old uploaded metadata
+   * is no longer valid.
+   */
+  useEffect(() => {
+    setUploadedMaterialsMetadata([]);
+    setUploadedFilesSignature("");
+
+    setMaterialUploadStatus({
+      type: "",
+      message: "",
+    });
+  }, [selectedFiles]);
+
+  /*
+   * Subtitle below the page title.
    */
   const getSubtitle = () => {
     switch (currentStep) {
@@ -528,44 +682,8 @@ export default function MainContent({
   };
 
   /*
-   * Returns correct layout class for each step.
-   */
-  const getStepContentClass = () => {
-    if (currentStep === 1) {
-      return "step-content step-content-start";
-    }
-
-    if (currentStep === 3) {
-      return "step-content step-content-preview";
-    }
-
-    return "step-content step-content-center";
-  };
-
-  /*
-   * Goes one step forward.
-   */
-  const goToNextStep = () => {
-    setCurrentStep((prevStep) =>
-      Math.min(prevStep + 1, 3)
-    );
-  };
-
-  /*
-   * Goes one step backwards.
-   */
-  const goToPreviousStep = () => {
-    setCurrentStep((prevStep) =>
-      Math.max(prevStep - 1, 1)
-    );
-  };
-
-  /*
-   * Uploads selected files to selected collection.
-   *
-   * Used by:
-   * - Continue button
-   * - Stepper navigation
+   * Uploads files to backend and stores
+   * returned metadata in frontend state.
    */
   const uploadSelectedFilesToCollection =
     async () => {
@@ -573,6 +691,11 @@ export default function MainContent({
         setMaterialUploadError(
           "Please select at least one file."
         );
+
+        setMaterialUploadStatus({
+          type: "error",
+          message: "Please select at least one file.",
+        });
 
         return false;
       }
@@ -582,17 +705,78 @@ export default function MainContent({
           "Please choose a collection."
         );
 
+        setMaterialUploadStatus({
+          type: "error",
+          message: "Please choose a collection.",
+        });
+
         return false;
+      }
+
+      const currentSignature =
+        createFilesSignature(
+          selectedFiles,
+          generationSettings.collectionId
+        );
+
+      /*
+       * If same upload already succeeded:
+       * reuse metadata instead of uploading again.
+       */
+      if (
+        uploadedFilesSignature ===
+          currentSignature &&
+        uploadedMaterialsMetadata.length > 0
+      ) {
+        setMaterialUploadStatus({
+          type: "success",
+          message: "Files are already uploaded.",
+        });
+
+        return true;
       }
 
       try {
         setIsUploadingMaterials(true);
         setMaterialUploadError("");
 
-        await uploadMaterials(
-          generationSettings.collectionId,
-          selectedFiles
+        setMaterialUploadStatus({
+          type: "loading",
+          message: "Uploading files...",
+        });
+
+        const uploadedMaterials =
+          await uploadMaterials(
+            generationSettings.collectionId,
+            selectedFiles
+          );
+
+        const normalizedMetadata =
+          uploadedMaterials.map(
+            (material, index) =>
+              normalizeMaterialMetadata(
+                material,
+                selectedFiles[index]
+              )
+          );
+
+        console.log(
+          "Uploaded materials metadata:",
+          normalizedMetadata
         );
+
+        setUploadedMaterialsMetadata(
+          normalizedMetadata
+        );
+
+        setUploadedFilesSignature(
+          currentSignature
+        );
+
+        setMaterialUploadStatus({
+          type: "success",
+          message: "Files uploaded successfully.",
+        });
 
         return true;
       } catch (error) {
@@ -601,9 +785,12 @@ export default function MainContent({
           error
         );
 
-        setMaterialUploadError(
-          error.message
-        );
+        setMaterialUploadError(error.message);
+
+        setMaterialUploadStatus({
+          type: "error",
+          message: error.message,
+        });
 
         return false;
       } finally {
@@ -612,25 +799,18 @@ export default function MainContent({
     };
 
   /*
-   * Stepper navigation rules:
-   *
-   * - Navigation should ALWAYS be allowed.
-   * - Files should upload automatically IF possible.
-   * - Missing files should NOT block navigation.
+   * Used by stepper navigation.
+   * Stepper should allow navigation even without files,
+   * but upload files if possible.
    */
   const uploadIfPossibleFromStepper =
     async () => {
-      const hasFiles =
-        selectedFiles.length > 0;
+      const hasFiles = selectedFiles.length > 0;
 
-      const hasCollection =
-        Boolean(
-          generationSettings.collectionId
-        );
+      const hasCollection = Boolean(
+        generationSettings.collectionId
+      );
 
-      /*
-       * Skip upload if missing files or collection.
-       */
       if (!hasFiles || !hasCollection) {
         return true;
       }
@@ -639,22 +819,15 @@ export default function MainContent({
     };
 
   /*
-   * Handles navigation through stepper.
+   * Handles clicks on stepper numbers.
    */
   const handleStepClick = async (
     targetStep
   ) => {
-    /*
-     * Ignore click on current step.
-     */
     if (targetStep === currentStep) {
       return;
     }
 
-    /*
-     * When leaving step 1:
-     * upload files IF possible.
-     */
     if (
       currentStep === 1 &&
       targetStep > 1
@@ -662,9 +835,6 @@ export default function MainContent({
       const uploadSucceeded =
         await uploadIfPossibleFromStepper();
 
-      /*
-       * Stop navigation if upload failed.
-       */
       if (!uploadSucceeded) {
         return;
       }
@@ -680,6 +850,10 @@ export default function MainContent({
     setCurrentStep(1);
 
     setSelectedFiles([]);
+
+    setUploadedMaterialsMetadata([]);
+
+    setUploadedFilesSignature("");
 
     setGenerationSettings(
       (prevSettings) => ({
@@ -697,6 +871,11 @@ export default function MainContent({
     setIsGenerating(false);
 
     setMaterialUploadError("");
+
+    setMaterialUploadStatus({
+      type: "",
+      message: "",
+    });
   };
 
   /*
@@ -707,6 +886,14 @@ export default function MainContent({
       fileNames: selectedFiles.map(
         (file) => file.name
       ),
+
+      materialIds:
+        uploadedMaterialsMetadata
+          .map((material) => material.id)
+          .filter(Boolean),
+
+      materials:
+        uploadedMaterialsMetadata,
 
       questionTypes:
         generationSettings.questionTypes,
@@ -740,7 +927,6 @@ export default function MainContent({
 
       outputContent: {
         ...generationSettings.outputContent,
-
         questions: true,
       },
     };
@@ -751,18 +937,13 @@ export default function MainContent({
    */
   const handleGenerate = async () => {
     setIsGenerating(true);
-
     setGenerationError("");
-
     setCurrentStep(3);
 
     const payload =
       buildGenerationPayload();
 
     try {
-      /*
-       * Temporary mock mode.
-       */
       if (USE_MOCK_GENERATION) {
         await new Promise((resolve) =>
           setTimeout(resolve, 700)
@@ -773,21 +954,32 @@ export default function MainContent({
 
           generatedFrom: {
             fileName:
+              uploadedMaterialsMetadata[0]?.fileName ??
               selectedFiles[0]?.name ??
-              mockGenerationResult
-                .generatedFrom.fileName,
+              mockGenerationResult.generatedFrom.fileName,
 
             fileType:
-              selectedFiles[0]?.type ||
-              selectedFiles[0]?.name
-                ?.split(".")
-                .pop() ||
-              "file",
+              uploadedMaterialsMetadata[0]?.fileType ??
+              (
+                selectedFiles[0]?.type ||
+                selectedFiles[0]?.name
+                  ?.split(".")
+                  .pop() ||
+                "file"
+              ),
 
             fileNames:
-              selectedFiles.map(
-                (file) => file.name
-              ),
+              uploadedMaterialsMetadata.length > 0
+                ? uploadedMaterialsMetadata.map(
+                    (material) =>
+                      material.fileName
+                  )
+                : selectedFiles.map(
+                    (file) => file.name
+                  ),
+
+            materials:
+              uploadedMaterialsMetadata,
           },
 
           settings: payload,
@@ -796,9 +988,6 @@ export default function MainContent({
         return;
       }
 
-      /*
-       * Real backend generation request.
-       */
       const formData = new FormData();
 
       selectedFiles.forEach((file) => {
@@ -838,13 +1027,12 @@ export default function MainContent({
         normalizeGenerationResponse(
           data,
           selectedFiles,
-          payload
+          payload,
+          uploadedMaterialsMetadata
         )
       );
     } catch (error) {
-      setGenerationError(
-        error.message
-      );
+      setGenerationError(error.message);
     } finally {
       setIsGenerating(false);
     }
@@ -867,6 +1055,9 @@ export default function MainContent({
       generatedFrom:
         generationResult?.generatedFrom,
 
+      uploadedMaterials:
+        uploadedMaterialsMetadata,
+
       settings:
         generationResult?.settings,
     };
@@ -878,7 +1069,7 @@ export default function MainContent({
   };
 
   /*
-   * Returns correct button text depending on current state.
+   * Returns correct button text depending on state.
    */
   const getButtonText = () => {
     if (currentStep === 1) {
@@ -898,16 +1089,9 @@ export default function MainContent({
 
   /*
    * Main action button logic.
-   *
-   * Unlike the stepper:
-   * - Continue button REQUIRES upload success.
    */
   const handleMainButtonClick =
     async () => {
-      /*
-       * Step 1:
-       * Upload files before continuing.
-       */
       if (currentStep === 1) {
         const uploadSucceeded =
           await uploadSelectedFilesToCollection();
@@ -916,25 +1100,17 @@ export default function MainContent({
           return;
         }
 
-        goToNextStep();
+        setCurrentStep(2);
 
         return;
       }
 
-      /*
-       * Step 2:
-       * Generate questions.
-       */
       if (currentStep === 2) {
         handleGenerate();
 
         return;
       }
 
-      /*
-       * Step 3:
-       * Save generation.
-       */
       if (currentStep === 3) {
         handleSave();
       }
@@ -981,7 +1157,7 @@ export default function MainContent({
   }
 
   /*
-   * Main generation flow.
+   * Main generation flow UI.
    */
   return (
     <main className="main-content">
@@ -1000,7 +1176,13 @@ export default function MainContent({
         />
 
         <div
-          className={getStepContentClass()}
+          className={
+            currentStep === 1
+              ? "step-content step-content-start"
+              : currentStep === 3
+              ? "step-content step-content-preview"
+              : "step-content step-content-center"
+          }
         >
           {currentStep === 1 && (
             <UploadBox
@@ -1035,6 +1217,10 @@ export default function MainContent({
 
               onCreateCollection={
                 handleCreateCollection
+              }
+
+              uploadStatus={
+                materialUploadStatus
               }
             />
           )}
@@ -1089,8 +1275,10 @@ export default function MainContent({
             <button
               className="button secondary-button"
 
-              onClick={
-                goToPreviousStep
+              onClick={() =>
+                setCurrentStep((prev) =>
+                  Math.max(prev - 1, 1)
+                )
               }
 
               disabled={
@@ -1110,11 +1298,6 @@ export default function MainContent({
             }
 
             disabled={
-              /*
-               * Continue button requires:
-               * - at least one file
-               * - selected collection
-               */
               (currentStep === 1 &&
                 (selectedFiles.length ===
                   0 ||
@@ -1151,4 +1334,4 @@ export default function MainContent({
       </section>
     </main>
   );
-};
+}
