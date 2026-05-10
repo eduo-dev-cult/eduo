@@ -1,6 +1,6 @@
 spring.application.name=eduo
 ###########################################
-##### BEGIN  DATABASE #####################
+############ BEGIN DATABASE ###############
 ###########################################
 spring.datasource.username=postgres (probably change this)
 spring.datasource.password=root (probably change this)
@@ -25,5 +25,17 @@ spring.sql.init.mode=always
     # runs some initialization intended for in-memory dbs, in this case to fill the db with test data
     # data.sql checks if a specific user exists and aborts to not generate duplicates, because these are not checked currently
 ###########################################
-####### END DATABASE ######################
+############# END DATABASE ################
 ###########################################
+
+###########################################
+# Springdoc ###############################
+###########################################
+# Enable the raw OpenAPI spec endpoint
+springdoc.api-docs.enabled=true
+
+# Enable Swagger UI
+springdoc.swagger-ui.enabled=true
+
+# Optional: where Swagger UI lives (this is the default)
+springdoc.swagger-ui.path=/swagger-ui.html
