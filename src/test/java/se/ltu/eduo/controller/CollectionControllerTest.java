@@ -238,14 +238,14 @@ class CollectionControllerTest {
     @Test
     void createGeneration_returns201_withEmptySourceMaterials() throws Exception {
         Collection collection = persistCollection(persistUser());
+        SourceMaterial material = persistMaterial(collection.getId());
+        CreateGenerationRequest request = TestDataGenerator.validGenerationRequest(material.getId());
 
         mockMvc.perform(post("/collections/{id}/generations", collection.getId())
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content("""
-                                {"sourceMaterialIds":[]}
-                                """))
+                        .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isCreated())
-                .andExpect(jsonPath("$.quiz").exists());
+                .andExpect(jsonPath("$.quiz.rawContent").value("ett dokument med frågor"));
     }
 
     // ---------------------------------------------------------------
