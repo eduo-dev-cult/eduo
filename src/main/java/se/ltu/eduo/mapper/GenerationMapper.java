@@ -3,6 +3,7 @@ package se.ltu.eduo.mapper;
 import org.mapstruct.*;
 import se.ltu.eduo.dto.CollectionDto;
 import se.ltu.eduo.dto.GenerationDto;
+import se.ltu.eduo.dto.request.CreateGenerationRequest;
 import se.ltu.eduo.model.collection.Generation;
 import se.ltu.eduo.model.collection.GenerationSourceMaterial;
 import se.ltu.eduo.model.collection.Quiz;
@@ -11,6 +12,11 @@ import se.ltu.eduo.model.collection.Quiz;
 public interface GenerationMapper {
     @Mapping(target = "sourceMaterials", ignore = true)
     Generation toEntity(GenerationDto generationDto);
+
+    //för mapping av CreateGenerationRequest till Generation i createGeneration
+    @Mapping(target = "collection", ignore = true)
+    @Mapping(target = "sourceMaterials", ignore = true)
+    Generation toEntity(CreateGenerationRequest request);
 
     @AfterMapping
     default void linkSourceMaterials(@MappingTarget Generation generation)
