@@ -1,6 +1,16 @@
 package se.ltu.eduo.model.collection;
 
 public enum GenerationLanguage {
-    ENGLISH,
-    SWEDISH
+    ENGLISH("English"),
+    SWEDISH("Swedish");
+
+    private final String language;
+
+    GenerationLanguage(String language){
+        this.language = language;
+    }
+
+    public String language(){
+        return language;
+    }
 }
