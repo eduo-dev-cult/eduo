@@ -2,10 +2,11 @@ package se.ltu.eduo.service;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import se.ltu.eduo.dto.GenerationDto;
+import se.ltu.eduo.dto.request.CreateGenerationRequest;
+import se.ltu.eduo.mapper.GenerationMapper;
 import se.ltu.eduo.model.collection.Generation;
-
-
-import java.util.List;
+import se.ltu.eduo.model.collection.Quiz;
 import java.util.UUID;
 
 @RequiredArgsConstructor
@@ -16,35 +17,46 @@ public class StudyQuestionService {
     private final FileService fileService;
     private final PromptService promptService;
     private final LlmService llmService;
+    private final GenerationMapper generationMapper;
+    private final SettingsService settingsService;
 
 
     @Transactional
-    public UUID generateStudyQuestions(UUID collectionId, UUID sourceMaterialId) {
+    public GenerationDto generateStudyQuestions(UUID collectionId, CreateGenerationRequest request) {
 
         // Vid generering skapas en tabell för generering i databasen
-        // Detta kräver både projectId och sourceMaterialId
-        Generation generation = collectionService.createGeneration(collectionId, List.of(sourceMaterialId));
+        // Detta kräver både collectiontId och en CreateGenerationRequest
+        Generation generation = collectionService.createGeneration(collectionId, request);
+
+        // extraherar första id från en lista av sourceMaterialId
+        UUID sourceMaterialId = request.sourceMaterials()[0];
 
         // Efter genererings tabellen har skapad behöver vi en string av filen
         // som ska in till llm.
         String fileContent = fileService.getFileAsString(sourceMaterialId);
 
+        // Hämtar en färdig string med settingsinstruktioner
+        String settings = settingsService.allSettings(request);
+
         // Stringen är bara en del av promten, vi behöver också lägga till instruktioner
         // Detta görs via promtService
-        String prompt = promptService.buildPrompt(fileContent);
+        String prompt = promptService.buildPrompt(fileContent, settings);
 
         // llmService skickar promten till llm och tar emot en string output
         String output = llmService.generateStudyQuestions(prompt);
 
         //Vi behöver skapa en quiz tabell där vi lagrar output
-        collectionService.createQuiz(
+        Quiz quiz = collectionService.createQuiz(
                 generation.getId(),
                 "Quiz " + generation.getId(),
                 output
         );
 
-        //returnerar bara id sålänge, inte output
-        return generation.getId();
+
+        generation.setQuiz(quiz);
+
+        //returnerar en generationDto object
+        return generationMapper.toDto(generation);
     }
 }
 
