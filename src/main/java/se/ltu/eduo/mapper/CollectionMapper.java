@@ -46,8 +46,7 @@ public interface CollectionMapper {
     @Mapping(target = "uploadedAt", source = "sourceMaterial.uploadedAt")
     CollectionDto.SourceMaterialDto toDto(GenerationSourceMaterial gsm);
 
-    // Breaks the CollectionDto → GenerationDto → CollectionDto cycle by dropping the back-reference.
-    @Mapping(target = "collection", ignore = true)
+
     GenerationDto toDto(Generation generation);
 
     @Mapping(target = "sourceMaterials", ignore = true)

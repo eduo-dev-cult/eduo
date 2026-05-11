@@ -35,6 +35,7 @@ public interface GenerationMapper {
         }
     }
 
+    @Mapping(target = "collectionId", source = "collection.id")
     GenerationDto toDto(Generation generation);
 
     @Mapping(target = "id", source = "sourceMaterial.id")

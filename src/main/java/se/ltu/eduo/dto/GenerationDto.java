@@ -2,7 +2,6 @@ package se.ltu.eduo.dto;
 
 import lombok.Getter;
 import lombok.Setter;
-import lombok.Value;
 import se.ltu.eduo.model.collection.Generation;
 import se.ltu.eduo.model.collection.GenerationFocusArea;
 import se.ltu.eduo.model.collection.GenerationLanguage;
@@ -24,7 +23,7 @@ public class GenerationDto implements Serializable {
     Instant updatedAt;
 
     //relations
-    CollectionDto collection; //reduce to id?
+    UUID collectionId;
     QuizDto quiz; //the quiz that was generated should be contained due to 1:1
     List<CollectionDto.SourceMaterialDto> sourceMaterials; //materials used list (metadata only)
     //settings
