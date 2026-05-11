@@ -63,6 +63,11 @@ public class CollectionService {
                                    .orElseThrow(() -> new EntityNotFoundException("collection not found with this ID: " + collectionId));
     }
 
+    @Transactional(readOnly = true)
+    public List<Collection> getUserCollections(Integer userId) throws EntityNotFoundException{
+        return collectionRepository.findAllByOwnerId(userId);
+    }
+
     /**
      * Updates the name of an existing collection and returns the saved state.
      * {@code updatedAt} is managed by {@link org.hibernate.annotations.UpdateTimestamp}
