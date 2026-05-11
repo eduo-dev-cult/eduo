@@ -5,6 +5,7 @@ import org.springframework.transaction.annotation.Transactional;
 import se.ltu.eduo.dto.GenerationDto;
 import se.ltu.eduo.dto.request.CreateGenerationRequest;
 import se.ltu.eduo.mapper.GenerationMapper;
+import se.ltu.eduo.mapper.QuizMapper;
 import se.ltu.eduo.model.collection.Generation;
 import se.ltu.eduo.model.collection.Quiz;
 import java.util.UUID;
@@ -19,6 +20,7 @@ public class StudyQuestionService {
     private final LlmService llmService;
     private final GenerationMapper generationMapper;
     private final SettingsService settingsService;
+    private final QuizMapper quizMapper;
 
 
     @Transactional
@@ -52,11 +54,17 @@ public class StudyQuestionService {
                 output
         );
 
+        quiz = collectionService.getQuiz(quiz.getId());
 
-        generation.setQuiz(quiz);
+        //System.out.println("id is +"+quiz.getId()+" and content is "+quiz.getRawContent());
+        //generation = collectionService.getGeneration(generation.getId());
+        //System.out.println(generation.getQuiz().getRawContent());
+
+        GenerationDto argh = generationMapper.toDto(generation);
+        argh.setQuiz(quizMapper.toDto(quiz));
 
         //returnerar en generationDto object
-        return generationMapper.toDto(generation);
+        return argh;
     }
 }
 
