@@ -37,9 +37,9 @@ public record CreateGenerationRequest(
     boolean questions, //must always generate questions
 
     //should there be a quiz description, answer explanations or quiz description (all optional)
-    boolean correctAnswers,
-    boolean explanations,
-    boolean description
+    Boolean correctAnswers,
+    Boolean explanations,
+    Boolean description
     // endregion
 ) {
     @AssertTrue(message = "At least one difficulty option must be selected")
@@ -50,5 +50,11 @@ public record CreateGenerationRequest(
     @AssertTrue(message = "At least one question type must be selected")
     public boolean isAtLeastOneQuestionTypeSelected() {
         return openEnded || trueFalse || questions;
+    }
+
+    public CreateGenerationRequest {
+        correctAnswers = correctAnswers != null ? correctAnswers : false;
+        explanations = explanations != null ? explanations : false;
+        description = description != null ? description : false;
     }
 }
