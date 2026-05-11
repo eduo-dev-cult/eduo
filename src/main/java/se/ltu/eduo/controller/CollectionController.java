@@ -120,13 +120,12 @@ public class CollectionController {
                                                           @Valid @RequestBody CreateGenerationRequest request) {
         logger.atDebug().log("Received request to create generation for collection");
         //step 1 validate data - handled by @Valid annotation in method header
-
         //step 2 call StudyQuestionService with request
-        //TODO proper request type
+        GenerationDto response = studyQuestionService.generateStudyQuestions(collectionId, request);
         //GenerationDto generationdto = studyQuestionService.generateStudyQuestions(request);
 
         //step 3 return generationdto containing generated quiz
-        return ResponseEntity.status(HttpStatus.CREATED).build(); //fixme should have content
+        return ResponseEntity.status(HttpStatus.CREATED).body(response); //fixme should have content
     }
 
     @GetMapping("/{collectionId}/generations/{generationId}")
