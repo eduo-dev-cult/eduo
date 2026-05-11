@@ -10,10 +10,10 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.transaction.annotation.Transactional;
 import se.ltu.eduo.TestContainersInitializer;
+import se.ltu.eduo.TestDataGenerator;
 import se.ltu.eduo.model.collection.*;
 import se.ltu.eduo.repository.*;
 
-import java.util.List;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -60,9 +60,8 @@ class CollectionServiceTest {
     @Autowired
     private QuizRepository quizRepository;
 
-    /** Creates a real User row so project FK references resolve correctly. */
     private Integer persistUser() {
-        return authService.createUser("Test", "User", "tuser", "pass").getId();
+        return TestDataGenerator.persistUser(authService);
     }
 
     // ---------------------------------------------------------------
@@ -212,7 +211,7 @@ class CollectionServiceTest {
     void deleteCollection_cascadesToGenerations() {
         Integer userId = persistUser();
         Collection collection = collectionService.createCollection(userId, "Intro to Java");
-        Generation generation = collectionService.createGeneration(collection.getId(), List.of());
+        Generation generation = collectionService.createGeneration(collection.getId(), TestDataGenerator.validGenerationRequest());
         UUID generationId = generation.getId();
 
         entityManager.flush();
@@ -333,7 +332,7 @@ class CollectionServiceTest {
         Integer userId = persistUser();
         Collection collection = collectionService.createCollection(userId, "Intro to Java");
 
-        Generation generation = collectionService.createGeneration(collection.getId(), List.of());
+        Generation generation = collectionService.createGeneration(collection.getId(), TestDataGenerator.validGenerationRequest());
 
         assertThat(generation.getId()).isNotNull();
         assertThat(generationRepository.findById(generation.getId())).isPresent();
@@ -353,7 +352,7 @@ class CollectionServiceTest {
         SourceMaterial mat2 = collectionService.createSourceMaterial(
                 collection.getId(), "b.pdf", "application/pdf", new byte[]{2});
 
-        collectionService.createGeneration(collection.getId(), List.of(mat1.getId(), mat2.getId()));
+        collectionService.createGeneration(collection.getId(), TestDataGenerator.validGenerationRequest(mat1.getId(), mat2.getId()));
 
         assertThat(generationSourceMaterialRepository.count()).isEqualTo(2);
     }
@@ -363,7 +362,7 @@ class CollectionServiceTest {
      */
     @Test
     void createGeneration_throwsEntityNotFoundException_whenProjectNotFound() {
-        assertThatThrownBy(() -> collectionService.createGeneration(UUID.randomUUID(), List.of()))
+        assertThatThrownBy(() -> collectionService.createGeneration(UUID.randomUUID(), TestDataGenerator.validGenerationRequest()))
                 .isInstanceOf(EntityNotFoundException.class);
     }
 
@@ -378,7 +377,7 @@ class CollectionServiceTest {
     void getGeneration_returnsGeneration_whenExists() {
         Integer userId = persistUser();
         Collection collection = collectionService.createCollection(userId, "Intro to Java");
-        Generation created = collectionService.createGeneration(collection.getId(), List.of());
+        Generation created = collectionService.createGeneration(collection.getId(), TestDataGenerator.validGenerationRequest());
 
         Generation found = collectionService.getGeneration(created.getId());
 
@@ -405,7 +404,7 @@ class CollectionServiceTest {
     void deleteGeneration_removesGenerationRow() {
         Integer userId = persistUser();
         Collection collection = collectionService.createCollection(userId, "Intro to Java");
-        Generation generation = collectionService.createGeneration(collection.getId(), List.of());
+        Generation generation = collectionService.createGeneration(collection.getId(), TestDataGenerator.validGenerationRequest());
         UUID generationId = generation.getId();
 
         collectionService.deleteGeneration(generationId);
@@ -428,7 +427,7 @@ class CollectionServiceTest {
     void createQuiz_persistsQuizWithCorrectContent() {
         Integer userId = persistUser();
         Collection collection = collectionService.createCollection(userId, "Intro to Java");
-        Generation generation = collectionService.createGeneration(collection.getId(), List.of());
+        Generation generation = collectionService.createGeneration(collection.getId(), TestDataGenerator.validGenerationRequest());
 
         Quiz quiz = collectionService.createQuiz(generation.getId(), "Week 1 Quiz", "{\"questions\":[]}");
 
@@ -458,7 +457,7 @@ class CollectionServiceTest {
     void getQuiz_returnsQuiz_whenExists() {
         Integer userId = persistUser();
         Collection collection = collectionService.createCollection(userId, "Intro to Java");
-        Generation generation = collectionService.createGeneration(collection.getId(), List.of());
+        Generation generation = collectionService.createGeneration(collection.getId(), TestDataGenerator.validGenerationRequest());
         Quiz created = collectionService.createQuiz(generation.getId(), "Week 1 Quiz", "raw content");
 
         Quiz found = collectionService.getQuiz(created.getId());
@@ -486,7 +485,7 @@ class CollectionServiceTest {
     void updateQuiz_updatesNameAndRawContent() {
         Integer userId = persistUser();
         Collection collection = collectionService.createCollection(userId, "Intro to Java");
-        Generation generation = collectionService.createGeneration(collection.getId(), List.of());
+        Generation generation = collectionService.createGeneration(collection.getId(), TestDataGenerator.validGenerationRequest());
         Quiz quiz = collectionService.createQuiz(generation.getId(), "Old Name", "old content");
 
         Quiz updated = collectionService.updateQuiz(quiz.getId(), "New Name", "new content");
@@ -515,7 +514,7 @@ class CollectionServiceTest {
     void deleteQuiz_removesQuizRow() {
         Integer userId = persistUser();
         Collection collection = collectionService.createCollection(userId, "Intro to Java");
-        Generation generation = collectionService.createGeneration(collection.getId(), List.of());
+        Generation generation = collectionService.createGeneration(collection.getId(), TestDataGenerator.validGenerationRequest());
         Quiz quiz = collectionService.createQuiz(generation.getId(), "Week 1 Quiz", "content");
         UUID quizId = quiz.getId();
 
