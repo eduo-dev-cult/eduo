@@ -1,9 +1,17 @@
 # abort all changes if error (safer)
+[CmdletBinding()]
+# Use -UseGpu switch to enable GPU support (requires Docker Desktop + WSL2 GPU support + NVIDIA drivers)
+param(
+    [switch]$UseGpu
+)
+
 $ErrorActionPreference = "Stop"
 
 # Resolve the infra/llm directory from the script location so the rest of the
 # paths still work when the script is started from another folder.
 $LlmDir = Split-Path -Parent $PSScriptRoot
+$ComposeFile = Join-Path $LlmDir "docker-compose.yml"
+$GpuComposeFile = Join-Path $LlmDir "docker-compose.windows-gpu.yml"
 
 # Default to the same Spring profile config file the application reads.
 $DefaultConfigFile = Join-Path $LlmDir "..\..\src\main\resources\application-ollama.properties"
@@ -66,8 +74,20 @@ if ($USE_DOCKER) {
         }
     }
 
+    $composeArgs = @("compose", "-f", $ComposeFile)
+    # If GPU support is requested, add the override compose file which includes the necessary NVIDIA runtime settings.
+    if ($UseGpu) {
+        if (Test-Path $GpuComposeFile) {
+            $composeArgs += @("-f", $GpuComposeFile)
+            Write-Host "GPU override enabled. Docker will request NVIDIA GPU access for Ollama."
+        } else {
+            Write-Error "GPU override file not found: $GpuComposeFile"
+            exit 1
+        }
+    }
+
     Write-Host "Starting Ollama via Docker..."
-    docker compose -f (Join-Path $LlmDir "docker-compose.yml") up -d
+    & docker @composeArgs up -d
 
     Write-Host "Waiting for Ollama to be ready..."
 
@@ -107,6 +127,11 @@ Write-Host "Setup complete."
 Write-Host "Config file: $ConfigFile"
 Write-Host "Ollama running at: $URL"
 Write-Host "Model: $MODEL"
+if ($UseGpu) {
+    Write-Host "GPU mode: enabled "
+} else {
+    Write-Host "GPU mode: disabled (requires Docker Desktop + WSL2 GPU support + NVIDIA drivers)"
+}
 Write-Host "Test with:"
 Write-Host "curl $URL/api/generate -d '{\"model\":\"$MODEL\",\"prompt\":\"Hello\",\"stream\":false}'"
 Write-Host "===================================="
