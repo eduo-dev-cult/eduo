@@ -46,9 +46,8 @@ public class CollectionController {
     // -------------------------------------------------------------------------
 
     @PostMapping
-    public ResponseEntity<CollectionDto> createCollection(@RequestBody CreateCollectionRequest request) {
+    public ResponseEntity<CollectionDto> createCollection(@Valid @RequestBody CreateCollectionRequest request) {
         //fixme ide reports xss risk in method, might be false positive
-        if(request.name() == null || request.name().isBlank()) {return  ResponseEntity.badRequest().build();}
         Collection collection = collectionService.createCollection(request.userId(), request.name());
         return ResponseEntity.status(HttpStatus.CREATED).body(collectionMapper.toDto(collection));
     }
