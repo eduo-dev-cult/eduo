@@ -118,12 +118,8 @@ public class CollectionController {
     public ResponseEntity<GenerationDto> createGeneration(@PathVariable UUID collectionId,
                                                           @Valid @RequestBody CreateGenerationRequest request) {
         logger.atDebug().log("Received request to create generation for collection "+collectionId);
-        //step 1 validate data - handled by @Valid annotation in method header
-        //step 2 call StudyQuestionService with request
         GenerationDto response = studyQuestionService.generateStudyQuestions(collectionId, request);
-        //GenerationDto generationdto = studyQuestionService.generateStudyQuestions(request);
 
-        //step 3 return generationdto containing generated quiz
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
