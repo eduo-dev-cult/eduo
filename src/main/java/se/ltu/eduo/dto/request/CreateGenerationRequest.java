@@ -49,7 +49,7 @@ public record CreateGenerationRequest(
 
     @AssertTrue(message = "At least one question type must be selected")
     public boolean isAtLeastOneQuestionTypeSelected() {
-        return openEnded || trueFalse || questions;
+        return openEnded || trueFalse || multipleChoice;
     }
 
     public CreateGenerationRequest {
