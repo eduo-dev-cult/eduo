@@ -47,7 +47,7 @@ public class CollectionController {
 
     @PostMapping
     public ResponseEntity<CollectionDto> createCollection(@RequestBody CreateCollectionRequest request) {
-        //fixme ide reports xss risk in method
+        //fixme ide reports xss risk in method, might be false positive
         if(request.name() == null || request.name().isBlank()) {return  ResponseEntity.badRequest().build();}
         Collection collection = collectionService.createCollection(request.userId(), request.name());
         return ResponseEntity.status(HttpStatus.CREATED).body(collectionMapper.toDto(collection));
@@ -118,14 +118,14 @@ public class CollectionController {
     @PostMapping("/{collectionId}/generations")
     public ResponseEntity<GenerationDto> createGeneration(@PathVariable UUID collectionId,
                                                           @Valid @RequestBody CreateGenerationRequest request) {
-        logger.atDebug().log("Received request to create generation for collection");
+        logger.atDebug().log("Received request to create generation for collection "+collectionId);
         //step 1 validate data - handled by @Valid annotation in method header
         //step 2 call StudyQuestionService with request
         GenerationDto response = studyQuestionService.generateStudyQuestions(collectionId, request);
         //GenerationDto generationdto = studyQuestionService.generateStudyQuestions(request);
 
         //step 3 return generationdto containing generated quiz
-        return ResponseEntity.status(HttpStatus.CREATED).body(response); //fixme should have content
+        return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
     @GetMapping("/{collectionId}/generations/{generationId}")
