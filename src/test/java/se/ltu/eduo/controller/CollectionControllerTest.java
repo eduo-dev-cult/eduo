@@ -118,6 +118,19 @@ class CollectionControllerTest {
                 .andExpect(status().isNotFound());
     }
 
+    @Test
+    void getCollection_nestedGenerations_haveCollectionIdPopulated() throws Exception {
+        Collection collection = persistCollection(persistUser());
+        SourceMaterial material = persistMaterial(collection.getId());
+        collectionService.createGeneration(collection.getId(), TestDataGenerator.validGenerationRequest(material.getId()));
+        entityManager.flush();
+        entityManager.clear();
+
+        mockMvc.perform(get("/collections/{id}", collection.getId()))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.generations[0].collectionId").value(collection.getId().toString()));
+    }
+
     // ---------------------------------------------------------------
     // PATCH /collections/{collectionId}
     // ---------------------------------------------------------------
