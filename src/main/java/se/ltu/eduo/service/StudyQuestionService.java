@@ -31,7 +31,7 @@ public class StudyQuestionService {
         Generation generation = collectionService.createGeneration(collectionId, request);
 
         // extraherar första id från en lista av sourceMaterialId
-        UUID sourceMaterialId = request.sourceMaterials()[0];
+        UUID sourceMaterialId = request.sourceMaterials()[0]; //TODO use all materials rather than only the first
 
         // Efter genererings tabellen har skapad behöver vi en string av filen
         // som ska in till llm.
