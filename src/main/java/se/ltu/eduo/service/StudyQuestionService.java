@@ -54,17 +54,11 @@ public class StudyQuestionService {
                 output
         );
 
-        quiz = collectionService.getQuiz(quiz.getId());
+        //lägg till skapad quiz i generation
+        generation.setQuiz(quiz);
 
-        //System.out.println("id is +"+quiz.getId()+" and content is "+quiz.getRawContent());
-        //generation = collectionService.getGeneration(generation.getId());
-        //System.out.println(generation.getQuiz().getRawContent());
-
-        GenerationDto argh = generationMapper.toDto(generation);
-        argh.setQuiz(quizMapper.toDto(quiz));
-
-        //returnerar en generationDto object
-        return argh;
+        //konvertera till dto och returnerar
+        return generationMapper.toDto(generation);
     }
 }
 
