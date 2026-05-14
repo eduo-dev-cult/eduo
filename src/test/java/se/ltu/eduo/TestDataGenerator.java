@@ -60,4 +60,34 @@ public class TestDataGenerator {
                 false, false, false
         );
     }
+
+    /** Fails {@code mustHaveATopicIfTopicsSelected} — focus area is TOPICS but topics string is empty. */
+    public static CreateGenerationRequest invalidRequest_topicsFocusWithNoTopics(UUID... sourceMaterialIds) {
+        return new CreateGenerationRequest(
+                sourceMaterialIds,
+                10,
+                GenerationLanguage.ENGLISH,
+                GenerationFocusArea.TOPICS,
+                "",
+                true, true, false,
+                false, false, true,
+                true,
+                false, false, false
+        );
+    }
+
+    /** Passes {@code mustHaveATopicIfTopicsSelected} — focus area is TOPICS with a non-empty topics string. */
+    public static CreateGenerationRequest validRequest_topicsFocusWithTopics(UUID... sourceMaterialIds) {
+        return new CreateGenerationRequest(
+                sourceMaterialIds,
+                10,
+                GenerationLanguage.ENGLISH,
+                GenerationFocusArea.TOPICS,
+                "Agile methodology",
+                true, true, false,
+                false, false, true,
+                true,
+                false, false, false
+        );
+    }
 }

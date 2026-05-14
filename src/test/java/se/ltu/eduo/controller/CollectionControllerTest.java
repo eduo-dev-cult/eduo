@@ -261,6 +261,32 @@ class CollectionControllerTest {
                 .andExpect(jsonPath("$.quiz.rawContent").value("ett dokument med frågor"));
     }
 
+    @Test
+    void createGeneration_returns400_whenTopicsFocusAreaHasNoTopics() throws Exception {
+        Collection collection = persistCollection(persistUser());
+        SourceMaterial material = persistMaterial(collection.getId());
+        CreateGenerationRequest request = TestDataGenerator.invalidRequest_topicsFocusWithNoTopics(material.getId());
+
+        mockMvc.perform(post("/collections/{id}/generations", collection.getId())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.fields.topicsSpecifiedWhenFocusAreaIsTopics").exists());
+    }
+
+    @Test
+    void createGeneration_returns201_whenTopicsFocusAreaHasTopics() throws Exception {
+        Collection collection = persistCollection(persistUser());
+        SourceMaterial material = persistMaterial(collection.getId());
+        CreateGenerationRequest request = TestDataGenerator.validRequest_topicsFocusWithTopics(material.getId());
+
+        mockMvc.perform(post("/collections/{id}/generations", collection.getId())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.quiz").exists());
+    }
+
     // ---------------------------------------------------------------
     // GET /collections/{collectionId}/generations/{generationId}
     // ---------------------------------------------------------------
