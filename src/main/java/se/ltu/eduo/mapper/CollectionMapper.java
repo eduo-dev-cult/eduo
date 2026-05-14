@@ -46,7 +46,7 @@ public interface CollectionMapper {
     @Mapping(target = "uploadedAt", source = "sourceMaterial.uploadedAt")
     CollectionDto.SourceMaterialDto toDto(GenerationSourceMaterial gsm);
 
-
+    @Mapping(target = "collectionId", source = "collection.id")
     GenerationDto toDto(Generation generation);
 
     @Mapping(target = "sourceMaterials", ignore = true)
