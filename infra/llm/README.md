@@ -69,7 +69,17 @@ Expected output  (might take a couple of seconds first time, loading model into 
 powershell -ExecutionPolicy Bypass -File scripts/setup_llm.ps1
 ```
 
+To request GPU access on Windows only:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File scripts/setup_llm.ps1 -UseGpu
+```
+
+This uses `docker-compose.windows-gpu.yml` in addition to the base compose file, so Linux can keep using the default CPU-only setup.
+
 The script uses the model selected in `src/main/resources/application-ollama.properties`.
+
+Windows GPU mode requires Docker Desktop with the WSL 2 backend, working NVIDIA drivers, and Docker GPU support on the host. If those are missing, Docker will fail to start the GPU-enabled container.
 
 #### Verify that it works:
 
@@ -97,6 +107,14 @@ From the project root (where `docker-compose.yml` is located):
 ```bash  ```
 docker compose up -d
 ```
+
+Windows-only GPU variant:
+
+```powershell
+docker compose -f docker-compose.yml -f docker-compose.windows-gpu.yml up -d
+```
+
+This keeps the base file CPU-only and adds GPU access only when the Windows override is explicitly included.
 
 #### 2. Verify that it is running:
 
@@ -158,4 +176,10 @@ $response.response
 Run this from this directory (where the `docker-compose.yml` is.):
 ```bash
 docker compose down
+```
+
+If you started the Windows GPU variant, stop it with the same file pair:
+
+```powershell
+docker compose -f docker-compose.yml -f docker-compose.windows-gpu.yml down
 ```
