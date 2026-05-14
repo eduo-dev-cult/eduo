@@ -33,8 +33,11 @@ public record CreateGenerationRequest(
     boolean multipleChoice,
     boolean openEnded,
     boolean trueFalse,
+
+    //must always generate questions
     @AssertTrue
-    boolean questions, //must always generate questions
+    boolean questions, //fixme carries no information if always true
+
 
     //should there be a quiz description, answer explanations or quiz description (all optional)
     Boolean correctAnswers,
