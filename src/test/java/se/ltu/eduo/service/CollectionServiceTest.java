@@ -222,18 +222,6 @@ class CollectionServiceTest {
         assertThat(generationRepository.findById(generationId)).isEmpty();
     }
 
-    /**
-     * Deletes a source material by ID. The service is the single entry point
-     * for deletion so that ownership checks and other pre-deletion logic have
-     * one place to live when added later.
-     */
-    @Transactional
-    public void deleteSourceMaterial(UUID sourceMaterialId) {
-        SourceMaterial material = sourceMaterialRepository.findById(sourceMaterialId)
-                                                          .orElseThrow(() -> new EntityNotFoundException("Source material not found: " + sourceMaterialId));
-        sourceMaterialRepository.delete(material);
-    }
-
     // ---------------------------------------------------------------
     // createSourceMaterial
     // ---------------------------------------------------------------
