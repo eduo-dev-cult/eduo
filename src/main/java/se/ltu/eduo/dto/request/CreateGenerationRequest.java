@@ -55,6 +55,14 @@ public record CreateGenerationRequest(
         return openEnded || trueFalse || multipleChoice;
     }
 
+    @AssertTrue(message = "Topics must be specified if they are the focus area")
+    public boolean isTopicsSpecifiedWhenFocusAreaIsTopics() {
+        if(focusArea != GenerationFocusArea.TOPICS)
+        {
+            return true;
+        }else return topics != null && !topics.isEmpty();
+    }
+
     public CreateGenerationRequest {
         correctAnswers = correctAnswers != null ? correctAnswers : false;
         explanations = explanations != null ? explanations : false;
