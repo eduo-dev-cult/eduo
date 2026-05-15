@@ -1,14 +1,15 @@
-package se.ltu.eduo.service;
+package se.ltu.eduo.collection.service;
 
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import se.ltu.eduo.dto.request.CreateGenerationRequest;
-import se.ltu.eduo.mapper.GenerationMapper;
-import se.ltu.eduo.model.User;
-import se.ltu.eduo.model.collection.*;
-import se.ltu.eduo.repository.*;
+import se.ltu.eduo.collection.model.*;
+import se.ltu.eduo.collection.repository.*;
+import se.ltu.eduo.collection.request.CreateGenerationRequest;
+import se.ltu.eduo.collection.mapper.GenerationMapper;
+import se.ltu.eduo.user.model.User;
+import se.ltu.eduo.user.repository.UserRepository;
 
 import java.util.List;
 import java.util.UUID;
@@ -167,8 +168,8 @@ public class CollectionService {
                 sourceMaterialRepository.findAllById(sourceMaterialIds);
 
         List<GenerationSourceMaterial> joins = materials.stream()
-                .map(material -> new GenerationSourceMaterial(generation, material))
-                .toList();
+                                                        .map(material -> new GenerationSourceMaterial(generation, material))
+                                                        .toList();
 
         generation.getSourceMaterials().addAll(joins);
 

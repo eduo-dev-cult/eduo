@@ -1,8 +1,8 @@
-package se.ltu.eduo.mapper;
+package se.ltu.eduo.collection.mapper;
 
 import org.mapstruct.*;
-import se.ltu.eduo.dto.QuizDto;
-import se.ltu.eduo.model.collection.Quiz;
+import se.ltu.eduo.collection.dto.QuizDto;
+import se.ltu.eduo.collection.model.Quiz;
 
 @Mapper(unmappedTargetPolicy = ReportingPolicy.WARN, componentModel = MappingConstants.ComponentModel.SPRING)
 public interface QuizMapper {

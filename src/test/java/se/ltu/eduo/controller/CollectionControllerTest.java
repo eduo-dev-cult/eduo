@@ -16,12 +16,12 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.transaction.annotation.Transactional;
 import se.ltu.eduo.TestContainersInitializer;
 import se.ltu.eduo.TestDataGenerator;
-import se.ltu.eduo.dto.request.CreateGenerationRequest;
-import se.ltu.eduo.model.collection.Collection;
-import se.ltu.eduo.model.collection.Generation;
-import se.ltu.eduo.model.collection.SourceMaterial;
-import se.ltu.eduo.service.AuthService;
-import se.ltu.eduo.service.CollectionService;
+import se.ltu.eduo.collection.request.CreateGenerationRequest;
+import se.ltu.eduo.collection.model.Collection;
+import se.ltu.eduo.collection.model.Generation;
+import se.ltu.eduo.collection.model.SourceMaterial;
+import se.ltu.eduo.user.service.AuthService;
+import se.ltu.eduo.collection.service.CollectionService;
 import tools.jackson.databind.ObjectMapper;
 
 import java.util.UUID;
