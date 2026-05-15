@@ -7,7 +7,7 @@ import org.springframework.web.bind.annotation.*;
 import se.ltu.eduo.user.request.LoginRequest;
 import se.ltu.eduo.user.request.RegisterRequest;
 import se.ltu.eduo.user.dto.UserDto;
-import se.ltu.eduo.common.exception.UsernameAlreadyExistsException;
+import se.ltu.eduo.exception.UsernameAlreadyExistsException;
 import se.ltu.eduo.user.mapper.UserMapper;
 import se.ltu.eduo.user.model.User;
 import se.ltu.eduo.user.service.AuthService;
