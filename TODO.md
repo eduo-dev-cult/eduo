@@ -4,31 +4,24 @@
 
 ### Bugs / correctness
 
-- [ ] `CreateGenerationRequest.questions` field with `@AssertTrue` (CreateGenerationRequest.java:37-39) — forces every client to send `"questions": true`. Comment says "must always generate questions" but if always-true, the field carries no information. Decide: drop the field, or document the intent and validate it consistently.
+- [ ] `CreateGenerationRequest.questions` field with `@AssertTrue` (CreateGenerationRequest.java:38-39) — forces every client to send `"questions": true`. Comment says "must always generate questions" but if always-true, the field carries no information. Decide: drop the field (and the matching `questions` column in `Generation`), or document the intent and validate it consistently.
 - [ ] `StudyQuestionService.generateStudyQuestions` (StudyQuestionService.java:34) processes only `request.sourceMaterials()[0]` even though the request accepts a list and `createGeneration` persists join rows for all of them. Either restrict the request to a single material or feed all materials into the prompt.
 
 ### Code hygiene before opening the PR
 
-- [ ] Commented-out scaffolding in CollectionController (`//GenerationDto generationdto = studyQuestionService.generateStudyQuestions(request);` at line 124). Remove.
-- [ ] Three unresolved XSS fixme comments without investigation (UserController.java:29 `//fixme xss warning`, CollectionController.java:50 `//fixme ide reports xss risk in method, might be false positive`, CollectionController.java:88 `//fixme ide reports xss risk in method`). Either remediate or document why the warning is a false positive and remove the fixme.
-- [ ] Step-by-step scaffolding comments left in `CollectionController.createGeneration` (lines 121-126, "step 1 / step 2 / step 3"). Remove now that the method is implemented.
+- [ ] Three unresolved XSS fixme comments without investigation (UserController.java:29 `//fixme xss warning`, CollectionController.java:50 `//fixme ide reports xss risk in method, might be false positive`, CollectionController.java:88 `//fixme ide reports xss risk in method`). All three are false positives: DTO serialization goes through Jackson (which escapes JSON), and the filename is already sanitised in `downloadMaterial` before use in a header. Document this conclusion and remove the fixme comments.
 - [ ] `SettingsService.allSettings` output formatting glitches (SettingsService.java):
   - line 20: prefixes value with `"Language: "` even though the section header `"LANGUAGE:"` already labels it (redundant).
   - line 23: `"Focus area =  "` has a double space.
   - Casing/style is inconsistent across sections: lowercase difficulty tokens vs. `"true/false"` vs. `"multiple choice"`. Worth a quick unit test that pins the rendered prompt fragment.
-- [ ] `application.properties:66` ships with `spring.profiles.active=mock` and a comment `# fixme should be ollama in prod`. Decide before merge: either leave `mock` as the default and let prod override via env/profile, or flip the default. Either way, address the fixme.
+- [ ] `application.properties` ships with `spring.profiles.active=mock` and a comment `# fixme should be ollama in prod` (line 51). Decide before merge: either leave `mock` as the default and let prod override via env/profile, or flip the default. Either way, remove the fixme.
 - [ ] Test name `createGeneration_returns201_withEmptySourceMaterials` (CollectionControllerTest.java:252) is misleading — the body passes a non-empty `material.getId()` and asserts on the mock LLM's Swedish return string. Rename to reflect what it actually exercises.
-- [ ] OllamaLlmServiceTest: two disabled strategies coexist as comments (lines 61-63: `@Disabled` variant, `@DisabledIfEnvironmentVariable` variant, plus a `//llm-suggested alternative^` label). The test itself uses `assumeTrue` which is fine; clean up the dead commented alternatives.
+- [ ] OllamaLlmServiceTest: dead commented-out disabled strategy at lines 62-63 (`@DisabledIfEnvironmentVariable` variant plus `//llm-suggested alternative^` label). The active `@Disabled` is fine; remove the two dead lines. Also remove the multi-line JavaDoc block on the test method (lines 65-70) — a single-line comment stating the skip condition is sufficient per project conventions.
 
 ### Open questions / design
 
-- [ ] No validation that `topics` is non-empty when `focusArea == TOPICS`. `GenerationFocusArea.format` will print `"Topics: "` with an empty trailing string. Add `@AssertTrue` cross-field check or make `topics` part of the enum's contract.
 - [ ] `CreateGenerationRequest.sourceMaterials` is a `UUID[]` (CreateGenerationRequest.java:16). Switch to `List<UUID>` for consistency with the rest of the codebase and to make MapStruct/Jackson less surprising.
 - [ ] `Generation` entity has three columns flagged `// TODO clearer column name?` (lines 89/93/97): `correct_answers`, `explanations`, `description`. `description` in particular collides semantically with "the quiz description" the same setting controls. Decide naming before the schema ships to prod (cheap now, expensive later).
-
-### Branch hygiene before opening the PR
-
-- [ ] Branch is behind `origin/dev` — `a17e725 feat: add Windows GPU support for Ollama with updated README and setup script` lives on dev but not on this branch, so `git diff origin/dev..HEAD` shows spurious deletions of `infra/llm/docker-compose.windows-gpu.yml`, GPU-related README sections, and PowerShell GPU flags. Merge `dev` again so the PR diff reflects only the work this branch intends.
 
 ## Open — pre-existing (carried over)
 
@@ -38,6 +31,11 @@
 
 ## Closed in this branch
 
+- [x] No validation that `topics` is non-empty when `focusArea == TOPICS` — added `@AssertTrue isTopicsSpecifiedWhenFocusAreaIsTopics()` cross-field check and covering tests (commits `f86f162`, `b5815af`).
+- [x] Regression: `AuthService.createUser` gave every new user a default collection; the persisted `Collection` (referencing `User`) remained in the persistence context when `deleteUser` called `userRepository.deleteById`, causing a flush-time FK violation. Fixed by adding `@OnDelete(action = OnDeleteAction.CASCADE)` to `Collection.owner` so the DB-level cascade mirrors `UserCredential`'s (commit `a428fc3`).
+- [x] Commented-out scaffolding in `CollectionController.createGeneration` (old lines 121-126) removed; method is now clean.
+- [x] Step-by-step "step 1 / step 2 / step 3" scaffolding comments in `createGeneration` removed.
+- [x] Branch was behind `origin/dev` (missing `a17e725`); merged via `5c05c59` — PR diff is now clean.
 - [x] `CreateGenerationRequest.isAtLeastOneQuestionTypeSelected()` included `questions` (always-true) and omitted `multipleChoice` → validator always passed. Fixed: now checks `openEnded || trueFalse || multipleChoice` (commit `100e554`).
 - [x] `CollectionMapper.toDto(Generation)` missing `@Mapping(target = "collectionId", source = "collection.id")` → `collectionId` was null when fetching a collection but populated when fetching a generation directly. Fixed with regression test (commits `8eaccd6`, `7c69869`).
 - [x] `StudyQuestionService` built the response DTO manually via placeholder variable `argh`, re-fetching the quiz separately. Fixed: call `generation.setQuiz(quiz)` in-memory then a single `generationMapper.toDto(generation)` suffices (commit `5eb1be6`).
