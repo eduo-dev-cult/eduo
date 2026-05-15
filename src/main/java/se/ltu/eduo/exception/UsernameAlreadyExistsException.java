@@ -1,4 +1,4 @@
-package se.ltu.eduo.common.exception;
+package se.ltu.eduo.exception;
 
 public class UsernameAlreadyExistsException extends RuntimeException {
     public UsernameAlreadyExistsException(String username) {
