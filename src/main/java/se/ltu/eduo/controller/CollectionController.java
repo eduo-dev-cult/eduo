@@ -1,6 +1,9 @@
 package se.ltu.eduo.controller;
 
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -8,12 +11,16 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import se.ltu.eduo.dto.*;
+import se.ltu.eduo.dto.request.CreateCollectionRequest;
+import se.ltu.eduo.dto.request.CreateGenerationRequest;
+import se.ltu.eduo.dto.request.UpdateProjectRequest;
+import se.ltu.eduo.dto.request.UpdateQuizRequest;
 import se.ltu.eduo.mapper.CollectionMapper;
 import se.ltu.eduo.mapper.GenerationMapper;
 import se.ltu.eduo.mapper.QuizMapper;
 import se.ltu.eduo.model.collection.*;
-import se.ltu.eduo.service.LlmService;
 import se.ltu.eduo.service.CollectionService;
+import se.ltu.eduo.service.StudyQuestionService;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
@@ -26,20 +33,21 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class CollectionController {
 
+    private static final Logger logger =  LoggerFactory.getLogger(CollectionController.class);
+
     private final CollectionService collectionService;
-    private final LlmService llmService;
     private final CollectionMapper collectionMapper;
     private final GenerationMapper generationMapper;
     private final QuizMapper quizMapper;
+    private final StudyQuestionService studyQuestionService;
 
     // -------------------------------------------------------------------------
     // Collections
     // -------------------------------------------------------------------------
 
     @PostMapping
-    public ResponseEntity<CollectionDto> createCollection(@RequestBody CreateCollectionRequest request) {
-        //fixme ide reports xss risk in method
-        if(request.name() == null || request.name().isBlank()) {return  ResponseEntity.badRequest().build();}
+    public ResponseEntity<CollectionDto> createCollection(@Valid @RequestBody CreateCollectionRequest request) {
+        //fixme ide reports xss risk in method, might be false positive
         Collection collection = collectionService.createCollection(request.userId(), request.name());
         return ResponseEntity.status(HttpStatus.CREATED).body(collectionMapper.toDto(collection));
     }
@@ -108,22 +116,11 @@ public class CollectionController {
 
     @PostMapping("/{collectionId}/generations")
     public ResponseEntity<GenerationDto> createGeneration(@PathVariable UUID collectionId,
-                                                          @RequestBody CreateGenerationRequest request) {
-        //TODO AIn var lite för snabb med att bygga prompts utan att använda det planerade systemet. Måste fixas.
-        Generation generation = collectionService.createGeneration(collectionId, request.sourceMaterialIds());
+                                                          @Valid @RequestBody CreateGenerationRequest request) {
+        logger.atDebug().log("Received request to create generation for collection "+collectionId);
+        GenerationDto response = studyQuestionService.generateStudyQuestions(collectionId, request);
 
-        String prompt = request.sourceMaterialIds().stream()
-                .map(collectionService::getSourceMaterial)
-                .map(m -> new String(m.getFileData(), StandardCharsets.UTF_8))
-                .reduce("", (a, b) -> a + "\n\n" + b);
-
-        String rawContent = llmService.generateStudyQuestions(prompt);
-        Quiz quiz = collectionService.createQuiz(generation.getId(), "Quiz", rawContent);
-        // Wire the quiz onto the in-memory entity so the mapper sees it without
-        // a re-fetch (re-fetching returns a stale L1-cached entity with quiz=null).
-        generation.setQuiz(quiz);
-
-        return ResponseEntity.status(HttpStatus.CREATED).body(generationMapper.toDto(generation));
+        return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
     @GetMapping("/{collectionId}/generations/{generationId}")

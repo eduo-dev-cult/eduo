@@ -4,6 +4,8 @@ import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import se.ltu.eduo.dto.request.CreateGenerationRequest;
+import se.ltu.eduo.mapper.GenerationMapper;
 import se.ltu.eduo.model.User;
 import se.ltu.eduo.model.collection.*;
 import se.ltu.eduo.repository.*;
@@ -23,6 +25,7 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class CollectionService {
 
+    private final GenerationMapper generationMapper;
     private final CollectionRepository collectionRepository;
     private final SourceMaterialRepository sourceMaterialRepository;
     private final GenerationRepository generationRepository;
@@ -145,20 +148,32 @@ public class CollectionService {
      * <p>The caller is responsible for subsequently calling
      * {@link #createQuiz(UUID, String, String)} once the AI response is available.
      */
+
     @Transactional
-    public Generation createGeneration(UUID collectionId, List<UUID> sourceMaterialIds) {
+    public Generation createGeneration(UUID collectionId, CreateGenerationRequest request) {
+
         Collection collection = collectionRepository.findById(collectionId)
-                                                    .orElseThrow(() -> new EntityNotFoundException("collection not found: " + collectionId));
+                .orElseThrow(() ->
+                        new EntityNotFoundException("collection not found: " + collectionId)
+                );
 
-        Generation generation = generationRepository.save(new Generation(collection));
+        Generation generation = generationMapper.toEntity(request);
 
-        List<SourceMaterial> materials = sourceMaterialRepository.findAllById(sourceMaterialIds);
+        generation.setCollection(collection);
+
+        List<UUID> sourceMaterialIds = List.of(request.sourceMaterials());
+
+        List<SourceMaterial> materials =
+                sourceMaterialRepository.findAllById(sourceMaterialIds);
+
         List<GenerationSourceMaterial> joins = materials.stream()
-                                                        .map(material -> new GenerationSourceMaterial(generation, material))
-                                                        .toList();
-        generationSourceMaterialRepository.saveAll(joins);
+                .map(material -> new GenerationSourceMaterial(generation, material))
+                .toList();
 
-        return generation;
+        generation.getSourceMaterials().addAll(joins);
+
+        return generationRepository.save(generation);
+
     }
 
     /**

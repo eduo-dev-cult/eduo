@@ -18,9 +18,10 @@ public class AuthService {
 
     private final UserRepository userRepository;
     private final UserCredentialRepository credentialRepository;
+    private final CollectionService collectionService;
 
     /**
-     * Creates a new user and associated credentials.
+     * Creates a new user, associated credentials, and a default collection.
      *
      * @param firstName user's first name
      * @param lastName  user's last name
@@ -29,24 +30,40 @@ public class AuthService {
      * @return the newly created {@link User}
      */
     @Transactional
-    public User createUser(String firstName, String lastName, String username, String password) throws UsernameAlreadyExistsException
-    {
-        //check uniqueness
-        if (credentialRepository.findByUsername(username) != null)
-            throw new UsernameAlreadyExistsException(username);
+    public User createUser(
+            String firstName,
+            String lastName,
+            String username,
+            String password
+    ) throws UsernameAlreadyExistsException {
 
+        // Check that the username is not already taken.
+        if (credentialRepository.findByUsername(username) != null) {
+            throw new UsernameAlreadyExistsException(username);
+        }
+
+        // Create and save the user first, so it gets a database ID.
         User user = new User();
         user.setFirstName(firstName);
         user.setLastName(lastName);
-        userRepository.save(user);
 
+        User savedUser = userRepository.save(user);
+
+        // Create login credentials for the saved user.
         UserCredential credential = new UserCredential();
-        credential.setUser(user);
+        credential.setUser(savedUser);
         credential.setUsername(username);
         credential.setPassword(password);
+
         credentialRepository.save(credential);
 
-        return user;
+        // Every user should always have at least one collection available.
+        collectionService.createCollection(
+                savedUser.getId(),
+                "My Collection"
+        );
+
+        return savedUser;
     }
 
     /**
@@ -60,7 +77,11 @@ public class AuthService {
     @Transactional
     public Optional<User> logInUser(String username, String password) {
         UserCredential credential = credentialRepository.findUserByUsernameAndPassword(username, password);
-        if (credential == null) return Optional.empty();
+
+        if (credential == null) {
+            return Optional.empty();
+        }
+
         Optional<User> user = userRepository.findById(credential.getUser().getId());
 
         if (user.isPresent()) {
@@ -80,7 +101,6 @@ public class AuthService {
     @Transactional
     public void deleteUser(Integer userId) {
         userRepository.deleteById(userId);
-        //fails silently if id does not exist - might be fine?
+        // Fails silently if id does not exist - might be fine?
     }
-
 }

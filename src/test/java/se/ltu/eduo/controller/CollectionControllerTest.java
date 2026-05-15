@@ -15,13 +15,15 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.transaction.annotation.Transactional;
 import se.ltu.eduo.TestContainersInitializer;
+import se.ltu.eduo.TestDataGenerator;
+import se.ltu.eduo.dto.request.CreateGenerationRequest;
 import se.ltu.eduo.model.collection.Collection;
 import se.ltu.eduo.model.collection.Generation;
 import se.ltu.eduo.model.collection.SourceMaterial;
 import se.ltu.eduo.service.AuthService;
 import se.ltu.eduo.service.CollectionService;
+import tools.jackson.databind.ObjectMapper;
 
-import java.util.List;
 import java.util.UUID;
 
 import static org.hamcrest.Matchers.containsString;
@@ -40,6 +42,9 @@ class CollectionControllerTest {
     private MockMvc mockMvc;
 
     @Autowired
+    private ObjectMapper objectMapper;
+
+    @Autowired
     private EntityManager entityManager;
 
     @Autowired
@@ -49,7 +54,7 @@ class CollectionControllerTest {
     private CollectionService collectionService;
 
     private Integer persistUser() {
-        return authService.createUser("Test", "User", "tuser", "pass").getId();
+        return TestDataGenerator.persistUser(authService);
     }
 
     private Collection persistCollection(Integer userId) {
@@ -59,6 +64,10 @@ class CollectionControllerTest {
     private SourceMaterial persistMaterial(UUID collectionId) {
         return collectionService.createSourceMaterial(
                 collectionId, "notes.txt", "text/plain", "hello world".getBytes());
+    }
+
+    private Generation persistGeneration(UUID collectionId) {
+        return collectionService.createGeneration(collectionId, TestDataGenerator.validGenerationRequest());
     }
 
     // ---------------------------------------------------------------
@@ -107,6 +116,19 @@ class CollectionControllerTest {
     void getCollection_returns404_whenNotFound() throws Exception {
         mockMvc.perform(get("/collections/{id}", UUID.randomUUID()))
                 .andExpect(status().isNotFound());
+    }
+
+    @Test
+    void getCollection_nestedGenerations_haveCollectionIdPopulated() throws Exception {
+        Collection collection = persistCollection(persistUser());
+        SourceMaterial material = persistMaterial(collection.getId());
+        collectionService.createGeneration(collection.getId(), TestDataGenerator.validGenerationRequest(material.getId()));
+        entityManager.flush();
+        entityManager.clear();
+
+        mockMvc.perform(get("/collections/{id}", collection.getId()))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.generations[0].collectionId").value(collection.getId().toString()));
     }
 
     // ---------------------------------------------------------------
@@ -213,12 +235,13 @@ class CollectionControllerTest {
     void createGeneration_returns201WithEmbeddedQuiz() throws Exception {
         Collection collection = persistCollection(persistUser());
         SourceMaterial material = persistMaterial(collection.getId());
+        CreateGenerationRequest request = TestDataGenerator.validGenerationRequest(material.getId());
+
+
 
         mockMvc.perform(post("/collections/{id}/generations", collection.getId())
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content("""
-                                {"sourceMaterialIds":["%s"]}
-                                """.formatted(material.getId())))
+                        .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isCreated())
                 .andExpect(jsonPath("$.id").isString())
                 .andExpect(jsonPath("$.quiz").exists())
@@ -228,12 +251,38 @@ class CollectionControllerTest {
     @Test
     void createGeneration_returns201_withEmptySourceMaterials() throws Exception {
         Collection collection = persistCollection(persistUser());
+        SourceMaterial material = persistMaterial(collection.getId());
+        CreateGenerationRequest request = TestDataGenerator.validGenerationRequest(material.getId());
 
         mockMvc.perform(post("/collections/{id}/generations", collection.getId())
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content("""
-                                {"sourceMaterialIds":[]}
-                                """))
+                        .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.quiz.rawContent").value("ett dokument med frågor"));
+    }
+
+    @Test
+    void createGeneration_returns400_whenTopicsFocusAreaHasNoTopics() throws Exception {
+        Collection collection = persistCollection(persistUser());
+        SourceMaterial material = persistMaterial(collection.getId());
+        CreateGenerationRequest request = TestDataGenerator.invalidRequest_topicsFocusWithNoTopics(material.getId());
+
+        mockMvc.perform(post("/collections/{id}/generations", collection.getId())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.fields.topicsSpecifiedWhenFocusAreaIsTopics").exists());
+    }
+
+    @Test
+    void createGeneration_returns201_whenTopicsFocusAreaHasTopics() throws Exception {
+        Collection collection = persistCollection(persistUser());
+        SourceMaterial material = persistMaterial(collection.getId());
+        CreateGenerationRequest request = TestDataGenerator.validRequest_topicsFocusWithTopics(material.getId());
+
+        mockMvc.perform(post("/collections/{id}/generations", collection.getId())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isCreated())
                 .andExpect(jsonPath("$.quiz").exists());
     }
@@ -245,7 +294,8 @@ class CollectionControllerTest {
     @Test
     void getGeneration_returns200_whenExists() throws Exception {
         Collection collection = persistCollection(persistUser());
-        Generation generation = collectionService.createGeneration(collection.getId(), List.of());
+        Generation generation = collectionService.createGeneration(collection.getId(), TestDataGenerator.validGenerationRequest());
+
         entityManager.flush();
         entityManager.clear();
 
@@ -271,7 +321,7 @@ class CollectionControllerTest {
     @Test
     void deleteGeneration_returns204() throws Exception {
         Collection collection = persistCollection(persistUser());
-        Generation generation = collectionService.createGeneration(collection.getId(), List.of());
+        Generation generation = collectionService.createGeneration(collection.getId(), TestDataGenerator.validGenerationRequest());
 
         mockMvc.perform(delete("/collections/{pid}/generations/{gid}",
                                collection.getId(), generation.getId()))
@@ -285,7 +335,7 @@ class CollectionControllerTest {
     @Test
     void getQuiz_returns200WithQuizContent_whenExists() throws Exception {
         Collection collection = persistCollection(persistUser());
-        Generation generation = collectionService.createGeneration(collection.getId(), List.of());
+        Generation generation = collectionService.createGeneration(collection.getId(), TestDataGenerator.validGenerationRequest());
         collectionService.createQuiz(generation.getId(), "Week 1", "raw content");
         entityManager.flush();
         entityManager.clear();
@@ -300,7 +350,7 @@ class CollectionControllerTest {
     @Test
     void getQuiz_returns404_whenGenerationHasNoQuiz() throws Exception {
         Collection collection = persistCollection(persistUser());
-        Generation generation = collectionService.createGeneration(collection.getId(), List.of());
+        Generation generation = collectionService.createGeneration(collection.getId(), TestDataGenerator.validGenerationRequest());
         entityManager.flush();
         entityManager.clear();
 
@@ -316,7 +366,7 @@ class CollectionControllerTest {
     @Test
     void updateQuiz_returns200WithUpdatedContent() throws Exception {
         Collection collection = persistCollection(persistUser());
-        Generation generation = collectionService.createGeneration(collection.getId(), List.of());
+        Generation generation = collectionService.createGeneration(collection.getId(), TestDataGenerator.validGenerationRequest());
         collectionService.createQuiz(generation.getId(), "Old Name", "old content");
         entityManager.flush();
         entityManager.clear();
@@ -339,7 +389,7 @@ class CollectionControllerTest {
     @Test
     void deleteQuiz_returns204() throws Exception {
         Collection collection = persistCollection(persistUser());
-        Generation generation = collectionService.createGeneration(collection.getId(), List.of());
+        Generation generation = collectionService.createGeneration(collection.getId(), TestDataGenerator.validGenerationRequest());
         collectionService.createQuiz(generation.getId(), "Quiz", "content");
         entityManager.flush();
         entityManager.clear();
