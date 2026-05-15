@@ -1,13 +1,15 @@
-package se.ltu.eduo.service;
+package se.ltu.eduo.llm;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import se.ltu.eduo.dto.GenerationDto;
-import se.ltu.eduo.dto.request.CreateGenerationRequest;
-import se.ltu.eduo.mapper.GenerationMapper;
-import se.ltu.eduo.mapper.QuizMapper;
-import se.ltu.eduo.model.collection.Generation;
-import se.ltu.eduo.model.collection.Quiz;
+import se.ltu.eduo.collection.dto.GenerationDto;
+import se.ltu.eduo.collection.request.CreateGenerationRequest;
+import se.ltu.eduo.collection.mapper.GenerationMapper;
+import se.ltu.eduo.collection.mapper.QuizMapper;
+import se.ltu.eduo.collection.model.Generation;
+import se.ltu.eduo.collection.model.Quiz;
+import se.ltu.eduo.collection.service.CollectionService;
+
 import java.util.UUID;
 
 @RequiredArgsConstructor

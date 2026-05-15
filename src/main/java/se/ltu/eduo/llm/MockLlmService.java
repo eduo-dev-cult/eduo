@@ -1,4 +1,4 @@
-package se.ltu.eduo.service;
+package se.ltu.eduo.llm;
 
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Service;

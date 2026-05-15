@@ -1,7 +1,7 @@
-package se.ltu.eduo.service;
+package se.ltu.eduo.llm;
 
 import org.springframework.stereotype.Service;
-import se.ltu.eduo.dto.request.CreateGenerationRequest;
+import se.ltu.eduo.collection.request.CreateGenerationRequest;
 import java.util.ArrayList;
 import java.util.List;
 

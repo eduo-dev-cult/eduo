@@ -1,9 +1,9 @@
 package se.ltu.eduo;
 
-import se.ltu.eduo.dto.request.CreateGenerationRequest;
-import se.ltu.eduo.model.collection.GenerationFocusArea;
-import se.ltu.eduo.model.collection.GenerationLanguage;
-import se.ltu.eduo.service.AuthService;
+import se.ltu.eduo.collection.request.CreateGenerationRequest;
+import se.ltu.eduo.collection.model.GenerationFocusArea;
+import se.ltu.eduo.collection.model.GenerationLanguage;
+import se.ltu.eduo.user.service.AuthService;
 
 import java.util.UUID;
 
