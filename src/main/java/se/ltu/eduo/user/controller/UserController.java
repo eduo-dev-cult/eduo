@@ -1,16 +1,16 @@
-package se.ltu.eduo.controller;
+package se.ltu.eduo.user.controller;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import se.ltu.eduo.dto.request.LoginRequest;
-import se.ltu.eduo.dto.request.RegisterRequest;
-import se.ltu.eduo.dto.UserDto;
-import se.ltu.eduo.exception.UsernameAlreadyExistsException;
-import se.ltu.eduo.mapper.UserMapper;
-import se.ltu.eduo.model.User;
-import se.ltu.eduo.service.AuthService;
+import se.ltu.eduo.user.request.LoginRequest;
+import se.ltu.eduo.user.request.RegisterRequest;
+import se.ltu.eduo.user.dto.UserDto;
+import se.ltu.eduo.common.exception.UsernameAlreadyExistsException;
+import se.ltu.eduo.user.mapper.UserMapper;
+import se.ltu.eduo.user.model.User;
+import se.ltu.eduo.user.service.AuthService;
 
 @RestController
 @RequestMapping("/users")

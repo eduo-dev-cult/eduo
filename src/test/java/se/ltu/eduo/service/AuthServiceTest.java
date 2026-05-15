@@ -2,7 +2,6 @@ package se.ltu.eduo.service;
 
 import jakarta.persistence.EntityManager;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.jdbc.test.autoconfigure.AutoConfigureTestDatabase;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -10,9 +9,10 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.transaction.annotation.Transactional;
 import se.ltu.eduo.TestContainersInitializer;
-import se.ltu.eduo.model.User;
-import se.ltu.eduo.repository.UserCredentialRepository;
-import se.ltu.eduo.repository.UserRepository;
+import se.ltu.eduo.user.model.User;
+import se.ltu.eduo.user.repository.UserCredentialRepository;
+import se.ltu.eduo.user.repository.UserRepository;
+import se.ltu.eduo.user.service.AuthService;
 
 import java.util.Optional;
 

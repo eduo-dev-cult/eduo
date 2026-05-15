@@ -1,13 +1,14 @@
-package se.ltu.eduo.service;
+package se.ltu.eduo.user.service;
 
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
-import se.ltu.eduo.exception.UsernameAlreadyExistsException;
-import se.ltu.eduo.model.User;
-import se.ltu.eduo.model.UserCredential;
-import se.ltu.eduo.repository.UserCredentialRepository;
-import se.ltu.eduo.repository.UserRepository;
+import se.ltu.eduo.collection.service.CollectionService;
+import se.ltu.eduo.common.exception.UsernameAlreadyExistsException;
+import se.ltu.eduo.user.model.User;
+import se.ltu.eduo.user.model.UserCredential;
+import se.ltu.eduo.user.repository.UserCredentialRepository;
+import se.ltu.eduo.user.repository.UserRepository;
 
 import java.time.Instant;
 import java.util.Optional;

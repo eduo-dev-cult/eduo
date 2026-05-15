@@ -1,8 +1,7 @@
-package se.ltu.eduo.repository;
+package se.ltu.eduo.user.repository;
 
 import org.springframework.data.jpa.repository.JpaRepository;
-import se.ltu.eduo.model.User;
-import se.ltu.eduo.model.UserCredential;
+import se.ltu.eduo.user.model.UserCredential;
 
 public interface UserCredentialRepository extends JpaRepository<UserCredential, Integer> {
 
