@@ -1,7 +1,7 @@
-package se.ltu.eduo.repository;
+package se.ltu.eduo.collection.repository;
 
 import org.springframework.data.jpa.repository.JpaRepository;
-import se.ltu.eduo.model.collection.Quiz;
+import se.ltu.eduo.collection.model.Quiz;
 
 import java.util.UUID;
 

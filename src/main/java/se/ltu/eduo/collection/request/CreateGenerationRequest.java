@@ -1,12 +1,12 @@
-package se.ltu.eduo.dto.request;
+package se.ltu.eduo.collection.request;
 
 
 import jakarta.validation.constraints.AssertTrue;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotEmpty;
-import se.ltu.eduo.model.collection.GenerationFocusArea;
-import se.ltu.eduo.model.collection.GenerationLanguage;
+import se.ltu.eduo.collection.model.GenerationFocusArea;
+import se.ltu.eduo.collection.model.GenerationLanguage;
 import java.util.UUID;
 
 public record CreateGenerationRequest(

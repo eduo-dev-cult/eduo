@@ -1,10 +1,10 @@
-package se.ltu.eduo.dto;
+package se.ltu.eduo.collection.dto;
 
 import lombok.Getter;
 import lombok.Setter;
-import se.ltu.eduo.model.collection.Generation;
-import se.ltu.eduo.model.collection.GenerationFocusArea;
-import se.ltu.eduo.model.collection.GenerationLanguage;
+import se.ltu.eduo.collection.model.Generation;
+import se.ltu.eduo.collection.model.GenerationFocusArea;
+import se.ltu.eduo.collection.model.GenerationLanguage;
 
 import java.io.Serializable;
 import java.time.Instant;

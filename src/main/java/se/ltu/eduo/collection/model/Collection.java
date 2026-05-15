@@ -1,4 +1,4 @@
-package se.ltu.eduo.model.collection;
+package se.ltu.eduo.collection.model;
 
 import jakarta.persistence.*;
 import lombok.Getter;
@@ -8,7 +8,7 @@ import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.OnDelete;
 import org.hibernate.annotations.OnDeleteAction;
 import org.hibernate.annotations.UpdateTimestamp;
-import se.ltu.eduo.model.User;
+import se.ltu.eduo.user.model.User;
 
 import java.time.Instant;
 import java.util.ArrayList;

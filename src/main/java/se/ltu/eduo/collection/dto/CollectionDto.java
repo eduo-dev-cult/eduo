@@ -1,7 +1,8 @@
-package se.ltu.eduo.dto;
+package se.ltu.eduo.collection.dto;
 
 import lombok.Value;
-import se.ltu.eduo.model.collection.Collection;
+import se.ltu.eduo.collection.model.Collection;
+import se.ltu.eduo.collection.model.SourceMaterial;
 
 import java.io.Serializable;
 import java.time.Instant;
@@ -22,7 +23,7 @@ public class CollectionDto implements Serializable {
     List<GenerationDto> generations;
 
     /**
-     * DTO for {@link se.ltu.eduo.model.collection.SourceMaterial}
+     * DTO for {@link SourceMaterial}
      */
     @Value
     public static class SourceMaterialDto implements Serializable {

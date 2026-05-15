@@ -11,8 +11,13 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.transaction.annotation.Transactional;
 import se.ltu.eduo.TestContainersInitializer;
 import se.ltu.eduo.TestDataGenerator;
-import se.ltu.eduo.model.collection.*;
-import se.ltu.eduo.repository.*;
+import se.ltu.eduo.collection.model.Collection;
+import se.ltu.eduo.collection.model.Generation;
+import se.ltu.eduo.collection.model.Quiz;
+import se.ltu.eduo.collection.model.SourceMaterial;
+import se.ltu.eduo.collection.repository.*;
+import se.ltu.eduo.collection.service.CollectionService;
+import se.ltu.eduo.user.service.AuthService;
 
 import java.util.UUID;
 

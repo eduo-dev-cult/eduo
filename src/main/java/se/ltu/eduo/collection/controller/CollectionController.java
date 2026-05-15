@@ -1,4 +1,4 @@
-package se.ltu.eduo.controller;
+package se.ltu.eduo.collection.controller;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -10,23 +10,25 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
-import se.ltu.eduo.dto.*;
-import se.ltu.eduo.dto.request.CreateCollectionRequest;
-import se.ltu.eduo.dto.request.CreateGenerationRequest;
-import se.ltu.eduo.dto.request.UpdateProjectRequest;
-import se.ltu.eduo.dto.request.UpdateQuizRequest;
-import se.ltu.eduo.mapper.CollectionMapper;
-import se.ltu.eduo.mapper.GenerationMapper;
-import se.ltu.eduo.mapper.QuizMapper;
-import se.ltu.eduo.model.collection.*;
-import se.ltu.eduo.service.CollectionService;
-import se.ltu.eduo.service.StudyQuestionService;
+import se.ltu.eduo.collection.dto.CollectionDto;
+import se.ltu.eduo.collection.dto.GenerationDto;
+import se.ltu.eduo.collection.dto.QuizDto;
+import se.ltu.eduo.collection.model.Collection;
+import se.ltu.eduo.collection.model.Quiz;
+import se.ltu.eduo.collection.model.SourceMaterial;
+import se.ltu.eduo.collection.request.CreateCollectionRequest;
+import se.ltu.eduo.collection.request.CreateGenerationRequest;
+import se.ltu.eduo.collection.request.UpdateProjectRequest;
+import se.ltu.eduo.collection.request.UpdateQuizRequest;
+import se.ltu.eduo.collection.mapper.CollectionMapper;
+import se.ltu.eduo.collection.mapper.GenerationMapper;
+import se.ltu.eduo.collection.mapper.QuizMapper;
+import se.ltu.eduo.collection.service.CollectionService;
+import se.ltu.eduo.llm.StudyQuestionService;
 
 import java.io.IOException;
-import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.UUID;
-import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/collections")

@@ -1,12 +1,12 @@
-package se.ltu.eduo.mapper;
+package se.ltu.eduo.collection.mapper;
 
 import org.mapstruct.*;
-import se.ltu.eduo.dto.CollectionDto;
-import se.ltu.eduo.dto.GenerationDto;
-import se.ltu.eduo.dto.request.CreateGenerationRequest;
-import se.ltu.eduo.model.collection.Generation;
-import se.ltu.eduo.model.collection.GenerationSourceMaterial;
-import se.ltu.eduo.model.collection.Quiz;
+import se.ltu.eduo.collection.dto.CollectionDto;
+import se.ltu.eduo.collection.dto.GenerationDto;
+import se.ltu.eduo.collection.request.CreateGenerationRequest;
+import se.ltu.eduo.collection.model.Generation;
+import se.ltu.eduo.collection.model.GenerationSourceMaterial;
+import se.ltu.eduo.collection.model.Quiz;
 
 @Mapper(unmappedTargetPolicy = ReportingPolicy.WARN, componentModel = MappingConstants.ComponentModel.SPRING)
 public interface GenerationMapper {
