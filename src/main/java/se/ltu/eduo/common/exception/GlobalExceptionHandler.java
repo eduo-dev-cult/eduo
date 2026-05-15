@@ -1,4 +1,4 @@
-package se.ltu.eduo.controller;
+package se.ltu.eduo.common.exception;
 
 import jakarta.persistence.EntityNotFoundException;
 import org.springframework.http.HttpStatus;
