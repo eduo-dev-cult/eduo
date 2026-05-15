@@ -1,4 +1,4 @@
-package se.ltu.eduo.service;
+package se.ltu.eduo.llm;
 
 import org.springframework.context.annotation.Profile; // För skilja på mock och riktiga.
 import org.springframework.stereotype.Service; // För att markera denna klass som en service: spring ser det som en bean.

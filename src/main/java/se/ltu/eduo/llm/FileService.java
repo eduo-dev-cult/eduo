@@ -1,9 +1,9 @@
-package se.ltu.eduo.service;
+package se.ltu.eduo.llm;
 
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
-import se.ltu.eduo.repository.SourceMaterialRepository;
+import se.ltu.eduo.collection.repository.SourceMaterialRepository;
 
 import java.nio.charset.StandardCharsets;
 import java.util.UUID;

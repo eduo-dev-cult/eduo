@@ -3,6 +3,7 @@ package se.ltu.eduo.service;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.springframework.web.client.RestClient; // To test against a real Ollama instance, we need to use the same RestClient that the service uses.
+import se.ltu.eduo.llm.OllamaLlmService;
 
 // For reading config file to get cirrently active set model.
 import java.io.IOException;
