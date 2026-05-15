@@ -1,9 +1,9 @@
-package se.ltu.eduo.config;
+package se.ltu.eduo.utils;
 
 import jakarta.annotation.PostConstruct;
 import org.springframework.stereotype.Component;
-import se.ltu.eduo.repository.UserRepository;
-import se.ltu.eduo.service.AuthService;
+import se.ltu.eduo.user.repository.UserRepository;
+import se.ltu.eduo.user.service.AuthService;
 
 @Component
 public class DemoDataLoader {

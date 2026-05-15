@@ -1,4 +1,4 @@
-package se.ltu.eduo.config;
+package se.ltu.eduo.utils;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
