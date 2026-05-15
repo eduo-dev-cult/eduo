@@ -1,8 +1,8 @@
-package se.ltu.eduo.mapper;
+package se.ltu.eduo.user.mapper;
 
 import org.mapstruct.*;
-import se.ltu.eduo.dto.UserDto;
-import se.ltu.eduo.model.User;
+import se.ltu.eduo.user.dto.UserDto;
+import se.ltu.eduo.user.model.User;
 
 @Mapper(unmappedTargetPolicy = ReportingPolicy.WARN, componentModel = MappingConstants.ComponentModel.SPRING)
 public interface UserMapper {

@@ -2,7 +2,6 @@ package se.ltu.eduo.repository;
 
 import jakarta.persistence.EntityManager;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.data.jpa.test.autoconfigure.DataJpaTest;
 import org.springframework.boot.jdbc.test.autoconfigure.AutoConfigureTestDatabase;
@@ -11,8 +10,10 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import se.ltu.eduo.TestContainersInitializer;
-import se.ltu.eduo.model.User;
-import se.ltu.eduo.model.UserCredential;
+import se.ltu.eduo.user.model.User;
+import se.ltu.eduo.user.model.UserCredential;
+import se.ltu.eduo.user.repository.UserCredentialRepository;
+import se.ltu.eduo.user.repository.UserRepository;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;

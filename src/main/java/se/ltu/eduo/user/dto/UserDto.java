@@ -1,12 +1,13 @@
-package se.ltu.eduo.dto;
+package se.ltu.eduo.user.dto;
 
 import lombok.Value;
+import se.ltu.eduo.user.model.User;
 
 import java.io.Serializable;
 import java.time.Instant;
 
 /**
- * DTO for {@link se.ltu.eduo.model.User}
+ * DTO for {@link User}
  */
 @Value
 public class UserDto implements Serializable {

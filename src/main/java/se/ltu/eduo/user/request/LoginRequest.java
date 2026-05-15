@@ -1,3 +1,3 @@
-package se.ltu.eduo.dto.request;
+package se.ltu.eduo.user.request;
 
 public record LoginRequest(String username, String password) {}
