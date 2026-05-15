@@ -4,7 +4,7 @@ import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import se.ltu.eduo.collection.service.CollectionService;
-import se.ltu.eduo.common.exception.UsernameAlreadyExistsException;
+import se.ltu.eduo.exception.UsernameAlreadyExistsException;
 import se.ltu.eduo.user.model.User;
 import se.ltu.eduo.user.model.UserCredential;
 import se.ltu.eduo.user.repository.UserCredentialRepository;
