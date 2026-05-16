@@ -1,16 +1,95 @@
 .upload-step-layout {
   width: 100%;
-  max-width: 820px;
+  max-width: 1180px;
 
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 22px;
+  gap: 18px;
+}
+
+/* Top section controls which existing materials are shown below. */
+.collection-top-section {
+  width: 100%;
+
+  border: 1px solid #d9d9d4;
+  border-radius: var(--radius-md);
+  background: white;
+
+  padding: 18px 24px;
+
+  display: grid;
+  grid-template-columns: 1fr 320px auto;
+  align-items: center;
+  gap: 24px;
+}
+
+.collection-top-section h2 {
+  margin: 0 0 6px;
+  font-size: 18px;
+  font-weight: 800;
+}
+
+.collection-top-section p {
+  margin: 0;
+  color: #555;
+  font-size: 14px;
+}
+
+.collection-top-section select {
+  width: 100%;
+  height: 40px;
+
+  border: 1px solid #d9d9d4;
+  border-radius: 7px;
+
+  padding: 0 12px;
+
+  font-size: 14px;
+  background: white;
+}
+
+.create-collection-button {
+  align-self: center;
+
+  margin: 0;
+  padding: 0;
+
+  border: none;
+  background: none;
+
+  color: #4d74ad;
+  font-weight: 700;
+  font-size: 13px;
+
+  cursor: pointer;
+}
+
+/* Two-column area for new uploads and existing material selection. */
+.material-selection-grid {
+  width: 100%;
+
+  display: grid;
+  grid-template-columns: 1.15fr 0.85fr;
+
+  border: 1px solid #d9d9d4;
+  border-radius: var(--radius-md);
+  background: white;
+
+  overflow: hidden;
+}
+
+.upload-panel,
+.existing-material-panel {
+  padding: 24px;
+}
+
+.upload-panel {
+  border-right: 1px solid #e1e1dc;
 }
 
 .upload-box {
   width: 100%;
-  max-width: 600px;
   min-height: 305px;
 
   border: 1px dashed var(--border);
@@ -70,9 +149,11 @@
 
 .selected-file-item {
   width: 100%;
+
   border: 1px solid #d9d9d4;
   border-radius: 7px;
   background: white;
+
   padding: 10px 12px;
 
   display: flex;
@@ -83,6 +164,7 @@
 
 .selected-file-name {
   display: block;
+
   color: #4f4f4f;
   font-weight: 700;
   font-size: 14px;
@@ -90,7 +172,9 @@
 
 .selected-file-size {
   display: block;
+
   margin-top: 2px;
+
   color: var(--muted);
   font-size: 12px;
 }
@@ -105,7 +189,9 @@
 .remove-single-file-button {
   border: none;
   border-radius: 5px;
+
   padding: 10px 16px;
+
   font-size: 16px;
   cursor: pointer;
 }
@@ -133,7 +219,9 @@
   background: white;
   color: var(--blue);
   border: 1px solid var(--blue);
+
   padding: 7px 10px;
+
   font-size: 13px;
 }
 
@@ -146,54 +234,9 @@
   color: var(--muted);
 }
 
-.upload-collection-section {
-  width: 100%;
-  max-width: 600px;
-}
-
-.upload-collection-section h2 {
-  font-size: 18px;
-  font-weight: 800;
-  margin: 0 0 6px;
-}
-
-.upload-collection-box {
-  border: 1px solid #d9d9d4;
-  border-radius: 5px;
-  background: white;
-  padding: 12px 16px;
-}
-
-.upload-collection-box p {
-  margin: 0 0 13px;
-  color: #555;
-  font-size: 14px;
-}
-
-.upload-collection-box select {
-  width: 100%;
-  height: 40px;
-  border: 1px solid #d9d9d4;
-  border-radius: 7px;
-  padding: 0 12px;
-  font-size: 14px;
-  background: white;
-}
-
-.create-collection-button {
-  align-self: flex-start;
-  margin-top: 10px;
-  padding: 0;
-  border: none;
-  background: none;
-  color: #4d74ad;
-  font-weight: 700;
-  font-size: 13px;
-  cursor: pointer;
-}
-
 .collection-error-message {
   margin: 8px 0 0;
+
   color: #9f1d1d;
   font-size: 13px;
 }
@@ -201,6 +244,7 @@
 .upload-status-message {
   width: 100%;
   max-width: 480px;
+
   margin: 12px 0 0;
   padding: 9px 12px;
 
@@ -227,4 +271,79 @@
   background: #fff0f0;
   color: #9f1d1d;
   border: 1px solid #e0a0a0;
+}
+
+.existing-material-panel h2 {
+  margin: 0 0 6px;
+
+  font-size: 18px;
+  font-weight: 800;
+}
+
+.existing-material-panel p {
+  margin: 0;
+
+  color: #555;
+  font-size: 14px;
+}
+
+.existing-material-muted {
+  margin-top: 18px !important;
+
+  color: var(--muted) !important;
+  font-size: 14px;
+}
+
+.existing-material-list {
+  margin-top: 18px;
+
+  border: 1px solid #e1e1dc;
+  border-radius: 7px;
+
+  overflow: hidden;
+}
+
+.existing-material-item {
+  min-height: 46px;
+
+  padding: 0 12px;
+
+  display: grid;
+  grid-template-columns: 24px 28px 1fr;
+  align-items: center;
+  gap: 10px;
+
+  border-bottom: 1px solid #e1e1dc;
+
+  cursor: pointer;
+}
+
+.existing-material-item:last-child {
+  border-bottom: none;
+}
+
+.existing-material-item:hover {
+  background: #f8f8f5;
+}
+
+.existing-material-icon {
+  font-size: 16px;
+}
+
+.existing-material-name {
+  color: var(--text);
+  font-size: 14px;
+  font-weight: 600;
+
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.existing-material-count {
+  margin-top: 12px !important;
+
+  color: var(--text) !important;
+  font-size: 13px !important;
+  font-weight: 700;
 }

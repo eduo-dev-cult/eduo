@@ -83,3 +83,32 @@ export async function uploadMaterials(collectionId, files) {
 
   return Promise.all(uploadPromises);
 }
+
+/*
+ * Fetches all materials that already exist
+ * in the selected collection.
+ */
+export async function getMaterialsByCollection(collectionId) {
+  const response = await fetch(
+    `http://localhost:8080/collections/${collectionId}`
+  );
+
+  if (!response.ok) {
+    throw new Error(
+      `Failed to load materials (Status: ${response.status})`
+    );
+  }
+
+  const collection = await response.json();
+
+  /*
+   * The backend might return materials in different fields due to historical reasons
+   * Fallbacks make the frontend more tolerant.
+   */
+  return (
+    collection.materials ??
+    collection.sourceMaterials ??
+    collection.sourceMaterial ??
+    []
+  );
+}

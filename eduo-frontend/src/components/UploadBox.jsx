@@ -19,6 +19,31 @@ function getCollectionName(collection) {
   );
 }
 
+/*
+ * Handles different possible backend field names
+ * for material IDs.
+ */
+function getMaterialId(material) {
+  return (
+    material?.id ??
+    material?.materialId ??
+    material?.sourceMaterialId
+  );
+}
+
+/*
+ * Handles different possible backend field names
+ * for material names.
+ */
+function getMaterialName(material) {
+  return (
+    material?.fileName ??
+    material?.filename ??
+    material?.name ??
+    "Unnamed material"
+  );
+}
+
 export default function UploadBox({
   selectedFiles,
   onFilesSelect,
@@ -30,16 +55,21 @@ export default function UploadBox({
   onCreateCollection,
 
   /*
-   * Upload status comes from MainContent.
+   * Props related to previously uploaded materials
+   * in the selected collection.
    *
-   * Expected format:
-   * {
-   *   type: "loading" | "success" | "error" | "",
-   *   message: "..."
-   * }
+   * Used for:
+   * - displaying existing materials
+   * - selecting materials for generation
+   * - handling loading and error states
    */
-  uploadStatus,
-}) {
+    uploadStatus,
+    existingMaterials,
+    selectedExistingMaterialIds,
+    setSelectedExistingMaterialIds,
+    isLoadingExistingMaterials,
+    existingMaterialsError,
+  }) {
   const fileInputRef = useRef(null);
   const [isDragging, setIsDragging] = useState(false);
 
@@ -150,168 +180,262 @@ export default function UploadBox({
   const shouldShowUploadStatus =
     uploadStatus?.type && uploadStatus?.message;
 
+  /*
+   * Toggles selection of an existing material.
+   */
+  const toggleExistingMaterial =
+    (materialId) => {
+
+      setSelectedExistingMaterialIds(
+        (prevSelected) =>
+
+          prevSelected.includes(materialId)
+
+            /*
+            * Remove if already selected.
+            */
+            ? prevSelected.filter(
+                (id) => id !== materialId
+              )
+
+            /*
+            * Add if not selected.
+            */
+            : [
+                ...prevSelected,
+                materialId,
+              ]
+      );
+    };
+
   return (
     <div className="upload-step-layout">
-      <div
-        className={`upload-box ${isDragging ? "dragging" : ""}`}
-        onDragOver={handleDragOver}
-        onDragLeave={handleDragLeave}
-        onDrop={handleDrop}
-      >
-        <input
-          ref={fileInputRef}
-          type="file"
-          multiple
-          accept={allowedTypes.join(",")}
-          className="file-input"
-          onChange={handleFileInputChange}
-        />
+      {/* Collection selector at the top because it controls the material list below. */}
+      <section className="collection-top-section">
+        <div>
+          <h2>Choose Collection</h2>
 
-        <div className="file-icon">📄</div>
+          <p>
+            Choose a collection to see previously uploaded material and save your questions.
+          </p>
+        </div>
 
-        {files.length > 0 ? (
-          <>
-            <p className="upload-title">
-              {files.length} file
-              {files.length > 1 ? "s" : ""} selected
-            </p>
+        <select
+          value={settings.collectionId || ""}
+          onChange={(event) =>
+            updateSetting("collectionId", event.target.value)
+          }
+          disabled={
+            isLoadingCollections ||
+            collections.length === 0
+          }
+        >
+          {collections.map((collection) => {
+            const collectionId =
+              getCollectionId(collection);
 
-            <ul className="selected-files-list">
-              {files.map((file, index) => (
-                <li
-                  className="selected-file-item"
-                  key={`${file.name}-${index}`}
-                >
-                  <div>
-                    <span className="selected-file-name">
-                      {file.name}
-                    </span>
+            const collectionName =
+              getCollectionName(collection);
 
-                    <span className="selected-file-size">
-                      {(file.size / 1024 / 1024).toFixed(2)} MB
-                    </span>
-                  </div>
+            return (
+              <option
+                key={collectionId}
+                value={collectionId}
+              >
+                {collectionName}
+              </option>
+            );
+          })}
+        </select>
+
+        <button
+          className="create-collection-button"
+          type="button"
+          onClick={onCreateCollection}
+        >
+          + Create new Collection
+        </button>
+      </section>
+
+      {collectionsError && (
+        <p className="collection-error-message">
+          {collectionsError}
+        </p>
+      )}
+
+      <div className="material-selection-grid">
+        <section className="upload-panel">
+          <div
+            className={`upload-box ${
+              isDragging ? "dragging" : ""
+            }`}
+            onDragOver={handleDragOver}
+            onDragLeave={handleDragLeave}
+            onDrop={handleDrop}
+          >
+            <input
+              ref={fileInputRef}
+              type="file"
+              multiple
+              accept={allowedTypes.join(",")}
+              className="file-input"
+              onChange={handleFileInputChange}
+            />
+
+            <div className="file-icon">📄</div>
+
+            {files.length > 0 ? (
+              <>
+                <p className="upload-title">
+                  {files.length} file
+                  {files.length > 1 ? "s" : ""} selected
+                </p>
+
+                <ul className="selected-files-list">
+                  {files.map((file, index) => (
+                    <li
+                      className="selected-file-item"
+                      key={`${file.name}-${index}`}
+                    >
+                      <div>
+                        <span className="selected-file-name">
+                          {file.name}
+                        </span>
+
+                        <span className="selected-file-size">
+                          {(file.size / 1024 / 1024).toFixed(2)} MB
+                        </span>
+                      </div>
+
+                      <button
+                        type="button"
+                        className="remove-single-file-button"
+                        onClick={() => removeFile(index)}
+                      >
+                        Remove
+                      </button>
+                    </li>
+                  ))}
+                </ul>
+
+                <div className="upload-actions">
+                  <button
+                    type="button"
+                    className="select-file-button"
+                    onClick={openFilePicker}
+                  >
+                    Add Files
+                  </button>
 
                   <button
                     type="button"
-                    className="remove-single-file-button"
-                    onClick={() => removeFile(index)}
+                    className="remove-file-button"
+                    onClick={removeAllFiles}
                   >
-                    Remove
+                    Remove All
                   </button>
-                </li>
-              ))}
-            </ul>
+                </div>
+              </>
+            ) : (
+              <>
+                <p className="upload-title">
+                  Drag and drop files here
+                </p>
 
-            <div className="upload-actions">
-              <button
-                type="button"
-                className="select-file-button"
-                onClick={openFilePicker}
-              >
-                Add Files
-              </button>
+                <p className="upload-or">or</p>
 
-              <button
-                type="button"
-                className="remove-file-button"
-                onClick={removeAllFiles}
-              >
-                Remove All
-              </button>
-            </div>
-          </>
-        ) : (
-          <>
-            <p className="upload-title">
-              Drag and drop files here
-            </p>
+                <button
+                  type="button"
+                  className="select-file-button"
+                  onClick={openFilePicker}
+                >
+                  Select Files
+                </button>
 
-            <p className="upload-or">or</p>
-
-            <button
-              type="button"
-              className="select-file-button"
-              onClick={openFilePicker}
-            >
-              Select Files
-            </button>
-          </>
-        )}
-
-        <p className="upload-help">
-          Supports PDF, TXT, DOCX and PPTX
-        </p>
-
-        {shouldShowUploadStatus && (
-          <p
-            className={`upload-status-message upload-status-${uploadStatus.type}`}
-          >
-            {uploadStatus.message}
-          </p>
-        )}
-      </div>
-
-      <section className="upload-collection-section">
-        <h2>Choose Collection</h2>
-
-        <div className="upload-collection-box">
-          <p>Choose a Collection to save questions in</p>
-
-          <select
-            value={settings.collectionId || ""}
-            onChange={(event) =>
-              updateSetting("collectionId", event.target.value)
-            }
-            disabled={
-              isLoadingCollections || collections.length === 0
-            }
-          >
-            {isLoadingCollections && (
-              <option value="">Loading collections...</option>
+                <p className="upload-help">
+                  Accepted formats: PDF, TXT, DOCX, PPTX
+                </p>
+              </>
             )}
 
-            {!isLoadingCollections &&
-              collections.length === 0 && (
-                <option value="">
-                  No collections available
-                </option>
-              )}
+            {shouldShowUploadStatus && (
+              <p
+                className={`upload-status-message upload-status-${uploadStatus.type}`}
+              >
+                {uploadStatus.message}
+              </p>
+            )}
+          </div>
+        </section>
 
-            {!isLoadingCollections &&
-              collections.map((collection) => {
-                const collectionId =
-                  getCollectionId(collection);
+        <section className="existing-material-panel">
+          <h2>
+            Previously uploaded material in this collection
+          </h2>
 
-                const collectionName =
-                  getCollectionName(collection);
+          <p>
+            Select material to include in the generation.
+          </p>
 
-                return (
-                  <option
-                    key={collectionId}
-                    value={collectionId}
-                  >
-                    {collectionName}
-                  </option>
-                );
-              })}
-          </select>
-
-          {collectionsError && (
-            <p className="collection-error-message">
-              {collectionsError}
+          {isLoadingExistingMaterials && (
+            <p className="existing-material-muted">
+              Loading materials...
             </p>
           )}
 
-          <button
-            className="create-collection-button"
-            type="button"
-            onClick={onCreateCollection}
-          >
-            + Create new Collection
-          </button>
-        </div>
-      </section>
+          {existingMaterialsError && (
+            <p className="collection-error-message">
+              {existingMaterialsError}
+            </p>
+          )}
+
+          {!isLoadingExistingMaterials &&
+            existingMaterials.length === 0 && (
+              <p className="existing-material-muted">
+                No material uploaded in this collection yet.
+              </p>
+            )}
+
+          <div className="existing-material-list">
+            {existingMaterials.slice(0, 4).map((material) => {
+              const materialId =
+                getMaterialId(material);
+
+              const isSelected =
+                selectedExistingMaterialIds.includes(
+                  materialId
+                );
+
+              return (
+                <label
+                  className="existing-material-item"
+                  key={materialId}
+                >
+                  <input
+                    type="checkbox"
+                    checked={isSelected}
+                    onChange={() =>
+                      toggleExistingMaterial(materialId)
+                    }
+                  />
+
+                  <span className="existing-material-icon">
+                    📄
+                  </span>
+
+                  <span className="existing-material-name">
+                    {getMaterialName(material)}
+                  </span>
+                </label>
+              );
+            })}
+          </div>
+
+          <p className="existing-material-count">
+            {selectedExistingMaterialIds.length} items selected
+          </p>
+        </section>
+      </div>
     </div>
   );
 }
