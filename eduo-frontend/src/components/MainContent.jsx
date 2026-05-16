@@ -531,7 +531,7 @@ export default function MainContent({
       }
     };
 
-  const uploadIfPossibleFromStepper =
+  const uploadSelectedFilesIfPossible =
     async () => {
       const hasFiles = selectedFiles.length > 0;
 
@@ -558,7 +558,7 @@ export default function MainContent({
       targetStep > 1
     ) {
       const uploadSucceeded =
-        await uploadIfPossibleFromStepper();
+        await uploadSelectedFilesIfPossible();
 
       if (!uploadSucceeded) {
         return;
@@ -796,7 +796,7 @@ const buildGenerationPayload = () => {
     async () => {
       if (currentStep === 1) {
         const uploadSucceeded =
-          await uploadSelectedFilesToCollection();
+          await uploadSelectedFilesIfPossible();
 
         if (!uploadSucceeded) {
           return;
@@ -991,11 +991,6 @@ const buildGenerationPayload = () => {
             }
 
             disabled={
-              (currentStep === 1 &&
-                (selectedFiles.length ===
-                  0 ||
-                  !generationSettings.collectionId)) ||
-
               isUploadingMaterials ||
 
               isGenerating ||
