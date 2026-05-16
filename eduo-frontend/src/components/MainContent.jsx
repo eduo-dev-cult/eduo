@@ -601,24 +601,108 @@ export default function MainContent({
   };
 
   /*
-   * Builds CreateGenerationRequest sent to backend.
-   *
-   * Backend currently expects:
-   * {
-   *   sourceMaterialIds: [...]
-   * }
-   *
-   * Settings are kept separately in frontend state
-   * until backend DTO supports them.
-   */
-  const buildGenerationPayload = () => {
-    return {
-      sourceMaterialIds:
-        uploadedMaterialsMetadata
-          .map((material) => material.id)
-          .filter(Boolean),
-    };
+ * Builds CreateGenerationRequest sent to backend.
+ */
+const buildGenerationPayload = () => {
+  return {
+    /*
+     * Backend expects:
+     * sourceMaterials: UUID[]
+     */
+    sourceMaterials:
+      uploadedMaterialsMetadata
+        .map((material) => material.id)
+        .filter(Boolean),
+
+    /*
+     * Number of questions to generate.
+     */
+    numOfQuestions: Number(
+      generationSettings.numberOfQuestions
+    ),
+
+    /*
+     * Backend enum values.
+     */
+    language:
+      generationSettings.language ===
+      "Swedish"
+        ? "SWEDISH"
+        : "ENGLISH",
+
+    focusArea:
+      generationSettings.focusArea ===
+      "keyConcepts"
+        ? "KEY_CONCEPTS"
+        : generationSettings.focusArea ===
+            "topics"
+          ? "TOPICS"
+          : "ENTIRE_MATERIAL",
+
+    /*
+     * Optional topics field.
+     */
+    topics:
+      generationSettings.specificTopics ??
+      "",
+
+    /*
+     * Difficulty flags.
+     */
+    easy:
+      generationSettings.difficulty.includes(
+        "Easy"
+      ),
+
+    medium:
+      generationSettings.difficulty.includes(
+        "Medium"
+      ),
+
+    hard:
+      generationSettings.difficulty.includes(
+        "Hard"
+      ),
+
+    /*
+     * Question type flags.
+     */
+    multipleChoice:
+      generationSettings.questionTypes.includes(
+        "multipleChoice"
+      ),
+
+    openEnded:
+      generationSettings.questionTypes.includes(
+        "openEnded"
+      ),
+
+    trueFalse:
+      generationSettings.questionTypes.includes(
+        "trueFalse"
+      ),
+
+    /*
+     * Output content flags.
+     */
+    questions:
+      generationSettings.outputContent
+        ?.questions ?? true,
+
+    correctAnswers:
+      generationSettings.outputContent
+        ?.correctAnswers ?? false,
+
+    explanations:
+      generationSettings.outputContent
+        ?.answerExplanations ?? false,
+
+    /*
+     * Optional description output.
+     */
+    description: false,
   };
+};
 
   const handleGenerate = async () => {
     setIsGenerating(true);
