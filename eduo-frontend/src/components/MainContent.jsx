@@ -9,10 +9,13 @@ import {
 } from "../api/collectionsApi";
 
 /*
- * Material upload API.
- * Returns metadata for uploaded files.
+ * Material management API.
+ * Includes functions for uploading files and fetching material metadata.
  */
-import { uploadMaterials } from "../api/materialsApi";
+import {
+  uploadMaterials,
+  getMaterialsByCollection,
+} from "../api/materialsApi";
 
 /*
  * Generation API.
@@ -282,6 +285,36 @@ export default function MainContent({
     message: "",
   });
 
+  /*
+  * Materials that already exist in the selected collection.
+  */
+  const [existingMaterials, setExistingMaterials] =
+    useState([]);
+
+  /*
+  * IDs of existing materials selected for generation.
+  */
+  const [
+    selectedExistingMaterialIds,
+    setSelectedExistingMaterialIds,
+  ] = useState([]);
+
+  /*
+  * Loading state for fetching existing materials.
+  */
+  const [
+    isLoadingExistingMaterials,
+    setIsLoadingExistingMaterials,
+  ] = useState(false);
+
+  /*
+  * Error message when fetching existing materials fails.
+  */
+  const [
+    existingMaterialsError,
+    setExistingMaterialsError,
+  ] = useState("");
+
   const [
     generationSettings,
     setGenerationSettings,
@@ -405,6 +438,76 @@ export default function MainContent({
       message: "",
     });
   }, [selectedFiles]);
+
+  /*
+  * Loads previously uploaded materials
+  * whenever selected collection changes.
+  */
+  useEffect(() => {
+    const loadExistingMaterials =
+      async () => {
+
+        /*
+        * No collection selected.
+        * Clear existing materials.
+        */
+        if (
+          !generationSettings.collectionId
+        ) {
+          setExistingMaterials([]);
+
+          setSelectedExistingMaterialIds(
+            []
+          );
+
+          return;
+        }
+
+        try {
+          setIsLoadingExistingMaterials(
+            true
+          );
+
+          setExistingMaterialsError("");
+
+          /*
+          * Fetch materials from backend.
+          */
+          const materials =
+            await getMaterialsByCollection(
+              generationSettings.collectionId
+            );
+
+          setExistingMaterials(materials);
+
+          /*
+          * Reset selected materials
+          * when switching collection.
+          */
+          setSelectedExistingMaterialIds(
+            []
+          );
+
+        } catch (error) {
+          console.error(
+            "Failed to load existing materials:",
+            error
+          );
+
+          setExistingMaterialsError(
+            error.message
+          );
+
+        } finally {
+          setIsLoadingExistingMaterials(
+            false
+          );
+        }
+      };
+
+    loadExistingMaterials();
+
+  }, [generationSettings.collectionId]);
 
   const getSubtitle = () => {
     switch (currentStep) {
@@ -606,13 +709,16 @@ export default function MainContent({
 const buildGenerationPayload = () => {
   return {
     /*
-     * Backend expects:
-     * sourceMaterials: UUID[]
+     * Combine IDs of selected existing materials
+     * with IDs of newly uploaded materials.
      */
-    sourceMaterials:
-      uploadedMaterialsMetadata
-        .map((material) => material.id)
-        .filter(Boolean),
+    sourceMaterials: [
+  ...selectedExistingMaterialIds,
+
+  ...uploadedMaterialsMetadata
+    .map((material) => material.id)
+    .filter(Boolean),
+],
 
     /*
      * Number of questions to generate.
@@ -794,14 +900,21 @@ const buildGenerationPayload = () => {
 
   const handleMainButtonClick =
     async () => {
+      // Step 1 -> Step 2
       if (currentStep === 1) {
-        const uploadSucceeded =
-          await uploadSelectedFilesIfPossible();
 
-        if (!uploadSucceeded) {
-          return;
+        //Only upload if user selected new files.
+        if (selectedFiles.length > 0) {
+
+          const uploadSucceeded =
+            await uploadSelectedFilesToCollection();
+
+          if (!uploadSucceeded) {
+            return;
+          }
         }
 
+        // Continue to step 2 even if no new files were selected
         setCurrentStep(2);
 
         return;
@@ -914,6 +1027,24 @@ const buildGenerationPayload = () => {
 
               uploadStatus={
                 materialUploadStatus
+              }
+
+              existingMaterials={
+                existingMaterials
+              }
+              
+              selectedExistingMaterialIds={
+                selectedExistingMaterialIds
+              }
+              
+              setSelectedExistingMaterialIds={
+                setSelectedExistingMaterialIds
+              }
+              isLoadingExistingMaterials={
+                isLoadingExistingMaterials
+              }
+              existingMaterialsError={
+                existingMaterialsError
               }
             />
           )}
