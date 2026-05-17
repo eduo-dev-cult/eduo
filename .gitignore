@@ -1,9 +1,3 @@
-# USER ITEMS GO HERE
-# Då sektionen under är autogenererad, för det är drygt att sitta och jämföra dem i diffs.
-/.env
-
-# END USER ITEMS
-
 # Created by https://www.toptal.com/developers/gitignore/api/java,visualstudiocode,intellij+all,maven,windows,linux,macos
 # Edit at https://www.toptal.com/developers/gitignore?templates=java,visualstudiocode,intellij+all,maven,windows,linux,macos
 
@@ -236,3 +230,8 @@ $RECYCLE.BIN/
 *.lnk
 
 # End of https://www.toptal.com/developers/gitignore/api/java,visualstudiocode,intellij+all,maven,windows,linux,macos
+
+# USER ITEMS GO BELOW HERE
+# Då sektionen under är autogenererad, för det är drygt att sitta och jämföra dem i diffs.
+/.env
+/eduo.iml
