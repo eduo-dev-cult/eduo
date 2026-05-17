@@ -59,7 +59,7 @@ class OllamaLlmServiceTest {
                 Capabilities: [brief description of what your model can do well]
                 Limitations: [brief description of any known limitations or weaknesses of your model]
             """;
-    @Disabled("Requires a running Ollama instance")
+    //@Disabled("Requires a running Ollama instance")
     // @DisabledIfEnvironmentVariable(named = "CI", matches = "true", disabledReason = "Requires local Ollama instance")
     //llm-suggested alternative^
     @Test
