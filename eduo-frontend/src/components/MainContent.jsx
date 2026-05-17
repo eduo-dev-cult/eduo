@@ -18,10 +18,13 @@ import {
 } from "../api/materialsApi";
 
 /*
- * Generation API.
- * Sends CreateGenerationRequest to backend.
+ * Generation API functions.
+ * Includes functions for creating generations and fetching generation results.
  */
-import { createGeneration } from "../api/generationsApi";
+import {
+  createGeneration,
+  getGenerationById,
+} from "../api/generationsApi";
 
 /*
  * UI components used in the generation flow.
@@ -179,7 +182,7 @@ function createFilesSignature(files, collectionId) {
 }
 
 /*
- * Converts backend generation response into
+ * Converts saved backend generation data into
  * the format expected by PreviewSave.
  */
 function normalizeGenerationResponse(
@@ -188,45 +191,100 @@ function normalizeGenerationResponse(
   settings,
   uploadedMaterialsMetadata
 ) {
-  const firstFile = selectedFiles[0];
-  const firstMaterial = uploadedMaterialsMetadata[0];
+  const sourceMaterials =
+    data.sourceMaterials ??
+    data.sourceMaterialIds ??
+    uploadedMaterialsMetadata ??
+    [];
 
   return {
     id: data.id ?? data.generationId ?? null,
 
     output:
+      data.quiz?.rawContent ??
       data.output ??
       data.generatedOutput ??
       data.text ??
       data.rawContent ??
-      data.quiz?.rawContent ??
       "",
 
     generatedFrom: {
       fileName:
-        data.generatedFrom?.fileName ??
-        data.fileName ??
-        firstMaterial?.fileName ??
-        firstFile?.name ??
+        sourceMaterials[0]?.fileName ??
+        sourceMaterials[0]?.filename ??
+        selectedFiles[0]?.name ??
         "Unknown source",
 
       fileType:
-        data.generatedFrom?.fileType ??
-        data.fileType ??
-        firstMaterial?.fileType ??
-        firstFile?.type ??
+        sourceMaterials[0]?.fileType ??
+        sourceMaterials[0]?.contentType ??
+        selectedFiles[0]?.type ??
         "Unknown file type",
 
       fileNames:
-        data.generatedFrom?.fileNames ??
-        uploadedMaterialsMetadata.map(
-          (material) => material.fileName
+        sourceMaterials.map(
+          (material) =>
+            material.fileName ??
+            material.filename ??
+            material.name ??
+            "Unknown file"
         ),
 
-      materials: uploadedMaterialsMetadata,
+      materials: sourceMaterials,
     },
 
-    settings,
+    settings: {
+      ...settings,
+
+      numberOfQuestions:
+        data.numOfQuestions ??
+        settings.numberOfQuestions,
+
+      language:
+        data.language === "SWEDISH"
+          ? "Swedish"
+          : data.language === "ENGLISH"
+          ? "English"
+          : settings.language,
+
+      focusArea:
+        data.focusArea === "KEY_CONCEPTS"
+          ? "Key concepts"
+          : data.focusArea === "TOPICS"
+          ? "Topics"
+          : data.focusArea === "ENTIRE_MATERIAL"
+          ? "Entire material"
+          : settings.focusArea,
+
+      specificTopics:
+        data.topics ?? settings.specificTopics,
+
+      difficulty: [
+        data.easy ? "Easy" : null,
+        data.medium ? "Medium" : null,
+        data.hard ? "Hard" : null,
+      ].filter(Boolean),
+
+      questionTypes: [
+        data.multipleChoice ? "multipleChoice" : null,
+        data.openEnded ? "openEnded" : null,
+        data.trueFalse ? "trueFalse" : null,
+      ].filter(Boolean),
+
+      outputContent: {
+        questions:
+          data.questions ??
+          settings.outputContent?.questions,
+
+        correctAnswers:
+          data.correctAnswers ??
+          settings.outputContent?.correctAnswers,
+
+        answerExplanations:
+          data.explanations ??
+          settings.outputContent?.answerExplanations,
+      },
+    },
 
     createdAt:
       data.createdAt ??
@@ -704,111 +762,79 @@ export default function MainContent({
   };
 
   /*
- * Builds CreateGenerationRequest sent to backend.
- */
-const buildGenerationPayload = () => {
-  return {
-    /*
-     * Combine IDs of selected existing materials
-     * with IDs of newly uploaded materials.
-     */
-    sourceMaterials: [
-  ...selectedExistingMaterialIds,
+   * Builds CreateGenerationRequest sent to backend.
+   */
+  const buildGenerationPayload = () => {
+    const uploadedMaterialIds =
+      uploadedMaterialsMetadata
+        .map((material) => material.id)
+        .filter(Boolean);
 
-  ...uploadedMaterialsMetadata
-    .map((material) => material.id)
-    .filter(Boolean),
-],
+    return {
+      /*
+      * Backend expects sourceMaterials, not sourceMaterialIds.
+      * This includes both existing selected materials and newly uploaded materials.
+      */
+      sourceMaterials: [
+        ...selectedExistingMaterialIds,
+        ...uploadedMaterialIds,
+      ],
 
-    /*
-     * Number of questions to generate.
-     */
-    numOfQuestions: Number(
-      generationSettings.numberOfQuestions
-    ),
+      numOfQuestions: Number(
+        generationSettings.numberOfQuestions
+      ),
 
-    /*
-     * Backend enum values.
-     */
-    language:
-      generationSettings.language ===
-      "Swedish"
-        ? "SWEDISH"
-        : "ENGLISH",
+      language:
+        generationSettings.language === "Swedish"
+          ? "SWEDISH"
+          : "ENGLISH",
 
-    focusArea:
-      generationSettings.focusArea ===
-      "keyConcepts"
-        ? "KEY_CONCEPTS"
-        : generationSettings.focusArea ===
-            "topics"
+      focusArea:
+        generationSettings.focusArea === "keyConcepts"
+          ? "KEY_CONCEPTS"
+          : generationSettings.focusArea === "topics"
           ? "TOPICS"
           : "ENTIRE_MATERIAL",
 
-    /*
-     * Optional topics field.
-     */
-    topics:
-      generationSettings.specificTopics ??
-      "",
+      topics:
+        generationSettings.specificTopics ?? "",
 
-    /*
-     * Difficulty flags.
-     */
-    easy:
-      generationSettings.difficulty.includes(
-        "Easy"
-      ),
+      easy:
+        generationSettings.difficulty.includes("Easy"),
 
-    medium:
-      generationSettings.difficulty.includes(
-        "Medium"
-      ),
+      medium:
+        generationSettings.difficulty.includes("Medium"),
 
-    hard:
-      generationSettings.difficulty.includes(
-        "Hard"
-      ),
+      hard:
+        generationSettings.difficulty.includes("Hard"),
 
-    /*
-     * Question type flags.
-     */
-    multipleChoice:
-      generationSettings.questionTypes.includes(
-        "multipleChoice"
-      ),
+      multipleChoice:
+        generationSettings.questionTypes.includes(
+          "multipleChoice"
+        ),
 
-    openEnded:
-      generationSettings.questionTypes.includes(
-        "openEnded"
-      ),
+      openEnded:
+        generationSettings.questionTypes.includes(
+          "openEnded"
+        ),
 
-    trueFalse:
-      generationSettings.questionTypes.includes(
-        "trueFalse"
-      ),
+      trueFalse:
+        generationSettings.questionTypes.includes(
+          "trueFalse"
+        ),
 
-    /*
-     * Output content flags.
-     */
-    questions:
-      generationSettings.outputContent
-        ?.questions ?? true,
+      questions:
+        generationSettings.outputContent?.questions ?? true,
 
-    correctAnswers:
-      generationSettings.outputContent
-        ?.correctAnswers ?? false,
+      correctAnswers:
+        generationSettings.outputContent?.correctAnswers ?? false,
 
-    explanations:
-      generationSettings.outputContent
-        ?.answerExplanations ?? false,
+      explanations:
+        generationSettings.outputContent?.answerExplanations ?? false,
 
-    /*
-     * Optional description output.
-     */
-    description: false,
+      description: false,
+    };
   };
-};
 
   const handleGenerate = async () => {
     setIsGenerating(true);
@@ -824,20 +850,57 @@ const buildGenerationPayload = () => {
         payload
       );
 
-      const response =
+      /*
+       * Currently selected collection.
+       */
+      const collectionId =
+        generationSettings.collectionId;
+        
+      /*
+       * Create the generation first.
+       */
+      const createdGeneration =
         await createGeneration(
-          generationSettings.collectionId,
+          collectionId,
           payload
         );
 
       console.log(
-        "Generation response:",
-        response
+        "Created generation:",
+        createdGeneration
+      );
+
+      /*
+       * Get the generation id returned by backend.
+       */
+      const generationId =
+        createdGeneration?.id ??
+        createdGeneration?.generationId;
+
+      if (!generationId) {
+        throw new Error(
+          "Generation was created, but no generation ID was returned."
+        );
+      }
+
+      /*
+       * Fetch the saved generation from backend.
+       * This makes step 3 show the data backend actually saved.
+       */
+      const savedGeneration =
+        await getGenerationById(
+          collectionId,
+          generationId
+        );
+
+      console.log(
+        "Saved generation:",
+        savedGeneration
       );
 
       setGenerationResult(
         normalizeGenerationResponse(
-          response,
+          savedGeneration,
           selectedFiles,
           generationSettings,
           uploadedMaterialsMetadata

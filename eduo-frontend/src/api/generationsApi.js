@@ -72,3 +72,26 @@ export async function createGeneration(
     "Failed to create generation"
   );
 }
+
+/**
+ * Fetches a saved generation from the backend.
+ *
+ * Backend endpoint:
+ * GET /collections/{collectionId}/generations/{generationId}
+ *
+ * Used after creating a generation so the preview page
+ * displays the generation data that backend actually saved.
+ */
+export async function getGenerationById(
+  collectionId,
+  generationId
+) {
+  const response = await fetch(
+    `${API_BASE_URL}/collections/${collectionId}/generations/${generationId}`
+  );
+
+  return handleResponse(
+    response,
+    "Failed to load saved generation"
+  );
+}
