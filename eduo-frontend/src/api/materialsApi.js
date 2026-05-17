@@ -1,5 +1,5 @@
-// Base URL for the backend API.
-// Change this if the backend URL or port changes.
+import { fetchConfig } from "./configApi";
+
 const API_BASE_URL = "http://localhost:8080";
 
 /**
@@ -51,6 +51,12 @@ async function handleResponse(response, defaultMessage) {
  * not as normal JSON.
  */
 export async function uploadMaterial(collectionId, file) {
+  const { maxFileSizeBytes } = await fetchConfig();
+  if (file.size > maxFileSizeBytes) {
+    const limitMB = Math.round(maxFileSizeBytes / (1024 * 1024));
+    throw new Error(`"${file.name}" exceeds the ${limitMB} MB upload limit.`);
+  }
+
   const formData = new FormData();
 
   // The key "file" must match the parameter name expected by the backend.
