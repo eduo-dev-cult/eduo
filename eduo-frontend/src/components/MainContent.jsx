@@ -784,8 +784,14 @@ export default function MainContent({
         generationSettings.numberOfQuestions
       ),
 
+      /*
+       * Backend expects enum values.
+       * Normalized frontend value to avoid case-sensitive bugs.
+       */
       language:
-        generationSettings.language === "Swedish"
+        generationSettings.language
+          ?.toString()
+          .toLowerCase() === "swedish"
           ? "SWEDISH"
           : "ENGLISH",
 
