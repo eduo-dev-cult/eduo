@@ -233,3 +233,12 @@
     grid-column: auto;
   }
 }
+
+.summary-sub-value {
+  display: inline-block;
+
+  margin-top: 4px;
+
+  color: var(--muted);
+  font-size: 13px;
+}

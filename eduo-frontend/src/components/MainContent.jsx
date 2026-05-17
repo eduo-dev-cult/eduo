@@ -251,7 +251,7 @@ function normalizeGenerationResponse(
         data.focusArea === "KEY_CONCEPTS"
           ? "Key concepts"
           : data.focusArea === "TOPICS"
-          ? "Topics"
+          ? "Specific topics"
           : data.focusArea === "ENTIRE_MATERIAL"
           ? "Entire material"
           : settings.focusArea,
