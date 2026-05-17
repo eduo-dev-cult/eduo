@@ -397,7 +397,7 @@ export default function UploadBox({
             )}
 
           <div className="existing-material-list">
-            {existingMaterials.slice(0, 4).map((material) => {
+            {existingMaterials.map((material) => {
               const materialId =
                 getMaterialId(material);
 
