@@ -792,8 +792,10 @@ export default function MainContent({
       focusArea:
         generationSettings.focusArea === "keyConcepts"
           ? "KEY_CONCEPTS"
-          : generationSettings.focusArea === "topics"
+          : generationSettings.focusArea === "specificTopics"
           ? "TOPICS"
+          : generationSettings.focusArea === "entireMaterial"
+          ? "ENTIRE_MATERIAL"
           : "ENTIRE_MATERIAL",
 
       topics:
