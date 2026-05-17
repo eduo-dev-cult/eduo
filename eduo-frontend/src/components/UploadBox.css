@@ -297,10 +297,11 @@
 .existing-material-list {
   margin-top: 18px;
 
+  max-height: 210px;
+  overflow-y: auto;
+
   border: 1px solid #e1e1dc;
   border-radius: 7px;
-
-  overflow: hidden;
 }
 
 .existing-material-item {
