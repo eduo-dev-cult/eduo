@@ -137,6 +137,13 @@ export default function PreviewSave({
     generationResult?.generatedFrom;
 
   /*
+   * Prefer settings from the saved backend generation.
+   * Fall back to current frontend settings if needed.
+   */
+  const displayedSettings =
+    generationResult?.settings ?? settings;
+
+  /*
    * Prefer backend/generated metadata.
    * Fall back to selected browser files.
    */
@@ -279,7 +286,7 @@ export default function PreviewSave({
 
               <span className="summary-value">
                 {formatList(
-                  settings.questionTypes,
+                  displayedSettings.questionTypes,
                   formatQuestionType
                 )}
               </span>
@@ -292,7 +299,7 @@ export default function PreviewSave({
 
               <span className="summary-value">
                 {formatList(
-                  settings.difficulty,
+                  displayedSettings.difficulty,
                   formatDifficulty
                 )}
               </span>
@@ -305,7 +312,7 @@ export default function PreviewSave({
 
               <span className="summary-value">
                 {
-                  settings.numberOfQuestions
+                  displayedSettings.numberOfQuestions
                 }
               </span>
             </div>
@@ -317,7 +324,7 @@ export default function PreviewSave({
 
               <span className="summary-value">
                 {formatLanguage(
-                  settings.language
+                  displayedSettings.language
                 )}
               </span>
             </div>
@@ -329,7 +336,7 @@ export default function PreviewSave({
 
               <span className="summary-value">
                 {formatFocusArea(
-                  settings.focusArea
+                  displayedSettings.focusArea
                 )}
               </span>
             </div>
@@ -341,7 +348,7 @@ export default function PreviewSave({
 
               <span className="summary-value">
                 {formatOutputContent(
-                  settings.outputContent
+                  displayedSettings.outputContent
                 )}
               </span>
             </div>
@@ -353,7 +360,7 @@ export default function PreviewSave({
 
               <span className="summary-value">
                 {formatCollection(
-                  settings.collectionId
+                  displayedSettings.collectionId
                 )}
               </span>
             </div>
