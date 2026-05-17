@@ -329,17 +329,29 @@ export default function PreviewSave({
               </span>
             </div>
 
-            <div className="generated-summary-item wide-summary-item">
-              <span className="summary-label">
-                Focus area
-              </span>
+           <div className="generated-summary-item wide-summary-item">
+            <span className="summary-label">
+              Focus area
+            </span>
 
-              <span className="summary-value">
-                {formatFocusArea(
-                  displayedSettings.focusArea
-                )}
-              </span>
-            </div>
+            <span className="summary-value">
+              {formatFocusArea(
+                displayedSettings.focusArea
+              )}
+
+              {displayedSettings.specificTopics && (
+                <>
+                  <br />
+
+                  <span className="summary-sub-value">
+                    {
+                      displayedSettings.specificTopics
+                    }
+                  </span>
+                </>
+              )}
+            </span>
+          </div>
 
             <div className="generated-summary-item wide-summary-item">
               <span className="summary-label">
