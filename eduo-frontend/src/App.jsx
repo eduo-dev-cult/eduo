@@ -3,7 +3,10 @@ import { useEffect, useState } from "react";
 import "./App.css";
 import SideBar from "./components/SideBar";
 import TopBar from "./components/TopBar";
-import MainContent from "./components/MainContent";
+
+import GenerationsPage from "./pages/GenerationsPage";
+import CollectionsPage from "./pages/CollectionsPage";
+
 import "./styles/Variables.css";
 import "./styles/Global.css";
 import "./styles/Buttons.css";
@@ -58,6 +61,23 @@ function App() {
     loginDemoUser();
   }, []);
 
+  /*
+   * Decides which page should be shown inside the main page area.
+   * The sidebar and topbar stay visible because only this content changes.
+   */
+  const renderActivePage = () => {
+    if (activePage === "collections") {
+      return <CollectionsPage currentUser={currentUser} />;
+    }
+
+    return (
+      <GenerationsPage
+        activePage={activePage}
+        currentUser={currentUser}
+      />
+    );
+  };
+
   if (!isDemoLoginDone) {
     return (
       <div className="app">
@@ -76,9 +96,9 @@ function App() {
       {/* Side navigation. Changes activePage when a menu option is clicked. */}
       <SideBar activePage={activePage} setActivePage={setActivePage} />
 
-      {/* Main page content. The shown content depends on activePage. */}
+      {/* Main page content. The shown page depends on activePage. */}
       <div className="page">
-        <MainContent activePage={activePage} currentUser={currentUser} />
+        {renderActivePage()}
       </div>
     </div>
   );

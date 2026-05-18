@@ -1,5 +1,5 @@
 import { useState } from "react";
-import SettingsPanel from "./SettingsPanel";
+import SettingsPanel from "./generations/SettingsPanel";
 
 const STORAGE_KEY = "eduo_generation_preferences";
 

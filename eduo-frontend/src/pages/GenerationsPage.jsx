@@ -29,13 +29,13 @@ import {
 /*
  * UI components used in the generation flow.
  */
-import Stepper from "./Stepper";
-import UploadBox from "./UploadBox";
-import SettingsPanel from "./SettingsPanel";
-import PreviewSave from "./PreviewSave";
-import GenerationPreferences from "./GenerationPreferences";
+import Stepper from "../components/generations/Stepper";
+import UploadBox from "../components/generations/UploadBox";
+import SettingsPanel from "../components/generations/SettingsPanel";
+import PreviewSave from "../components/generations/PreviewSave";
+import GenerationPreferences from "../components/GenerationPreferences";
 
-import "./MainContent.css";
+import "./GenerationsPage.css";
 
 /*
  * LocalStorage key for saved generation preferences.
