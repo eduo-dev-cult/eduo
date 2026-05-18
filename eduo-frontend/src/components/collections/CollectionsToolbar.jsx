@@ -1,20 +1,25 @@
 import "./CollectionsToolbar.css";
 
-export default function CollectionsToolbar() {
+export default function CollectionsToolbar({
+  sortOption,
+  setSortOption,
+}) {
   return (
     <div className="collections-toolbar">
-      {/* Search input */}
       <input
         type="text"
         placeholder="Search collections..."
         className="collections-search"
       />
 
-      {/* Sort dropdown */}
-      <select className="collections-sort">
-        <option>Recently updated</option>
-        <option>Alphabetical</option>
-        <option>Most generations</option>
+      <select
+        className="collections-sort"
+        value={sortOption}
+        onChange={(event) => setSortOption(event.target.value)}
+      >
+        <option value="recent">Recently updated</option>
+        <option value="alphabetical">Alphabetical</option>
+        <option value="most-generations">Most generations</option>
       </select>
     </div>
   );
