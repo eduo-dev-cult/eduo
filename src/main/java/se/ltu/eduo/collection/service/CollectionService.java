@@ -39,19 +39,20 @@ public class CollectionService {
     // Standard CRUD behaviours.
     // -------------------------------------------------------------------------
 
-    /**
+   /**
      * Creates and persists a new collection owned by the given user.
      * Time of creation is that of the invocation.
      * @param userId the owner of the collection
      * @param name the name of the collection
+     * @param description optional description of the collection
      * @return the created collection
      */
     @Transactional
-    public Collection createCollection(Integer userId, String name) throws EntityNotFoundException
+    public Collection createCollection(Integer userId, String name, String description) throws EntityNotFoundException
     {
         User user = userRepository.findById(userId)
-                                  .orElseThrow(() -> new EntityNotFoundException("User not found by this ID: " + userId));
-        Collection collection = new Collection(user, name);
+                                .orElseThrow(() -> new EntityNotFoundException("User not found by this ID: " + userId));
+        Collection collection = new Collection(user, name, description);
         return collectionRepository.save(collection);
     }
 
@@ -75,10 +76,11 @@ public class CollectionService {
      * and refreshes automatically on save.
      */
     @Transactional
-    public Collection updateCollection(UUID collectionId, String name) {
+    public Collection updateCollection(UUID collectionId, String name, String description) throws EntityNotFoundException {
         Collection collection = collectionRepository.findById(collectionId)
                                                     .orElseThrow(() -> new EntityNotFoundException("collection not found with this ID: " + collectionId));
         collection.setName(name);
+        collection.setDescription(description);
         return collectionRepository.save(collection);
     }
 

@@ -39,6 +39,10 @@ public class Collection {
     @Column(name = "name", nullable = false)
     private String name;
 
+    // Optional description shown in the collections overview.
+    @Column(name = "description")
+    private String description;
+
     @CreationTimestamp
     @Column(name = "created_at", nullable = false, updatable = false)
     private Instant createdAt;
@@ -56,5 +60,11 @@ public class Collection {
     public Collection(User owner, String name) {
         this.owner = owner;
         this.name = name;
+    }
+
+    public Collection(User owner, String name, String description) {
+        this.owner = owner;
+        this.name = name;
+        this.description = description;
     }
 }

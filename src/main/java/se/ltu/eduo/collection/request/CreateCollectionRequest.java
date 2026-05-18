@@ -7,4 +7,6 @@ public record CreateCollectionRequest(
         @NotNull(message = "must be associated with a user")
         Integer userId,
         @NotBlank(message = "collection must have a name")
-        String name) {}
+        String name,
+        String description
+) {}

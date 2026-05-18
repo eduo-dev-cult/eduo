@@ -18,7 +18,7 @@ import se.ltu.eduo.collection.model.Quiz;
 import se.ltu.eduo.collection.model.SourceMaterial;
 import se.ltu.eduo.collection.request.CreateCollectionRequest;
 import se.ltu.eduo.collection.request.CreateGenerationRequest;
-import se.ltu.eduo.collection.request.UpdateProjectRequest;
+import se.ltu.eduo.collection.request.UpdateCollectionRequest;
 import se.ltu.eduo.collection.request.UpdateQuizRequest;
 import se.ltu.eduo.collection.mapper.CollectionMapper;
 import se.ltu.eduo.collection.mapper.GenerationMapper;
@@ -50,7 +50,7 @@ public class CollectionController {
     @PostMapping
     public ResponseEntity<CollectionDto> createCollection(@Valid @RequestBody CreateCollectionRequest request) {
         //fixme ide reports xss risk in method, might be false positive
-        Collection collection = collectionService.createCollection(request.userId(), request.name());
+        Collection collection = collectionService.createCollection(request.userId(), request.name(), request.description());
         return ResponseEntity.status(HttpStatus.CREATED).body(collectionMapper.toDto(collection));
     }
 
@@ -70,8 +70,8 @@ public class CollectionController {
 
     @PatchMapping("/{collectionId}")
     public ResponseEntity<CollectionDto> updateProject(@PathVariable UUID collectionId,
-                                                       @RequestBody UpdateProjectRequest request) {
-        return ResponseEntity.ok(collectionMapper.toDto(collectionService.updateCollection(collectionId, request.name())));
+                                                       @RequestBody UpdateCollectionRequest request) {
+        return ResponseEntity.ok(collectionMapper.toDto(collectionService.updateCollection(collectionId, request.name(), request.description())));
     }
 
     @DeleteMapping("/{collectionId}")
