@@ -15,7 +15,16 @@ export default function CollectionCard({ collection }) {
     ? collection.generations.length
     : collection.generations ?? 0;
 
-  const updated = collection.updatedAt || collection.createdAt || "Unknown";
+  const rawUpdatedDate =
+  collection.updatedAt || collection.createdAt;
+
+  const updated = rawUpdatedDate
+    ? new Date(rawUpdatedDate).toLocaleDateString("sv-SE", {
+        year: "numeric",
+        month: "short",
+        day: "numeric",
+      })
+    : "Unknown";
 
   return (
     <div className="collection-card">
