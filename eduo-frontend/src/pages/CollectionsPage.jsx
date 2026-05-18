@@ -30,6 +30,9 @@ export default function CollectionsPage({ currentUser }) {
   // Stores the current sorting option for the collections
   const [sortOption, setSortOption] = useState("recent");
 
+  // Stores the current search query for filtering collections
+  const [searchQuery, setSearchQuery] = useState("");
+
   useEffect(() => {
     const fetchCollections = async () => {
       const userId = getUserId(currentUser);
@@ -92,7 +95,19 @@ export default function CollectionsPage({ currentUser }) {
     }
   };
 
-  const sortedCollections = [...collections].sort((a, b) => {
+  const filteredCollections = collections.filter((collection) => {
+    const name = collection.name || "";
+    const description = collection.description || "";
+
+    const query = searchQuery.toLowerCase();
+
+    return (
+      name.toLowerCase().includes(query) ||
+      description.toLowerCase().includes(query)
+    );
+  });
+
+  const sortedCollections = [...filteredCollections].sort((a, b) => {
     if (sortOption === "alphabetical") {
       return (a.name || "").localeCompare(b.name || "");
     }
@@ -133,6 +148,8 @@ export default function CollectionsPage({ currentUser }) {
       <CollectionsToolbar
         sortOption={sortOption}
         setSortOption={setSortOption}
+        searchQuery={searchQuery}
+        setSearchQuery={setSearchQuery}
       />
 
       {isLoading && (
