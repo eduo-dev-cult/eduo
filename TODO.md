@@ -2,22 +2,26 @@
 
 ## Open — surfaced in this branch (front-backend-rest-sync)
 
-### Bugs / correctness
+### Code hygiene before opening the PR
 
-- [ ] `configApi.js` (eduo-frontend/src/api/configApi.js:5-9) caches the `fetch` promise in `configPromise` for the lifetime of the page, but never resets it on failure. If the first `/config` request fails (backend not yet up, transient network error), the rejected promise is cached and every subsequent `uploadMaterial` call rejects without retrying. Either clear `configPromise` in a `.catch`, or re-fetch on rejection.
-- [ ] `configApi.js` calls `.json()` without checking `res.ok`. A non-2xx response (e.g. 500) would still parse JSON and yield `{maxFileSizeBytes: undefined}`, making `file.size > undefined` always false — silently disabling the client-side check. Add an `if (!res.ok) throw …` guard.
-
-### Code hygiene
-
-- [ ] Inconsistent error-body schema in `GlobalExceptionHandler` (GlobalExceptionHandler.java:25-31 vs 33-54): `handleFileTooLarge` uses `{status, message, timestamp}` while `handleValidationErrors` uses `{status, error, fields, timestamp}`. Pick one key (`message` vs `error`) and apply consistently so the frontend can parse uniformly.
-- [ ] `handleFileTooLarge` hardcodes `"status", 413` — use `HttpStatus.CONTENT_TOO_LARGE.value()` to avoid drift.
-- [ ] `MaxUploadSizeExceededException ex` parameter is unused in `handleFileTooLarge`. Either log `ex.getMessage()` (it contains the actual offending size) or drop the parameter name.
-- [ ] `ConfigController.java` and `configApi.js` both end without a trailing newline — minor style nit.
+- [ ] Leftover debug print in `CollectionController.createGeneration` (line 123): `logger.atDebug().log("incoming json is " + request.toString());` (commit `7e3ae6c`, "add debug printouts to troubleshoot bad request"). Two issues — (a) it's a debug aid that should not ship; (b) the string is built with `+` outside the lambda form, defeating the lazy-eval intent of `atDebug()`. Remove it, or rewrite with the templated form `logger.atDebug().log("incoming json is {}", request)` if it's deliberately kept.
+- [ ] `logging.level.org.springframework.web=DEBUG` in `application.properties:47` (commit `9b0c652`) is verbose for prod and prints every request line. Either move under `application-dev.properties` (or similar profile) or remove before merge.
+- [ ] `WebConfig.restClientBuilder()` (commit `0c9009c`) — explicit bean added because "backend does not start with ollama without this". Spring Boot autoconfigures a `RestClient.Builder`, so the underlying reason is worth investigating (excluded autoconfig? profile mismatch?). At minimum add a one-line comment in `WebConfig` explaining why the bean is hand-rolled so a future cleanup pass doesn't strip it.
 - [ ] `API_BASE_URL = "http://localhost:8080"` is now duplicated across four frontend API files (configApi.js, materialsApi.js, generationsApi.js, collectionsApi.js). Hoist to a shared module before the count grows further — pre-existing pattern, but this branch added the fourth copy.
 
 ### Open questions / design
 
 - [ ] `/config` endpoint is unauthenticated and currently exposes only the upload limit. Fine for now, but document the intent (public config vs. user-scoped config) before adding more fields — anything user- or env-sensitive should not land here.
+- [ ] `MainContent.jsx buildGenerationPayload` hardcodes `description: false` and defaults `questions` to `true`. Intentional given there's no UI yet, but a short comment would prevent future churn when the UI catches up. Also: language/focusArea mapping silently falls through to `"ENGLISH"` / `"ENTIRE_MATERIAL"` for unexpected values — fine for the current closed set, watch if locales/options expand.
+- [ ] `MainContent.jsx` step-1 continue button no longer disables when `selectedFiles.length === 0 || !generationSettings.collectionId` (commit `92efccc`). The commit message frames this as intentional — verify `handleContinueStep` still guards the no-collection / no-files case so the user can't reach step 2 in an invalid state. (Couldn't verify without running the frontend.)
+
+### Closed in this branch
+
+- [x] `configApi.js` cached the fetch promise across failures, permanently disabling client-side validation after one bad first call. Fixed in commit `27c3887` (plus a follow-up): `.catch` clears `configPromise` and rethrows so the next call retries.
+- [x] `configApi.js` parsed `.json()` without checking `res.ok`, so a non-2xx silently yielded `maxFileSizeBytes: undefined` and made `file.size > undefined` always false. Fixed in commit `27c3887`: throws an explicit `Error` on non-OK responses.
+- [x] Inconsistent error-body schema between `handleFileTooLarge` (`message`) and `handleValidationErrors` (`error`). Both now use `error`, plus literal `413`/`400` swapped for `HttpStatus.CONTENT_TOO_LARGE.value()` / `HttpStatus.BAD_REQUEST.value()` (uncommitted at time of review).
+- [x] `MaxUploadSizeExceededException ex` was unused. Now used: handler walks the cause chain reflectively for `getActualSize()` and emits `"File of X.X MB exceeds the maximum upload size of Y.Y MB."` when available, falling back to limit-only / generic messages.
+- [x] Trailing-newline nits on `ConfigController.java` and `configApi.js` — fixed (commits `4fabc1b` javadoc edit and `27c3887` respectively).
 
 ## Open — surfaced in earlier branch (db-generation-settings-persist)
 
