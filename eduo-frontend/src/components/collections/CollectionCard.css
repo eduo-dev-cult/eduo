@@ -1,0 +1,99 @@
+.collection-card {
+  background: white;
+
+  border: 1px solid var(--border);
+  border-radius: 10px;
+
+  padding: 22px;
+
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.collection-card-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.collection-icon {
+  width: 52px;
+  height: 52px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  background: var(--background-dark);
+  border-radius: 12px;
+
+  font-size: 26px;
+}
+
+.collection-menu-button {
+  border: none;
+  background: transparent;
+
+  font-size: 22px;
+  cursor: pointer;
+
+  color: var(--text-light);
+}
+
+.collection-content h2 {
+  margin: 0 0 8px 0;
+
+  font-size: 22px;
+}
+
+.collection-content p {
+  margin: 0;
+
+  line-height: 1.5;
+  color: var(--text-light);
+}
+
+.collection-stats {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 14px;
+
+  font-size: 14px;
+  color: var(--text-light);
+}
+
+.collection-actions {
+  display: flex;
+  gap: 12px;
+}
+
+.primary-button,
+.secondary-button {
+  height: 40px;
+  padding: 0 16px;
+
+  border-radius: 5px;
+
+  font-size: 14px;
+  font-weight: 600;
+
+  cursor: pointer;
+}
+
+.primary-button {
+  background: var(--blue);
+  color: white;
+  border: none;
+}
+
+.primary-button:hover {
+  background: var(--blue-dark);
+}
+
+.secondary-button {
+  background: transparent;
+  color: var(--text);
+
+  border: 1px solid var(--border);
+}

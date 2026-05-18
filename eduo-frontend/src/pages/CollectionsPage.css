@@ -1,0 +1,86 @@
+.collections-page {
+  height: 100%;
+
+  margin: 0 32px 32px 0;
+  padding: 32px;
+
+  background: white;
+  border-radius: 10px;
+
+  overflow-y: auto;
+}
+
+.collections-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+
+  margin-bottom: 28px;
+}
+
+.collections-header h1 {
+  margin: 0;
+
+  font-size: 42px;
+  font-weight: 700;
+
+  color: var(--text);
+}
+
+.collections-header p {
+  margin-top: 8px;
+
+  color: var(--text-light);
+  font-size: 16px;
+}
+
+.create-collection-button {
+  height: 45px;
+  padding: 0 18px;
+
+  background: var(--blue);
+  color: white;
+
+  border: none;
+  border-radius: 5px;
+
+  font-size: 15px;
+  font-weight: 600;
+
+  cursor: pointer;
+}
+
+.create-collection-button:hover {
+  background: var(--blue-dark);
+}
+
+.collections-status-text,
+.collections-error-text {
+  margin-top: 24px;
+  font-size: 16px;
+  color: var(--text-light);
+}
+
+.collections-error-text {
+  color: #b00020;
+}
+
+.collections-empty-state {
+  margin-top: 32px;
+  padding: 40px;
+
+  border: 1px dashed var(--border);
+  border-radius: 10px;
+
+  text-align: center;
+}
+
+.collections-empty-state h2 {
+  margin: 0 0 8px 0;
+  font-size: 24px;
+}
+
+.collections-empty-state p {
+  margin: 0;
+  color: var(--text-light);
+}
