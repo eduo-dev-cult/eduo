@@ -2,7 +2,6 @@ package se.ltu.eduo.utils;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.web.client.RestClient;
 import org.springframework.web.servlet.config.annotation.CorsRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
@@ -13,11 +12,6 @@ public class WebConfig {
      * Allows the React frontend to send requests to the Spring Boot backend
      * during local development.
      */
-    @Bean
-    public RestClient.Builder restClientBuilder() {
-        return RestClient.builder();
-    }
-
     @Bean
     public WebMvcConfigurer corsConfigurer() {
         return new WebMvcConfigurer() {
