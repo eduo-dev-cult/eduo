@@ -17,6 +17,7 @@ public class CollectionDto implements Serializable {
     UUID id;
     Integer ownerId;
     String name;
+    String description;
     Instant createdAt;
     Instant updatedAt;
     List<SourceMaterialDto> sourceMaterials;

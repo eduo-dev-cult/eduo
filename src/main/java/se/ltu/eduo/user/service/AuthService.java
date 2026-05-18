@@ -61,7 +61,8 @@ public class AuthService {
         // Every user should always have at least one collection available.
         collectionService.createCollection(
                 savedUser.getId(),
-                "My Collection"
+                "My Collection",
+                ""
         );
 
         return savedUser;

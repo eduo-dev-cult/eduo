@@ -80,7 +80,7 @@ class CollectionServiceTest {
     void createProject_persistsCollectionWithGeneratedId() {
         Integer userId = persistUser();
 
-        Collection collection = collectionService.createCollection(userId, "Intro to Java");
+        Collection collection = collectionService.createCollection(userId, "Intro to Java", "This is a collection description");
 
         assertThat(collection.getId()).isNotNull();
         assertThat(collectionRepository.findById(collection.getId())).isPresent();
@@ -93,7 +93,7 @@ class CollectionServiceTest {
     void createCollection_storesCorrectUserIdAndName() {
         Integer userId = persistUser();
 
-        Collection collection = collectionService.createCollection(userId, "Intro to Java");
+        Collection collection = collectionService.createCollection(userId, "Intro to Java", "This is a collection description");
 
         assertThat(collection.getOwner().getId()).isEqualTo(userId);
         assertThat(collection.getName()).isEqualTo("Intro to Java");
@@ -109,7 +109,7 @@ class CollectionServiceTest {
     @Test
     void getProject_returnsCollection_whenExists() {
         Integer userId = persistUser();
-        Collection created = collectionService.createCollection(userId, "Intro to Java");
+        Collection created = collectionService.createCollection(userId, "Intro to Java", "This is a collection description");
 
         Collection found = collectionService.getCollection(created.getId());
 
@@ -136,9 +136,9 @@ class CollectionServiceTest {
     @Test
     void updateCollection_updatesName() {
         Integer userId = persistUser();
-        Collection collection = collectionService.createCollection(userId, "Old Name");
+        Collection collection = collectionService.createCollection(userId, "Old Name", "Old description");
 
-        Collection updated = collectionService.updateCollection(collection.getId(), "New Name");
+        Collection updated = collectionService.updateCollection(collection.getId(), "New Name", "New description");
 
         assertThat(updated.getName()).isEqualTo("New Name");
     }
@@ -148,7 +148,7 @@ class CollectionServiceTest {
      */
     @Test
     void updateCollection_throwsEntityNotFoundException_whenNotFound() {
-        assertThatThrownBy(() -> collectionService.updateCollection(UUID.randomUUID(), "New Name"))
+        assertThatThrownBy(() -> collectionService.updateCollection(UUID.randomUUID(), "New Name", "New description"))
                 .isInstanceOf(EntityNotFoundException.class);
     }
 
@@ -162,7 +162,7 @@ class CollectionServiceTest {
     @Test
     void deleteProject_removesCollectionRow() {
         Integer userId = persistUser();
-        Collection collection = collectionService.createCollection(userId, "Intro to Java");
+        Collection collection = collectionService.createCollection(userId, "Intro to Java", "This is a collection description");
         UUID projectId = collection.getId();
 
         assertThat(collectionRepository.findById(projectId)).isPresent();
@@ -193,7 +193,7 @@ class CollectionServiceTest {
     @Test
     void deleteCollection_cascadesToSourceMaterials() {
         Integer userId = persistUser();
-        Collection collection = collectionService.createCollection(userId, "Intro to Java");
+        Collection collection = collectionService.createCollection(userId, "Intro to Java", "This is a collection description");
         SourceMaterial material = collectionService.createSourceMaterial(
                 collection.getId(), "notes.pdf", "application/pdf", new byte[]{1, 2, 3});
         UUID materialId = material.getId();
@@ -215,7 +215,7 @@ class CollectionServiceTest {
     @Test
     void deleteCollection_cascadesToGenerations() {
         Integer userId = persistUser();
-        Collection collection = collectionService.createCollection(userId, "Intro to Java");
+        Collection collection = collectionService.createCollection(userId, "Intro to Java", "This is a collection description");
         Generation generation = collectionService.createGeneration(collection.getId(), TestDataGenerator.validGenerationRequest());
         UUID generationId = generation.getId();
 
@@ -238,7 +238,7 @@ class CollectionServiceTest {
     @Test
     void createSourceMaterial_persistsMaterialWithCorrectMetadata() {
         Integer userId = persistUser();
-        Collection collection = collectionService.createCollection(userId, "Intro to Java");
+        Collection collection = collectionService.createCollection(userId, "Intro to Java", "This is a collection description");
         byte[] data = {1, 2, 3, 4};
 
         SourceMaterial material = collectionService.createSourceMaterial(
@@ -272,7 +272,7 @@ class CollectionServiceTest {
     @Test
     void getSourceMaterial_returnsMaterial_whenExists() {
         Integer userId = persistUser();
-        Collection collection = collectionService.createCollection(userId, "Intro to Java");
+        Collection collection = collectionService.createCollection(userId, "Intro to Java", "This is a collection description");
         SourceMaterial created = collectionService.createSourceMaterial(
                 collection.getId(), "notes.txt", "text/plain", new byte[]{42});
 
@@ -300,7 +300,7 @@ class CollectionServiceTest {
     @Test
     void deleteSourceMaterial_removesMaterialRow() {
         Integer userId = persistUser();
-        Collection collection = collectionService.createCollection(userId, "Intro to Java");
+        Collection collection = collectionService.createCollection(userId, "Intro to Java", "This is a collection description");
         SourceMaterial material = collectionService.createSourceMaterial(
                 collection.getId(), "notes.pdf", "application/pdf", new byte[]{1, 2, 3});
         UUID materialId = material.getId();
@@ -323,7 +323,7 @@ class CollectionServiceTest {
     @Test
     void createGeneration_persistsGenerationLinkedToProject() {
         Integer userId = persistUser();
-        Collection collection = collectionService.createCollection(userId, "Intro to Java");
+        Collection collection = collectionService.createCollection(userId, "Intro to Java", "This is a collection description");
 
         Generation generation = collectionService.createGeneration(collection.getId(), TestDataGenerator.validGenerationRequest());
 
@@ -339,7 +339,7 @@ class CollectionServiceTest {
     @Test
     void createGeneration_linksSelectedSourceMaterials() {
         Integer userId = persistUser();
-        Collection collection = collectionService.createCollection(userId, "Intro to Java");
+        Collection collection = collectionService.createCollection(userId, "Intro to Java", "This is a collection description");
         SourceMaterial mat1 = collectionService.createSourceMaterial(
                 collection.getId(), "a.pdf", "application/pdf", new byte[]{1});
         SourceMaterial mat2 = collectionService.createSourceMaterial(
@@ -369,7 +369,7 @@ class CollectionServiceTest {
     @Test
     void getGeneration_returnsGeneration_whenExists() {
         Integer userId = persistUser();
-        Collection collection = collectionService.createCollection(userId, "Intro to Java");
+        Collection collection = collectionService.createCollection(userId, "Intro to Java", "This is a collection description");
         Generation created = collectionService.createGeneration(collection.getId(), TestDataGenerator.validGenerationRequest());
 
         Generation found = collectionService.getGeneration(created.getId());
@@ -396,7 +396,7 @@ class CollectionServiceTest {
     @Test
     void deleteGeneration_removesGenerationRow() {
         Integer userId = persistUser();
-        Collection collection = collectionService.createCollection(userId, "Intro to Java");
+        Collection collection = collectionService.createCollection(userId, "Intro to Java", "This is a collection description");
         Generation generation = collectionService.createGeneration(collection.getId(), TestDataGenerator.validGenerationRequest());
         UUID generationId = generation.getId();
 
@@ -419,7 +419,7 @@ class CollectionServiceTest {
     @Test
     void createQuiz_persistsQuizWithCorrectContent() {
         Integer userId = persistUser();
-        Collection collection = collectionService.createCollection(userId, "Intro to Java");
+        Collection collection = collectionService.createCollection(userId, "Intro to Java", "This is a collection description");
         Generation generation = collectionService.createGeneration(collection.getId(), TestDataGenerator.validGenerationRequest());
 
         Quiz quiz = collectionService.createQuiz(generation.getId(), "Week 1 Quiz", "{\"questions\":[]}");
@@ -449,7 +449,7 @@ class CollectionServiceTest {
     @Test
     void getQuiz_returnsQuiz_whenExists() {
         Integer userId = persistUser();
-        Collection collection = collectionService.createCollection(userId, "Intro to Java");
+        Collection collection = collectionService.createCollection(userId, "Intro to Java", "This is a collection description");
         Generation generation = collectionService.createGeneration(collection.getId(), TestDataGenerator.validGenerationRequest());
         Quiz created = collectionService.createQuiz(generation.getId(), "Week 1 Quiz", "raw content");
 
@@ -477,7 +477,7 @@ class CollectionServiceTest {
     @Test
     void updateQuiz_updatesNameAndRawContent() {
         Integer userId = persistUser();
-        Collection collection = collectionService.createCollection(userId, "Intro to Java");
+        Collection collection = collectionService.createCollection(userId, "Intro to Java", "This is a collection description");
         Generation generation = collectionService.createGeneration(collection.getId(), TestDataGenerator.validGenerationRequest());
         Quiz quiz = collectionService.createQuiz(generation.getId(), "Old Name", "old content");
 
@@ -506,7 +506,7 @@ class CollectionServiceTest {
     @Test
     void deleteQuiz_removesQuizRow() {
         Integer userId = persistUser();
-        Collection collection = collectionService.createCollection(userId, "Intro to Java");
+        Collection collection = collectionService.createCollection(userId, "Intro to Java", "This is a collection description");
         Generation generation = collectionService.createGeneration(collection.getId(), TestDataGenerator.validGenerationRequest());
         Quiz quiz = collectionService.createQuiz(generation.getId(), "Week 1 Quiz", "content");
         UUID quizId = quiz.getId();

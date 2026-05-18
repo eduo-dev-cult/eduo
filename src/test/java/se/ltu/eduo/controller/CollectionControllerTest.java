@@ -58,7 +58,7 @@ class CollectionControllerTest {
     }
 
     private Collection persistCollection(Integer userId) {
-        return collectionService.createCollection(userId, "Test Collection");
+        return collectionService.createCollection(userId, "Test Collection", "Test description");
     }
 
     private SourceMaterial persistMaterial(UUID collectionId) {
