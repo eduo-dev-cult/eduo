@@ -27,6 +27,9 @@ export default function CollectionsPage({ currentUser }) {
   const [newCollectionDescription, setNewCollectionDescription] = useState("");
   const [isCreating, setIsCreating] = useState(false);
 
+  // Stores the current sorting option for the collections
+  const [sortOption, setSortOption] = useState("recent");
+
   useEffect(() => {
     const fetchCollections = async () => {
       const userId = getUserId(currentUser);
@@ -89,6 +92,24 @@ export default function CollectionsPage({ currentUser }) {
     }
   };
 
+  const sortedCollections = [...collections].sort((a, b) => {
+    if (sortOption === "alphabetical") {
+      return (a.name || "").localeCompare(b.name || "");
+    }
+
+    if (sortOption === "most-generations") {
+      const aGenerations = Array.isArray(a.generations) ? a.generations.length : 0;
+      const bGenerations = Array.isArray(b.generations) ? b.generations.length : 0;
+
+      return bGenerations - aGenerations;
+    }
+
+    const aDate = new Date(a.updatedAt || a.createdAt || 0);
+    const bDate = new Date(b.updatedAt || b.createdAt || 0);
+
+    return bDate - aDate;
+  });
+
   return (
     <main className="collections-page">
       <div className="collections-header">
@@ -109,7 +130,10 @@ export default function CollectionsPage({ currentUser }) {
         </button>
       </div>
 
-      <CollectionsToolbar />
+      <CollectionsToolbar
+        sortOption={sortOption}
+        setSortOption={setSortOption}
+      />
 
       {isLoading && (
         <p className="collections-status-text">
@@ -135,7 +159,7 @@ export default function CollectionsPage({ currentUser }) {
       )}
 
       {!isLoading && !errorMessage && collections.length > 0 && (
-        <CollectionsGrid collections={collections} />
+        <CollectionsGrid collections={sortedCollections} />
       )}
 
       {isCreateModalOpen && (
