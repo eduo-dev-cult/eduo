@@ -389,6 +389,27 @@ export default function MainContent({
   const [generationError, setGenerationError] =
     useState("");
 
+  /*
+   * Controls the create collection modal.
+   */
+  const [
+    isCreateCollectionModalOpen,
+    setIsCreateCollectionModalOpen,
+  ] = useState(false);
+
+  /*
+  * Form values for the new collection.
+  */
+  const [
+    newCollectionName,
+    setNewCollectionName,
+  ] = useState("");
+
+  const [
+    newCollectionDescription,
+    setNewCollectionDescription,
+  ] = useState("");
+
   const loadCollections = async (userId) => {
     try {
       setIsLoadingCollections(true);
@@ -424,58 +445,87 @@ export default function MainContent({
     }
   };
 
-  const handleCreateCollection = async () => {
-    const userId = getUserId(currentUser);
+  const handleCreateCollection =
+    async (event) => {
 
-    if (!userId) {
-      setCollectionsError(
-        "No logged-in user found."
-      );
+      /*
+      * Prevent page reload when submitted from form.
+      */
+      if (event) {
+        event.preventDefault();
+      }
 
-      return;
-    }
+      const userId =
+        getUserId(currentUser);
 
-    const name = window.prompt(
-      "Collection name:"
-    );
+      if (!userId) {
+        setCollectionsError(
+          "No logged-in user found."
+        );
 
-    if (!name || name.trim() === "") {
-      return;
-    }
+        return;
+      }
 
-    try {
-      setIsLoadingCollections(true);
-      setCollectionsError("");
+      if (
+        !newCollectionName ||
+        newCollectionName.trim() === ""
+      ) {
+        return;
+      }
 
-      const newCollection =
-        await createCollection({
-          userId,
-          name: name.trim(),
-        });
+      try {
+        setIsLoadingCollections(true);
+        setCollectionsError("");
 
-      const newCollectionId =
-        getCollectionId(newCollection);
+        const newCollection =
+          await createCollection({
+            userId,
 
-      setCollections((prevCollections) => [
-        ...prevCollections,
-        newCollection,
-      ]);
+            name:
+              newCollectionName.trim(),
 
-      setGenerationSettings((prevSettings) => ({
-        ...prevSettings,
-        collectionId: newCollectionId,
-      }));
-    } catch (error) {
-      console.error(
-        "Failed to create collection:",
-        error
-      );
+            description:
+              newCollectionDescription.trim(),
+          });
 
-      setCollectionsError(error.message);
-    } finally {
-      setIsLoadingCollections(false);
-    }
-  };
+        const newCollectionId =
+          getCollectionId(newCollection);
+
+        setCollections((prevCollections) => [
+          ...prevCollections,
+          newCollection,
+        ]);
+
+        /*
+        * Automatically select newly created collection.
+        */
+        setGenerationSettings((prevSettings) => ({
+          ...prevSettings,
+          collectionId: newCollectionId,
+        }));
+
+        /*
+        * Reset modal state.
+        */
+        setNewCollectionName("");
+        setNewCollectionDescription("");
+
+        setIsCreateCollectionModalOpen(
+          false
+        );
+
+      } catch (error) {
+        console.error(
+          "Failed to create collection:",
+          error
+        );
+
+        setCollectionsError(error.message);
+
+      } finally {
+        setIsLoadingCollections(false);
+      }
+    };
 
   useEffect(() => {
     const userId = getUserId(currentUser);
@@ -1092,8 +1142,8 @@ export default function MainContent({
                 materialUploadError
               }
 
-              onCreateCollection={
-                handleCreateCollection
+              onCreateCollection={() =>
+                setIsCreateCollectionModalOpen(true)
               }
 
               uploadStatus={
@@ -1221,6 +1271,72 @@ export default function MainContent({
             </button>
           )}
         </div>
+
+        {isCreateCollectionModalOpen && (
+          <div className="collection-modal-backdrop">
+            <form
+              className="collection-modal"
+              onSubmit={handleCreateCollection}
+            >
+              <h2>Create Collection</h2>
+
+              <label>
+                Collection name
+
+                <input
+                  type="text"
+                  value={newCollectionName}
+                  onChange={(event) =>
+                    setNewCollectionName(
+                      event.target.value
+                    )
+                  }
+                  placeholder="Example: Interaktionsdesign"
+                />
+              </label>
+
+              <label>
+                Description
+
+                <textarea
+                  value={
+                    newCollectionDescription
+                  }
+                  onChange={(event) =>
+                    setNewCollectionDescription(
+                      event.target.value
+                    )
+                  }
+                  placeholder="What will this collection be used for?"
+                />
+              </label>
+
+              <div className="collection-modal-actions">
+                <button
+                  type="button"
+                  className="secondary-button"
+                  onClick={() =>
+                    setIsCreateCollectionModalOpen(
+                      false
+                    )
+                  }
+                >
+                  Cancel
+                </button>
+
+                <button
+                  type="submit"
+                  className="primary-button"
+                  disabled={
+                    !newCollectionName.trim()
+                  }
+                >
+                  Create
+                </button>
+              </div>
+            </form>
+          </div>
+        )}
       </section>
     </main>
   );
