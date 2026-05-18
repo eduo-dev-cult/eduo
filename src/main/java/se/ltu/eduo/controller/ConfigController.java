@@ -8,6 +8,10 @@ import org.springframework.web.bind.annotation.RestController;
 
 import java.util.Map;
 
+/**
+ * The only purpose of this class is to expose an endpoint for the frontend to know what file sizes
+ * are acceptable BEFORE an upload is attempted. Spring will guillotine the connection if exceeded.
+ */
 @RestController
 @RequestMapping("/config")
 public class ConfigController {
