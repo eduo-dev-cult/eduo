@@ -5,7 +5,19 @@ let configPromise = null;
 
 export function fetchConfig() {
   if (!configPromise) {
-    configPromise = fetch(`${API_BASE_URL}/config`).then((res) => res.json());
+    configPromise = fetch(`${API_BASE_URL}/config`)
+      .then((res) => {
+        if (!res.ok) {
+          throw new Error(`Failed to load config (HTTP ${res.status}).`);
+        }
+        return res.json();
+      })
+      .catch((err) => {
+        // Drop the cached rejection so the next call retries instead of
+        // permanently disabling client-side validation.
+        configPromise = null;
+        throw err;
+      });
   }
   return configPromise;
 }
