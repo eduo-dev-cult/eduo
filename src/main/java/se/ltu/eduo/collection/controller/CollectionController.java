@@ -119,8 +119,8 @@ public class CollectionController {
     @PostMapping("/{collectionId}/generations")
     public ResponseEntity<GenerationDto> createGeneration(@PathVariable UUID collectionId,
                                                           @Valid @RequestBody CreateGenerationRequest request) {
-        logger.atDebug().log("Received request to create generation for collection "+collectionId);
-        logger.atDebug().log("incoming json is " + request.toString());
+        logger.atDebug().log("Received request to create generation for collection {}", collectionId);
+        logger.atDebug().log("incoming json is {}", request);
         GenerationDto response = studyQuestionService.generateStudyQuestions(collectionId, request);
 
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
