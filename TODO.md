@@ -1,6 +1,25 @@
 # TODO
 
-## Open — surfaced in this branch (db-generation-settings-persist)
+## Open — surfaced in this branch (front-backend-rest-sync)
+
+### Bugs / correctness
+
+- [ ] `configApi.js` (eduo-frontend/src/api/configApi.js:5-9) caches the `fetch` promise in `configPromise` for the lifetime of the page, but never resets it on failure. If the first `/config` request fails (backend not yet up, transient network error), the rejected promise is cached and every subsequent `uploadMaterial` call rejects without retrying. Either clear `configPromise` in a `.catch`, or re-fetch on rejection.
+- [ ] `configApi.js` calls `.json()` without checking `res.ok`. A non-2xx response (e.g. 500) would still parse JSON and yield `{maxFileSizeBytes: undefined}`, making `file.size > undefined` always false — silently disabling the client-side check. Add an `if (!res.ok) throw …` guard.
+
+### Code hygiene
+
+- [ ] Inconsistent error-body schema in `GlobalExceptionHandler` (GlobalExceptionHandler.java:25-31 vs 33-54): `handleFileTooLarge` uses `{status, message, timestamp}` while `handleValidationErrors` uses `{status, error, fields, timestamp}`. Pick one key (`message` vs `error`) and apply consistently so the frontend can parse uniformly.
+- [ ] `handleFileTooLarge` hardcodes `"status", 413` — use `HttpStatus.CONTENT_TOO_LARGE.value()` to avoid drift.
+- [ ] `MaxUploadSizeExceededException ex` parameter is unused in `handleFileTooLarge`. Either log `ex.getMessage()` (it contains the actual offending size) or drop the parameter name.
+- [ ] `ConfigController.java` and `configApi.js` both end without a trailing newline — minor style nit.
+- [ ] `API_BASE_URL = "http://localhost:8080"` is now duplicated across four frontend API files (configApi.js, materialsApi.js, generationsApi.js, collectionsApi.js). Hoist to a shared module before the count grows further — pre-existing pattern, but this branch added the fourth copy.
+
+### Open questions / design
+
+- [ ] `/config` endpoint is unauthenticated and currently exposes only the upload limit. Fine for now, but document the intent (public config vs. user-scoped config) before adding more fields — anything user- or env-sensitive should not land here.
+
+## Open — surfaced in earlier branch (db-generation-settings-persist)
 
 ### Bugs / correctness
 
