@@ -37,30 +37,16 @@ import GenerationPreferences from "../components/GenerationPreferences";
 
 import "./GenerationsPage.css";
 
-/*
- * LocalStorage key for saved generation preferences.
- */
 const STORAGE_KEY =
   "eduo_generation_preferences";
 
-/*
- * Default generation settings used:
- * - on first app start
- * - if no saved preferences exist
- */
 const defaultGenerationSettings = {
   questionTypes: ["multipleChoice"],
-
   numberOfQuestions: 10,
-
   collectionId: "",
-
   focusArea: "entireMaterial",
-
   specificTopics: "",
-
   difficulty: ["Medium"],
-
   language: "English",
 
   outputContent: {
@@ -70,25 +56,14 @@ const defaultGenerationSettings = {
   },
 };
 
-/*
- * Handles different possible backend field names
- * for collection IDs.
- */
 function getCollectionId(collection) {
   return collection?.id ?? collection?.collectionId;
 }
 
-/*
- * Handles different possible backend field names
- * for user IDs.
- */
 function getUserId(user) {
   return user?.id ?? user?.userId;
 }
 
-/*
- * Loads saved preferences from localStorage.
- */
 function getPreferences() {
   const saved = localStorage.getItem(STORAGE_KEY);
 
@@ -121,10 +96,6 @@ function getPreferences() {
   }
 }
 
-/*
- * Converts backend material metadata into
- * a consistent frontend format.
- */
 function normalizeMaterialMetadata(
   material,
   fallbackFile
@@ -165,10 +136,6 @@ function normalizeMaterialMetadata(
   };
 }
 
-/*
- * Creates a lightweight signature for uploaded files.
- * Used to avoid duplicate uploads of the exact same files.
- */
 function createFilesSignature(files, collectionId) {
   return JSON.stringify({
     collectionId,
@@ -181,10 +148,6 @@ function createFilesSignature(files, collectionId) {
   });
 }
 
-/*
- * Converts saved backend generation data into
- * the format expected by PreviewSave.
- */
 function normalizeGenerationResponse(
   data,
   selectedFiles,
@@ -295,6 +258,9 @@ function normalizeGenerationResponse(
 export default function MainContent({
   activePage,
   currentUser,
+  initialCollection,
+  initialMaterial,
+  generateFromCollection,
 }) {
   const [currentStep, setCurrentStep] =
     useState(1);
@@ -343,31 +309,19 @@ export default function MainContent({
     message: "",
   });
 
-  /*
-  * Materials that already exist in the selected collection.
-  */
   const [existingMaterials, setExistingMaterials] =
     useState([]);
 
-  /*
-  * IDs of existing materials selected for generation.
-  */
   const [
     selectedExistingMaterialIds,
     setSelectedExistingMaterialIds,
   ] = useState([]);
 
-  /*
-  * Loading state for fetching existing materials.
-  */
   const [
     isLoadingExistingMaterials,
     setIsLoadingExistingMaterials,
   ] = useState(false);
 
-  /*
-  * Error message when fetching existing materials fails.
-  */
   const [
     existingMaterialsError,
     setExistingMaterialsError,
@@ -389,17 +343,11 @@ export default function MainContent({
   const [generationError, setGenerationError] =
     useState("");
 
-  /*
-   * Controls the create collection modal.
-   */
   const [
     isCreateCollectionModalOpen,
     setIsCreateCollectionModalOpen,
   ] = useState(false);
 
-  /*
-  * Form values for the new collection.
-  */
   const [
     newCollectionName,
     setNewCollectionName,
@@ -447,10 +395,6 @@ export default function MainContent({
 
   const handleCreateCollection =
     async (event) => {
-
-      /*
-      * Prevent page reload when submitted from form.
-      */
       if (event) {
         event.preventDefault();
       }
@@ -480,10 +424,7 @@ export default function MainContent({
         const newCollection =
           await createCollection({
             userId,
-
-            name:
-              newCollectionName.trim(),
-
+            name: newCollectionName.trim(),
             description:
               newCollectionDescription.trim(),
           });
@@ -496,24 +437,14 @@ export default function MainContent({
           newCollection,
         ]);
 
-        /*
-        * Automatically select newly created collection.
-        */
         setGenerationSettings((prevSettings) => ({
           ...prevSettings,
           collectionId: newCollectionId,
         }));
 
-        /*
-        * Reset modal state.
-        */
         setNewCollectionName("");
         setNewCollectionDescription("");
-
-        setIsCreateCollectionModalOpen(
-          false
-        );
-
+        setIsCreateCollectionModalOpen(false);
       } catch (error) {
         console.error(
           "Failed to create collection:",
@@ -521,7 +452,6 @@ export default function MainContent({
         );
 
         setCollectionsError(error.message);
-
       } finally {
         setIsLoadingCollections(false);
       }
@@ -537,28 +467,54 @@ export default function MainContent({
     loadCollections(userId);
   }, [currentUser]);
 
-  useEffect(() => {
-    setUploadedMaterialsMetadata([]);
-    setUploadedFilesSignature("");
-
-    setMaterialUploadStatus({
-      type: "",
-      message: "",
-    });
-  }, [selectedFiles]);
-
   /*
-  * Loads previously uploaded materials
-  * whenever selected collection changes.
+  * Prefills the generation flow when opened from CollectionDetailsPage.
+  *
+  * Generate from collection:
+  * Selects the collection and stays on step 1.
+  *
+  * Use specific material for generation:
+  * Selects the collection and material, then jumps to step 2.
   */
+  useEffect(() => {
+    if (!initialCollection) {
+      return;
+    }
+
+    const collectionId =
+      getCollectionId(initialCollection);
+
+    if (!collectionId) {
+      return;
+    }
+
+    setGenerationSettings((prevSettings) => ({
+      ...prevSettings,
+      collectionId,
+    }));
+
+    if (initialMaterial?.id) {
+      setSelectedExistingMaterialIds([
+        initialMaterial.id,
+      ]);
+
+      setCurrentStep(2);
+      return;
+    }
+
+    if (generateFromCollection) {
+      setSelectedExistingMaterialIds([]);
+      setCurrentStep(1);
+    }
+  }, [
+    initialCollection,
+    initialMaterial,
+    generateFromCollection,
+  ]);
+
   useEffect(() => {
     const loadExistingMaterials =
       async () => {
-
-        /*
-        * No collection selected.
-        * Clear existing materials.
-        */
         if (
           !generationSettings.collectionId
         ) {
@@ -572,15 +528,9 @@ export default function MainContent({
         }
 
         try {
-          setIsLoadingExistingMaterials(
-            true
-          );
-
+          setIsLoadingExistingMaterials(true);
           setExistingMaterialsError("");
 
-          /*
-          * Fetch materials from backend.
-          */
           const materials =
             await getMaterialsByCollection(
               generationSettings.collectionId
@@ -588,14 +538,19 @@ export default function MainContent({
 
           setExistingMaterials(materials);
 
-          /*
-          * Reset selected materials
-          * when switching collection.
-          */
-          setSelectedExistingMaterialIds(
-            []
-          );
-
+          if (
+            initialMaterial?.id &&
+            getCollectionId(initialCollection) ===
+              generationSettings.collectionId
+          ) {
+            setSelectedExistingMaterialIds([
+              initialMaterial.id,
+            ]);
+          } else {
+            setSelectedExistingMaterialIds(
+              []
+            );
+          }
         } catch (error) {
           console.error(
             "Failed to load existing materials:",
@@ -605,17 +560,17 @@ export default function MainContent({
           setExistingMaterialsError(
             error.message
           );
-
         } finally {
-          setIsLoadingExistingMaterials(
-            false
-          );
+          setIsLoadingExistingMaterials(false);
         }
       };
 
     loadExistingMaterials();
-
-  }, [generationSettings.collectionId]);
+  }, [
+    generationSettings.collectionId,
+    initialCollection,
+    initialMaterial,
+  ]);
 
   const getSubtitle = () => {
     switch (currentStep) {
@@ -704,11 +659,6 @@ export default function MainContent({
               )
           );
 
-        console.log(
-          "Uploaded materials metadata:",
-          normalizedMetadata
-        );
-
         setUploadedMaterialsMetadata(
           normalizedMetadata
         );
@@ -781,28 +731,21 @@ export default function MainContent({
 
   const startNewGeneration = () => {
     setCurrentStep(1);
-
     setSelectedFiles([]);
-
     setUploadedMaterialsMetadata([]);
-
     setUploadedFilesSignature("");
 
     setGenerationSettings(
       (prevSettings) => ({
         ...getPreferences(),
-
         collectionId:
           prevSettings.collectionId,
       })
     );
 
     setGenerationResult(null);
-
     setGenerationError("");
-
     setIsGenerating(false);
-
     setMaterialUploadError("");
 
     setMaterialUploadStatus({
@@ -811,9 +754,6 @@ export default function MainContent({
     });
   };
 
-  /*
-   * Builds CreateGenerationRequest sent to backend.
-   */
   const buildGenerationPayload = () => {
     const uploadedMaterialIds =
       uploadedMaterialsMetadata
@@ -821,10 +761,6 @@ export default function MainContent({
         .filter(Boolean);
 
     return {
-      /*
-      * Backend expects sourceMaterials, not sourceMaterialIds.
-      * This includes both existing selected materials and newly uploaded materials.
-      */
       sourceMaterials: [
         ...selectedExistingMaterialIds,
         ...uploadedMaterialIds,
@@ -834,10 +770,6 @@ export default function MainContent({
         generationSettings.numberOfQuestions
       ),
 
-      /*
-       * Backend expects enum values.
-       * Normalized frontend value to avoid case-sensitive bugs.
-       */
       language:
         generationSettings.language
           ?.toString()
@@ -908,29 +840,15 @@ export default function MainContent({
         payload
       );
 
-      /*
-       * Currently selected collection.
-       */
       const collectionId =
         generationSettings.collectionId;
-        
-      /*
-       * Create the generation first.
-       */
+
       const createdGeneration =
         await createGeneration(
           collectionId,
           payload
         );
 
-      console.log(
-        "Created generation:",
-        createdGeneration
-      );
-
-      /*
-       * Get the generation id returned by backend.
-       */
       const generationId =
         createdGeneration?.id ??
         createdGeneration?.generationId;
@@ -941,20 +859,11 @@ export default function MainContent({
         );
       }
 
-      /*
-       * Fetch the saved generation from backend.
-       * This makes step 3 show the data backend actually saved.
-       */
       const savedGeneration =
         await getGenerationById(
           collectionId,
           generationId
         );
-
-      console.log(
-        "Saved generation:",
-        savedGeneration
-      );
 
       setGenerationResult(
         normalizeGenerationResponse(
@@ -1021,12 +930,8 @@ export default function MainContent({
 
   const handleMainButtonClick =
     async () => {
-      // Step 1 -> Step 2
       if (currentStep === 1) {
-
-        //Only upload if user selected new files.
         if (selectedFiles.length > 0) {
-
           const uploadSucceeded =
             await uploadSelectedFilesToCollection();
 
@@ -1035,15 +940,12 @@ export default function MainContent({
           }
         }
 
-        // Continue to step 2 even if no new files were selected
         setCurrentStep(2);
-
         return;
       }
 
       if (currentStep === 2) {
         handleGenerate();
-
         return;
       }
 
@@ -1113,51 +1015,26 @@ export default function MainContent({
         >
           {currentStep === 1 && (
             <UploadBox
-              selectedFiles={
-                selectedFiles
-              }
-
-              onFilesSelect={
-                setSelectedFiles
-              }
-
-              settings={
-                generationSettings
-              }
-
-              setSettings={
-                setGenerationSettings
-              }
-
-              collections={
-                collections
-              }
-
+              selectedFiles={selectedFiles}
+              onFilesSelect={setSelectedFiles}
+              settings={generationSettings}
+              setSettings={setGenerationSettings}
+              collections={collections}
               isLoadingCollections={
                 isLoadingCollections
               }
-
               collectionsError={
                 collectionsError ||
                 materialUploadError
               }
-
               onCreateCollection={() =>
                 setIsCreateCollectionModalOpen(true)
               }
-
-              uploadStatus={
-                materialUploadStatus
-              }
-
-              existingMaterials={
-                existingMaterials
-              }
-              
+              uploadStatus={materialUploadStatus}
+              existingMaterials={existingMaterials}
               selectedExistingMaterialIds={
                 selectedExistingMaterialIds
               }
-              
               setSelectedExistingMaterialIds={
                 setSelectedExistingMaterialIds
               }
@@ -1172,45 +1049,20 @@ export default function MainContent({
 
           {currentStep === 2 && (
             <SettingsPanel
-              settings={
-                generationSettings
-              }
-
-              setSettings={
-                setGenerationSettings
-              }
+              settings={generationSettings}
+              setSettings={setGenerationSettings}
             />
           )}
 
           {currentStep === 3 && (
             <PreviewSave
-              generationResult={
-                generationResult
-              }
-
-              isGenerating={
-                isGenerating
-              }
-
-              generationError={
-                generationError
-              }
-
-              selectedFiles={
-                selectedFiles
-              }
-
-              settings={
-                generationSettings
-              }
-
-              setSettings={
-                setGenerationSettings
-              }
-
-              onRegenerate={
-                handleGenerate
-              }
+              generationResult={generationResult}
+              isGenerating={isGenerating}
+              generationError={generationError}
+              selectedFiles={selectedFiles}
+              settings={generationSettings}
+              setSettings={setGenerationSettings}
+              onRegenerate={handleGenerate}
             />
           )}
         </div>
@@ -1219,13 +1071,11 @@ export default function MainContent({
           {currentStep > 1 && (
             <button
               className="button secondary-button"
-
               onClick={() =>
                 setCurrentStep((prev) =>
                   Math.max(prev - 1, 1)
                 )
               }
-
               disabled={
                 isGenerating ||
                 isUploadingMaterials
@@ -1237,16 +1087,10 @@ export default function MainContent({
 
           <button
             className="button primary-button"
-
-            onClick={
-              handleMainButtonClick
-            }
-
+            onClick={handleMainButtonClick}
             disabled={
               isUploadingMaterials ||
-
               isGenerating ||
-
               (currentStep === 3 &&
                 !generationResult)
             }
@@ -1257,11 +1101,7 @@ export default function MainContent({
           {currentStep === 3 && (
             <button
               className="button primary-button"
-
-              onClick={
-                startNewGeneration
-              }
-
+              onClick={startNewGeneration}
               disabled={
                 isGenerating ||
                 isUploadingMaterials

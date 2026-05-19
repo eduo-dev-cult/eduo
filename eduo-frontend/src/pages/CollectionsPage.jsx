@@ -14,7 +14,12 @@ function getUserId(user) {
   return user?.id ?? user?.userId;
 }
 
-export default function CollectionsPage({ currentUser }) {
+export default function CollectionsPage({
+  currentUser,
+  onOpenCollection,
+  onGenerateFromCollection,
+  onUploadToCollection,
+}) {
   const [collections, setCollections] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [errorMessage, setErrorMessage] = useState("");
@@ -27,10 +32,10 @@ export default function CollectionsPage({ currentUser }) {
   const [newCollectionDescription, setNewCollectionDescription] = useState("");
   const [isCreating, setIsCreating] = useState(false);
 
-  // Stores the current sorting option for the collections
+  // Stores the current sorting option for the collections.
   const [sortOption, setSortOption] = useState("recent");
 
-  // Stores the current search query for filtering collections
+  // Stores the current search query for filtering collections.
   const [searchQuery, setSearchQuery] = useState("");
 
   useEffect(() => {
@@ -113,8 +118,13 @@ export default function CollectionsPage({ currentUser }) {
     }
 
     if (sortOption === "most-generations") {
-      const aGenerations = Array.isArray(a.generations) ? a.generations.length : 0;
-      const bGenerations = Array.isArray(b.generations) ? b.generations.length : 0;
+      const aGenerations = Array.isArray(a.generations)
+        ? a.generations.length
+        : 0;
+
+      const bGenerations = Array.isArray(b.generations)
+        ? b.generations.length
+        : 0;
 
       return bGenerations - aGenerations;
     }
@@ -176,7 +186,16 @@ export default function CollectionsPage({ currentUser }) {
       )}
 
       {!isLoading && !errorMessage && collections.length > 0 && (
-        <CollectionsGrid collections={sortedCollections} />
+        <CollectionsGrid
+          collections={sortedCollections}
+          onOpenCollection={onOpenCollection}
+          onGenerateFromCollection={
+            onGenerateFromCollection
+          }
+          onUploadToCollection={
+            onUploadToCollection
+          }
+        />
       )}
 
       {isCreateModalOpen && (
