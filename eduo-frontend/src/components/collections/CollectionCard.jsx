@@ -1,6 +1,11 @@
 import "./CollectionCard.css";
 
-export default function CollectionCard({ collection }) {
+export default function CollectionCard({
+  collection,
+  onOpenCollection,
+  onGenerateFromCollection,
+  onUploadToCollection,
+}) {
   // Backend data can have different field names than our first mock data.
   const name = collection.name || "Untitled collection";
 
@@ -16,7 +21,7 @@ export default function CollectionCard({ collection }) {
     : collection.generations ?? 0;
 
   const rawUpdatedDate =
-  collection.updatedAt || collection.createdAt;
+    collection.updatedAt || collection.createdAt;
 
   const updated = rawUpdatedDate
     ? new Date(rawUpdatedDate).toLocaleDateString("sv-SE", {
@@ -55,15 +60,32 @@ export default function CollectionCard({ collection }) {
 
       {/* Actions */}
       <div className="collection-actions">
-        <button className="secondary-button">
+        <button
+          className="secondary-button"
+          onClick={() =>
+            onOpenCollection(collection)
+          }
+        >
           Open
         </button>
 
-        <button className="primary-button">
+        <button
+          className="primary-button"
+          onClick={() =>
+            onGenerateFromCollection(
+              collection
+            )
+          }
+        >
           Generate
         </button>
 
-        <button className="secondary-button">
+        <button
+          className="secondary-button"
+          onClick={() =>
+            onUploadToCollection(collection)
+          }
+        >
           Upload
         </button>
       </div>
