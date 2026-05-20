@@ -1,6 +1,6 @@
 import "./SideBar.css";
 
-export default function SideBar({ activePage, setActivePage }) {
+export default function SideBar({ activePage, setActivePage, onSignOut }) {
   return (
     <aside className="sidebar">
       <nav className="nav">
@@ -48,7 +48,7 @@ export default function SideBar({ activePage, setActivePage }) {
       <button
         type="button"
         className="sidebar-button sign-out"
-        onClick={() => alert("You have been signed out")}
+        onClick={onSignOut}
       >
         Sign Out
       </button>
