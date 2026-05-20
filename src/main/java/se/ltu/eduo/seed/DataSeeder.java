@@ -65,7 +65,7 @@ public class DataSeeder implements ApplicationRunner {
     @Override
     @Transactional
     public void run(ApplicationArguments args) throws IOException {
-        if (userRepository.count() > 0) {
+        if (userRepository.count() > 1) { //include demo user which is loaded separately
             log.info("Users already present — skipping seed.");
             return;
         }
