@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 
 import "./App.css";
 import SideBar from "./components/SideBar";
@@ -7,7 +7,14 @@ import TopBar from "./components/TopBar";
 import GenerationsPage from "./pages/GenerationsPage";
 import CollectionsPage from "./pages/CollectionsPage";
 import CollectionDetailsPage from "./pages/CollectionDetailsPage";
+import LoginPage from "./pages/LoginPage";
 import PreviewSave from "./components/generations/PreviewSave";
+
+import {
+  loadCurrentUser,
+  saveCurrentUser,
+  clearCurrentUser,
+} from "./utils/currentUser";
 
 import "./styles/Variables.css";
 import "./styles/Global.css";
@@ -17,11 +24,9 @@ function App() {
   // Keeps track of which main page/view is currently shown in the app.
   const [activePage, setActivePage] = useState("generate");
 
-  // Stores the currently logged in demo user returned from the backend.
-  const [currentUser, setCurrentUser] = useState(null);
-
-  // Prevents the app from trying to load user-specific data before login is done.
-  const [isDemoLoginDone, setIsDemoLoginDone] = useState(false);
+  // Stores the currently logged in user returned from the backend.
+  // Initialized from localStorage so a refresh keeps the session.
+  const [currentUser, setCurrentUser] = useState(() => loadCurrentUser());
 
   // Stores the collection that is currently selected in the CollectionsPage.
   const [selectedCollection, setSelectedCollection] = useState(null);
@@ -47,37 +52,21 @@ function App() {
     setShouldOpenCollectionUploadModal,
   ] = useState(false);
 
-  useEffect(() => {
-    const loginDemoUser = async () => {
-      try {
-        const response = await fetch("http://localhost:8080/users/login", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          credentials: "include",
-          body: JSON.stringify({
-            username: "demo",
-            password: "demo",
-          }),
-        });
+  const handleLogin = (user) => {
+    saveCurrentUser(user);
+    setCurrentUser(user);
+  };
 
-        if (!response.ok) {
-          console.error("Demo login failed with status:", response.status);
-          return;
-        }
-
-        const user = await response.json();
-        setCurrentUser(user);
-      } catch (error) {
-        console.error("Failed to auto-login demo user:", error);
-      } finally {
-        setIsDemoLoginDone(true);
-      }
-    };
-
-    loginDemoUser();
-  }, []);
+  const handleLogout = () => {
+    clearCurrentUser();
+    setCurrentUser(null);
+    setActivePage("generate");
+    setSelectedCollection(null);
+    setSelectedGeneration(null);
+    setSelectedMaterialForGeneration(null);
+    setShouldGenerateFromCollection(false);
+    setShouldOpenCollectionUploadModal(false);
+  };
 
   const handleSetActivePage = (page) => {
     if (page === "generate") {
@@ -249,14 +238,8 @@ function App() {
     );
   };
 
-  if (!isDemoLoginDone) {
-    return (
-      <div className="app">
-        <main className="page">
-          <p>Loading demo user...</p>
-        </main>
-      </div>
-    );
+  if (!currentUser) {
+    return <LoginPage onLogin={handleLogin} />;
   }
 
   return (
@@ -266,6 +249,7 @@ function App() {
       <SideBar
         activePage={activePage}
         setActivePage={handleSetActivePage}
+        onSignOut={handleLogout}
       />
 
       <div className="page">
