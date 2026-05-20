@@ -14,7 +14,7 @@ import java.util.UUID;
  * has no independent identity beyond the relationship it represents.
  */
 @Entity
-@Table(name = "generation_source_materials", schema = "eduo")
+@Table(name = "generation_source_materials")
 @Getter
 @Setter
 @NoArgsConstructor

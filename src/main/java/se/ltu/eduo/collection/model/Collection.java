@@ -20,7 +20,7 @@ import java.util.UUID;
  * materials and generation attempts. Owned by a single user.
  */
 @Entity
-@Table(name = "collection", schema = "eduo")
+@Table(name = "collection")
 @Getter
 @Setter
 @NoArgsConstructor

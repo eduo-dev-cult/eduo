@@ -19,7 +19,7 @@ import java.util.UUID;
  * is the owning side of this relationship.
  */
 @Entity
-@Table(name = "quiz", schema = "eduo")
+@Table(name = "quiz")
 @Getter
 @Setter
 @NoArgsConstructor

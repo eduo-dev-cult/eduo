@@ -16,7 +16,7 @@ import java.util.UUID;
  * use a projection or a dedicated fetch method instead.
  */
 @Entity
-@Table(name = "source_material", schema = "eduo")
+@Table(name = "source_material")
 @Getter
 @Setter
 @NoArgsConstructor

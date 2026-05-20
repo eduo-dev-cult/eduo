@@ -11,7 +11,7 @@ import java.time.Instant;
 @Getter
 @Setter
 @Entity
-@Table(name = "user_credential", schema = "eduo")
+@Table(name = "user_credential")
 public class UserCredential {
     @Id
     @Column(name = "user_id", nullable = false)

@@ -18,7 +18,7 @@ import java.util.UUID;
  * etc.) as sibling one-to-one relationships on this entity.
  */
 @Entity
-@Table(name = "generation", schema = "eduo")
+@Table(name = "generation")
 @Getter
 @Setter
 @NoArgsConstructor
