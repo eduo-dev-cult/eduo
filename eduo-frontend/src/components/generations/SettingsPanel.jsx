@@ -1,8 +1,8 @@
 import "./SettingsPanel.css";
 
 const languageOptions = [
-  { value: "english", label: "English" },
-  { value: "swedish", label: "Swedish" },
+  { value: "English", label: "English" },
+  { value: "Swedish", label: "Swedish" },
 ];
 
 export default function SettingsPanel({ settings, setSettings }) {
@@ -71,7 +71,7 @@ export default function SettingsPanel({ settings, setSettings }) {
                 <button
                   type="button"
                   className={`question-type-card ${
-                    settings.questionTypes.includes("multipleChoice")
+                    settings.questionTypes?.includes("multipleChoice")
                       ? "selected"
                       : ""
                   }`}
@@ -88,7 +88,7 @@ export default function SettingsPanel({ settings, setSettings }) {
                 <button
                   type="button"
                   className={`question-type-card ${
-                    settings.questionTypes.includes("openEnded") ? "selected" : ""
+                    settings.questionTypes?.includes("openEnded") ? "selected" : ""
                   }`}
                   onClick={() => toggleQuestionType("openEnded")}
                 >
@@ -103,7 +103,7 @@ export default function SettingsPanel({ settings, setSettings }) {
                 <button
                   type="button"
                   className={`question-type-card ${
-                    settings.questionTypes.includes("trueFalse") ? "selected" : ""
+                    settings.questionTypes?.includes("trueFalse") ? "selected" : ""
                   }`}
                   onClick={() => toggleQuestionType("trueFalse")}
                 >
@@ -192,7 +192,7 @@ export default function SettingsPanel({ settings, setSettings }) {
                     key={level}
                     type="button"
                     className={`difficulty-button ${
-                      settings.difficulty.includes(level) ? "selected" : ""
+                      settings.difficulty?.includes(level) ? "selected" : ""
                     }`}
                     onClick={() => toggleDifficulty(level)}
                   >
@@ -293,7 +293,7 @@ export default function SettingsPanel({ settings, setSettings }) {
               <label className="checkbox-option">
                 <input
                   type="checkbox"
-                  checked={settings.outputContent.correctAnswers}
+                  checked={settings.outputContent?.correctAnswers ?? true}
                   onChange={() => toggleOutputContent("correctAnswers")}
                 />
                 <span>Correct Answers</span>
@@ -302,7 +302,7 @@ export default function SettingsPanel({ settings, setSettings }) {
               <label className="checkbox-option">
                 <input
                   type="checkbox"
-                  checked={settings.outputContent.answerExplanations}
+                  checked={settings.outputContent?.answerExplanations?? false}
                   onChange={() => toggleOutputContent("answerExplanations")}
                 />
                 <span>Answer Explanations</span>
@@ -311,7 +311,7 @@ export default function SettingsPanel({ settings, setSettings }) {
               <label className="checkbox-option">
                 <input
                   type="checkbox"
-                  checked={settings.outputContent.quizDescription}
+                  checked={settings.outputContent?.quizDescription?? false}
                   onChange={() => toggleOutputContent("quizDescription")}
                 />
                 <span>Quiz Description</span>
