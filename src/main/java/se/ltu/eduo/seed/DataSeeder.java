@@ -17,6 +17,7 @@ import se.ltu.eduo.collection.model.GenerationSourceMaterial;
 import se.ltu.eduo.collection.model.Quiz;
 import se.ltu.eduo.collection.model.SourceMaterial;
 import se.ltu.eduo.collection.repository.CollectionRepository;
+import se.ltu.eduo.collection.service.DocumentTextExtractor;
 import se.ltu.eduo.collection.repository.GenerationRepository;
 import se.ltu.eduo.collection.repository.GenerationSourceMaterialRepository;
 import se.ltu.eduo.collection.repository.QuizRepository;
@@ -58,6 +59,7 @@ public class DataSeeder implements ApplicationRunner {
     private final UserPreferencesRepository userPreferencesRepository;
     private final CollectionRepository collectionRepository;
     private final SourceMaterialRepository sourceMaterialRepository;
+    private final DocumentTextExtractor documentTextExtractor;
     private final GenerationRepository generationRepository;
     private final GenerationSourceMaterialRepository generationSourceMaterialRepository;
     private final QuizRepository quizRepository;
@@ -146,7 +148,7 @@ public class DataSeeder implements ApplicationRunner {
             byte[] bytes = loadAndValidatePdf(pdf);
             if (bytes == null) continue;
             materials.add(sourceMaterialRepository.save(
-                    new SourceMaterial(project, pdf.getFilename(), "application/pdf", bytes)));
+                    new SourceMaterial(project, pdf.getFilename(), "application/pdf", bytes, documentTextExtractor.extractText(bytes, "application/pdf"))));
         }
 
         if (materials.isEmpty()) {
