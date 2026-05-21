@@ -53,7 +53,6 @@ public class SourceMaterial {
     private byte[] fileData;
 
     // added
-    @Lob
     @Column(name = "extracted_text", columnDefinition = "text")
     private String extractedText;
 
