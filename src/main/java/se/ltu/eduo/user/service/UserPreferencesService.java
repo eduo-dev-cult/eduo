@@ -26,17 +26,17 @@ public class UserPreferencesService {
         return mapper.toDto(userPreferences);
     }
 
-
-    // updates preferences by userId
+    // updates a preferences for a user
     @Transactional
-    public void updatePreferencesByUserId(Integer userId, UserPreferencesDto userPreferencesDto) {
+    public UserPreferencesDto updatePreferencesByUserId(Integer userId, UserPreferencesDto dto) {
 
         UserPreferences userPreferences = repository.findById(userId)
-                .orElseThrow(() ->
-                        new UserPreferencesNotFoundException(userId));
+                .orElseThrow(() -> new UserPreferencesNotFoundException(userId));
 
-        mapper.updateFromDto(userPreferencesDto, userPreferences);
+        mapper.updateFromDto(dto, userPreferences);
 
-        repository.save(userPreferences);
+        UserPreferences saved = repository.save(userPreferences);
+
+        return mapper.toDto(saved);
     }
 }
