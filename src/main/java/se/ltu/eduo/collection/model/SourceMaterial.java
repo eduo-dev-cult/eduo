@@ -52,15 +52,22 @@ public class SourceMaterial {
     @Column(name = "file_data", nullable = false)
     private byte[] fileData;
 
+    // added
+    @Lob
+    @Column(name = "extracted_text", columnDefinition = "text")
+    private String extractedText;
+
     @CreationTimestamp
     @Column(name = "uploaded_at", nullable = false, updatable = false)
     private Instant uploadedAt;
 
-    public SourceMaterial(Collection collection, String filename, String fileType, byte[] fileData) {
+    public SourceMaterial(Collection collection, String filename, String fileType, byte[] fileData, String extractedText) {
         this.collection = collection;
         this.filename = filename;
         this.fileType = fileType;
         this.fileData = fileData;
         this.fileSizeBytes = fileData.length;
+        // added
+        this.extractedText = extractedText;
     }
 }
