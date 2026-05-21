@@ -1,9 +1,11 @@
-import { useState } from "react";
+import {useEffect, useState} from "react";
 import SettingsPanel from "./generations/SettingsPanel";
+import {loadUserPreferences, updateUserPreferences,} from "../api/userApi.js";
 
-const STORAGE_KEY = "eduo_generation_preferences";
+//const STORAGE_KEY = "eduo_generation_preferences";
 
 const defaultGenerationSettings = {
+  language: "English",
   questionTypes: ["multipleChoice"],
   numberOfQuestions: 10,
   collectionId: "default",
@@ -17,58 +19,132 @@ const defaultGenerationSettings = {
   },
 };
 
-function getPreferences() {
-  const saved = localStorage.getItem(STORAGE_KEY);
+async function getPreferences(userId) {
+  const parsed = await loadUserPreferences(userId);
 
-  if (!saved) return defaultGenerationSettings;
+  if (!parsed) return defaultGenerationSettings;
 
-  try {
-    const parsed = JSON.parse(saved);
+  const parsedFormatted = {
+    numberOfQuestions: parsed.numOfQuestions ?? defaultGenerationSettings.numberOfQuestions,
+    language:
+        parsed.language === "SWEDISH"
+            ? "Swedish"
+            : parsed.language === "ENGLISH"
+                ? "English"
+                : parsed.language,
 
-    return {
-      ...defaultGenerationSettings,
-      ...parsed,
-      outputContent: {
-        ...defaultGenerationSettings.outputContent,
-        ...parsed.outputContent,
-        questions: true,
-      },
-    };
-  } catch {
-    return defaultGenerationSettings;
-  }
+    focusArea:
+        parsed.focusArea === "KEY_CONCEPTS"
+            ? "Key concepts"
+            : parsed.focusArea === "TOPICS"
+                ? "Specific topics"
+                : parsed.focusArea === "ENTIRE_MATERIAL"
+                    ? "Entire material"
+                    : parsed.focusArea,
+
+    specificTopics: parsed.topics ?? defaultGenerationSettings.specificTopics,
+
+    difficulty: [
+      parsed.easy ? "Easy" : null,
+      parsed.medium ? "Medium" : null,
+      parsed.hard ? "Hard" : null,
+    ].filter(Boolean),
+
+    questionTypes: [
+      parsed.multipleChoice ? "multipleChoice" : null,
+      parsed.openEnded ? "openEnded" : null,
+      parsed.trueFalse ? "trueFalse" : null,
+    ].filter(Boolean),
+
+    outputContent: {
+      questions: parsed.questions,
+      correctAnswers: parsed.correctAnswers,
+      answerExplanations: parsed.explanations,
+    },
+  };
+
+  return {
+    ...defaultGenerationSettings,
+    ...parsedFormatted,
+  };
 }
 
-function savePreferences(preferences) {
-  localStorage.setItem(
-    STORAGE_KEY,
-    JSON.stringify({
-      ...preferences,
-      outputContent: {
-        ...preferences.outputContent,
-        questions: true,
-      },
-    })
-  );
+async function savePreferences(userId, preferences) {
+  var formattedPreferences = {
+    numOfQuestions: preferences?.numberOfQuestions,
+
+    language:
+        preferences.language === "English"
+            ? "ENGLISH"
+            : preferences.language === "Swedish"
+                ? "SWEDISH"
+                : preferences.language,
+
+    focusArea:
+        preferences.focusArea === "Entire material"
+            ? "ENTIRE_MATERIAL"
+            : preferences.focusArea === "Key concepts"
+                ? "KEY_CONCEPTS"
+                : preferences.focusArea === "Specific topics"
+                    ? "TOPICS"
+                    : preferences.focusArea,
+
+    topics: preferences.specificTopics ?? preferences.topics ?? null,
+
+    easy: preferences.difficulty?.includes("Easy") ?? false,
+    medium: preferences.difficulty?.includes("Medium") ?? false,
+    hard: preferences.difficulty?.includes("Hard") ?? false,
+
+    multipleChoice: preferences.questionTypes?.includes("multipleChoice") ?? false,
+    openEnded: preferences.questionTypes?.includes("openEnded") ?? false,
+    trueFalse: preferences.questionTypes?.includes("trueFalse") ?? false,
+
+    correctAnswers: preferences.outputContent?.correctAnswers ?? false,
+    explanations: preferences.outputContent?.answerExplanations ?? false,
+    description: false,
+    questions: preferences.outputContent?.questions ?? true,
+  };
+
+  await updateUserPreferences(userId, formattedPreferences);
 }
 
-export default function GenerationPreferences() {
-  const [preferences, setPreferences] = useState(() => getPreferences());
+export default function GenerationPreferences({userId}) {
+  const [preferences, setPreferences] = useState( defaultGenerationSettings);
   const [message, setMessage] = useState("");
 
-  const handleSave = () => {
-    savePreferences(preferences);
-    setMessage("Preferences saved.");
+  // ------hårdkodad userID)--------
+  useEffect (()=>{
+    getPreferences(2).then(pref=>{
+      setPreferences(pref)
+    });
+  }, [])
 
-    setTimeout(() => {
-      setMessage("");
-    }, 2000);
+  const handleSave = async () => {
+    await savePreferences(2, preferences);
+    setMessage("Preferences saved.");
+  // -----slut-------
+
+  // -----------byt med hårdkodning när userID fungerar--------
+  //useEffect(() => {
+  //  if (!userId) return;
+  //
+  //  getPreferences(userId).then(pref => {
+  //    setPreferences(pref);
+  //  });
+  //}, [userId]);
+
+  //const handleSave = async () => {
+  //  await savePreferences(userId, preferences);
+  //  setMessage("Preferences saved.");
+  //------------slut----------
+
+
+    setTimeout(() => {setMessage("");}, 2000);
   };
 
   return (
     <>
       <div className="title-section">
-        <h1>Preferences</h1>
         <p>
           Set your preferred generation options. These will be used as defaults when you generate 
           new questions, but can be adjusted on a per-generation basis.
