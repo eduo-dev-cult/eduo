@@ -958,7 +958,7 @@ export default function MainContent({
     return (
       <main className="main-content">
         <section className="content-card">
-          <GenerationPreferences />
+          <GenerationPreferences userId={getUserId(currentUser)}/>
         </section>
       </main>
     );
