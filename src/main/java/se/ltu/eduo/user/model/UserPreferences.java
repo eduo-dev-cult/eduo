@@ -26,52 +26,52 @@ public class UserPreferences {
     @Column(name = "locale", length = Integer.MAX_VALUE)
     private String locale;
 
-    //general settings
+    //settings
     @Column(name = "num_of_questions", nullable = false)
-    private int numOfQuestions = 10;
+    private int numOfQuestions;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "language", nullable = false)
-    private GenerationLanguage language = GenerationLanguage.ENGLISH;
+    private GenerationLanguage language;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "focus_area", nullable = false)
-    private GenerationFocusArea focusArea = GenerationFocusArea.ENTIRE_MATERIAL;
+    private GenerationFocusArea focusArea;
 
     @Column(name = "topics")
     private String topics;
 
-    // diffuculty settings, with default values (easy = true)
-    @Column(name = "default_easy", nullable = false)
-    private boolean defaultEasy = true;
+    // difficulty
+    @Column(name = "easy", nullable = false)
+    private boolean easy;
 
-    @Column(name = "default_medium", nullable = false)
-    private boolean defaultMedium = false;
+    @Column(name = "medium", nullable = false)
+    private boolean medium;
 
-    @Column(name = "default_hard", nullable = false)
-    private boolean defaultHard = false;
+    @Column(name = "hard", nullable = false)
+    private boolean hard;
 
-    //Default question types (multiple choice = true)
-    @Column(name = "default_multiple_choice", nullable = false)
-    private boolean defaultMultipleChoice = true;
+    // question types
+    @Column(name = "multiple_choice", nullable = false)
+    private boolean multipleChoice;
 
-    @Column(name = "default_open_ended", nullable = false)
-    private boolean defaultOpenEnded = false;
+    @Column(name = "open_ended", nullable = false)
+    private boolean openEnded;
 
-    @Column(name = "default_true_false", nullable = false)
-    private boolean defaultTrueFalse = false;
+    @Column(name = "true_false", nullable = false)
+    private boolean trueFalse;
 
-    //extra generationoptions, only questions is set as true.
-    @Column(name = "default_questions", nullable = false)
-    private boolean defaultQuestions = true;
+    // output content
+    @Column(name = "questions", nullable = false)
+    private boolean questions;
 
-    @Column(name = "default_correct_answers", nullable = false)
-    private boolean defaultCorrectAnswers = false;
+    @Column(name = "correct_answers", nullable = false)
+    private boolean correctAnswers;
 
-    @Column(name = "default_explanations", nullable = false)
-    private boolean defaultExplanations = false;
+    @Column(name = "explanations", nullable = false)
+    private boolean explanations;
 
-    @Column(name = "default_description", nullable = false)
-    private boolean defaultDescription = false;
+    @Column(name = "description", nullable = false)
+    private boolean description;
 
 }
