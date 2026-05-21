@@ -1,23 +1,25 @@
 package se.ltu.eduo.user.dto;
 
+import lombok.Data;
 import se.ltu.eduo.collection.model.GenerationFocusArea;
 import se.ltu.eduo.collection.model.GenerationLanguage;
 
+@Data
 public class UserPreferencesDto {
     private int numOfQuestions;
     private GenerationLanguage language;
     private GenerationFocusArea focusArea;
     private String topics;
 
-    private boolean defaultEasy;
-    private boolean defaultMedium;
-    private boolean defaultHard;
+    private boolean easy;
+    private boolean medium;
+    private boolean hard;
 
-    private boolean defaultMultipleChoice;
-    private boolean defaultOpenEnded;
-    private boolean defaultTrueFalse;
+    private boolean multipleChoice;
+    private boolean openEnded;
+    private boolean trueFalse;
 
-    private boolean defaultCorrectAnswers;
-    private boolean defaultExplanations;
-    private boolean defaultDescription;
+    private boolean correctAnswers;
+    private boolean explanations;
+    private boolean description;
 }
