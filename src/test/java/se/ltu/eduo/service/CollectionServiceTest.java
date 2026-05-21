@@ -195,7 +195,7 @@ class CollectionServiceTest {
         Integer userId = persistUser();
         Collection collection = collectionService.createCollection(userId, "Intro to Java", "This is a collection description");
         SourceMaterial material = collectionService.createSourceMaterial(
-                collection.getId(), "notes.pdf", "application/pdf", new byte[]{1, 2, 3});
+                collection.getId(), "notes.txt", "text/plain", "abc".getBytes());
         UUID materialId = material.getId();
 
         entityManager.flush();
@@ -239,15 +239,15 @@ class CollectionServiceTest {
     void createSourceMaterial_persistsMaterialWithCorrectMetadata() {
         Integer userId = persistUser();
         Collection collection = collectionService.createCollection(userId, "Intro to Java", "This is a collection description");
-        byte[] data = {1, 2, 3, 4};
+        byte[] data = "test".getBytes();
 
         SourceMaterial material = collectionService.createSourceMaterial(
-                collection.getId(), "slides.pdf", "application/pdf", data);
+                collection.getId(), "slides.txt", "text/plain", data);
 
         assertThat(material.getId()).isNotNull();
         assertThat(sourceMaterialRepository.findById(material.getId())).isPresent();
-        assertThat(material.getFilename()).isEqualTo("slides.pdf");
-        assertThat(material.getFileType()).isEqualTo("application/pdf");
+        assertThat(material.getFilename()).isEqualTo("slides.txt");
+        assertThat(material.getFileType()).isEqualTo("text/plain");
         assertThat(material.getFileSizeBytes()).isEqualTo(4);
     }
 
@@ -302,7 +302,7 @@ class CollectionServiceTest {
         Integer userId = persistUser();
         Collection collection = collectionService.createCollection(userId, "Intro to Java", "This is a collection description");
         SourceMaterial material = collectionService.createSourceMaterial(
-                collection.getId(), "notes.pdf", "application/pdf", new byte[]{1, 2, 3});
+                collection.getId(), "notes.txt", "text/plain", "abc".getBytes());
         UUID materialId = material.getId();
 
         collectionService.deleteSourceMaterial(materialId);
@@ -341,9 +341,9 @@ class CollectionServiceTest {
         Integer userId = persistUser();
         Collection collection = collectionService.createCollection(userId, "Intro to Java", "This is a collection description");
         SourceMaterial mat1 = collectionService.createSourceMaterial(
-                collection.getId(), "a.pdf", "application/pdf", new byte[]{1});
+                collection.getId(), "a.txt", "text/plain", "doc a".getBytes());
         SourceMaterial mat2 = collectionService.createSourceMaterial(
-                collection.getId(), "b.pdf", "application/pdf", new byte[]{2});
+                collection.getId(), "b.txt", "text/plain", "doc b".getBytes());
 
         collectionService.createGeneration(collection.getId(), TestDataGenerator.validGenerationRequest(mat1.getId(), mat2.getId()));
 

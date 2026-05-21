@@ -10,6 +10,7 @@ import se.ltu.eduo.collection.model.Generation;
 import se.ltu.eduo.collection.model.Quiz;
 import se.ltu.eduo.collection.service.CollectionService;
 
+import java.util.List;
 import java.util.UUID;
 
 @RequiredArgsConstructor
@@ -32,12 +33,9 @@ public class StudyQuestionService {
         // Detta kräver både collectiontId och en CreateGenerationRequest
         Generation generation = collectionService.createGeneration(collectionId, request);
 
-        // extraherar första id från en lista av sourceMaterialId
-        UUID sourceMaterialId = request.sourceMaterials()[0]; //TODO use all materials rather than only the first
-
-        // Efter genererings tabellen har skapad behöver vi en string av filen
-        // som ska in till llm.
-        String fileContent = fileService.getFileAsString(sourceMaterialId);
+        // Concatenate the extracted text from all selected source materials
+        List<UUID> sourceMaterialIds = List.of(request.sourceMaterials());
+        String fileContent = fileService.getFilesAsString(sourceMaterialIds);
 
         // Hämtar en färdig string med settingsinstruktioner
         String settings = settingsService.allSettings(request);

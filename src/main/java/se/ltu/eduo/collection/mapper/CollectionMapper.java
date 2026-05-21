@@ -37,6 +37,7 @@ public interface CollectionMapper {
 
     @Mapping(target = "collection", ignore = true)
     @Mapping(target = "fileData", ignore = true)
+    @Mapping(target = "extractedText", ignore = true)
     SourceMaterial toEntity(CollectionDto.SourceMaterialDto dto);
 
     @Mapping(target = "id", source = "sourceMaterial.id")

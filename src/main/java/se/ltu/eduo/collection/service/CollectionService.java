@@ -29,6 +29,7 @@ public class CollectionService {
     private final GenerationMapper generationMapper;
     private final CollectionRepository collectionRepository;
     private final SourceMaterialRepository sourceMaterialRepository;
+    private final DocumentTextExtractor documentTextExtractor;
     private final GenerationRepository generationRepository;
     private final GenerationSourceMaterialRepository generationSourceMaterialRepository;
     private final QuizRepository quizRepository;
@@ -115,7 +116,9 @@ public class CollectionService {
                                                byte[] fileData) {
         Collection collection = collectionRepository.findById(collectionId)
                                                     .orElseThrow(() -> new EntityNotFoundException("collection not found with this ID: " + collectionId));
-        SourceMaterial material = new SourceMaterial(collection, filename, fileType, fileData);
+        // here is where we call the document text extractor:
+        String extractedText = documentTextExtractor.extractText(fileData, fileType);
+        SourceMaterial material = new SourceMaterial(collection, filename, fileType, fileData, extractedText);
         return sourceMaterialRepository.save(material);
     }
 
