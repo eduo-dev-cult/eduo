@@ -9,6 +9,8 @@ public interface UserPreferencesMapper {
 
     UserPreferencesDto toDto(UserPreferences userPreferences);
 
+    UserPreferences toEntity(UserPreferencesDto dto);
+
     @BeanMapping(nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE)
     void updateFromDto(UserPreferencesDto userPreferencesDto,
                        @MappingTarget UserPreferences userPreferences);
