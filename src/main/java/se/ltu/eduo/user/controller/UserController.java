@@ -52,19 +52,23 @@ public class UserController {
         return ResponseEntity.noContent().build();
     }
 
-    // gets user preferences (fixa url så den hittar rätt)
+    // gets user preferences
     @GetMapping("/{id}/preferences")
     public ResponseEntity<UserPreferencesDto> getUserPreferences(@PathVariable Integer id) {
         UserPreferencesDto preferences = userPreferencesService.getPreferencesByUserId(id);
         return ResponseEntity.ok(preferences);
     }
 
-    // updates user preferences (fixa url så den hittar rätt)
+    // updates user preferences
     @PutMapping("/{id}/preferences")
-    public ResponseEntity<Void> updateUserPreferences(@PathVariable Integer id,
-            @RequestBody UserPreferencesDto userPreferencesDto) {
-        userPreferencesService.updatePreferencesByUserId(id, userPreferencesDto);
-        return ResponseEntity.noContent().build();
+    public ResponseEntity<UserPreferencesDto> updateUserPreferences(
+            @PathVariable Integer id,
+            @RequestBody UserPreferencesDto userPreferencesDto
+    ) {
+        UserPreferencesDto updated =
+                userPreferencesService.updatePreferencesByUserId(id, userPreferencesDto);
+
+        return ResponseEntity.ok(updated);
     }
 
 }
