@@ -2,12 +2,17 @@ package se.ltu.eduo.user.service;
 
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import org.jspecify.annotations.NonNull;
 import org.springframework.stereotype.Service;
+import se.ltu.eduo.collection.model.GenerationFocusArea;
+import se.ltu.eduo.collection.model.GenerationLanguage;
 import se.ltu.eduo.collection.service.CollectionService;
 import se.ltu.eduo.exception.UsernameAlreadyExistsException;
 import se.ltu.eduo.user.model.User;
 import se.ltu.eduo.user.model.UserCredential;
+import se.ltu.eduo.user.model.UserPreferences;
 import se.ltu.eduo.user.repository.UserCredentialRepository;
+import se.ltu.eduo.user.repository.UserPreferencesRepository;
 import se.ltu.eduo.user.repository.UserRepository;
 
 import java.time.Instant;
@@ -20,6 +25,7 @@ public class AuthService {
     private final UserRepository userRepository;
     private final UserCredentialRepository credentialRepository;
     private final CollectionService collectionService;
+    private final UserPreferencesRepository userPreferencesRepository;
 
     /**
      * Creates a new user, associated credentials, and a default collection.
@@ -58,6 +64,11 @@ public class AuthService {
 
         credentialRepository.save(credential);
 
+        // sets defaultUserPreferences when a user is created
+        UserPreferences prefs = getUserPreferences(savedUser);
+
+        userPreferencesRepository.save(prefs);
+
         // Every user should always have at least one collection available.
         collectionService.createCollection(
                 savedUser.getId(),
@@ -66,6 +77,31 @@ public class AuthService {
         );
 
         return savedUser;
+    }
+
+    // method to set default userPreferences
+    private static @NonNull UserPreferences getUserPreferences(User savedUser) {
+        UserPreferences prefs = new UserPreferences();
+        prefs.setUser(savedUser);
+
+        prefs.setNumOfQuestions(10);
+        prefs.setLanguage(GenerationLanguage.ENGLISH);
+        prefs.setFocusArea(GenerationFocusArea.ENTIRE_MATERIAL);
+        prefs.setTopics(null);
+
+        prefs.setEasy(true);
+        prefs.setMedium(false);
+        prefs.setHard(false);
+
+        prefs.setMultipleChoice(true);
+        prefs.setOpenEnded(false);
+        prefs.setTrueFalse(false);
+
+        prefs.setQuestions(true);
+        prefs.setCorrectAnswers(false);
+        prefs.setExplanations(false);
+        prefs.setDescription(false);
+        return prefs;
     }
 
     /**
